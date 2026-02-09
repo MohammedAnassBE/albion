@@ -3,5 +3,7 @@
 *.egg-info
 *.swp
 tags
+.vscode
 node_modules
-__pycache__
+yarn.lock
+package-lock.json
