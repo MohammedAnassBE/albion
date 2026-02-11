@@ -1,4 +1,4 @@
-frappe.dom.set_style("/* sfc-style:/home/anas/frappe-15/apps/albion/albion/public/js/components/OrderMatrix.vue?type=style&index=0 */\n.order-matrix[data-v-736a6fcc] {\n  margin-top: 20px;\n}\n.item-section[data-v-736a6fcc] {\n  margin-bottom: 30px;\n  padding: 15px;\n  border: 1px solid #d1d8dd;\n  border-radius: 4px;\n}\n.item-header[data-v-736a6fcc] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 15px;\n  padding-bottom: 10px;\n  border-bottom: 1px solid #d1d8dd;\n}\n.item-title[data-v-736a6fcc] {\n  margin: 0;\n}\n.item-actions[data-v-736a6fcc] {\n  display: flex;\n  gap: 8px;\n}\n.qty-input[data-v-736a6fcc] {\n  width: 80px;\n  text-align: right;\n}\n.colour-header[data-v-736a6fcc],\n.colour-cell[data-v-736a6fcc] {\n  min-width: 100px;\n  font-weight: bold;\n}\n.size-header[data-v-736a6fcc] {\n  min-width: 80px;\n  text-align: center;\n}\n.total-header[data-v-736a6fcc],\n.total-cell[data-v-736a6fcc] {\n  min-width: 80px;\n  text-align: right;\n  font-weight: bold;\n}\n\n/* sfc-style:/home/anas/frappe-15/apps/albion/albion/public/js/components/CapacityPlanning.vue?type=style&index=0 */\n.capacity-planning[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n  background: #f9fafb;\n}\n.cp-header[data-v-662cf2e2] {\n  background: white;\n  padding: 12px 16px;\n  border-bottom: 1px solid #e5e7eb;\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);\n}\n.cp-filters[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: end;\n}\n.filter-group[data-v-662cf2e2] {\n  display: flex;\n  gap: 12px;\n  align-items: end;\n  flex-wrap: wrap;\n}\n.action-group[data-v-662cf2e2] {\n  display: flex;\n  gap: 8px;\n  align-items: end;\n}\n.form-group[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n.form-group label[data-v-662cf2e2] {\n  font-size: 12px;\n  font-weight: 500;\n  color: #374151;\n}\n.form-control[data-v-662cf2e2] {\n  min-width: unset;\n  width: 100%;\n  padding: 7px 12px;\n  border: 1px solid #e5e7eb;\n  border-radius: 8px;\n  font-size: 13px;\n  background: white;\n  transition: border-color 0.2s, box-shadow 0.2s;\n}\nselect.form-control[data-v-662cf2e2] {\n  -webkit-appearance: menulist;\n  -moz-appearance: menulist;\n  appearance: menulist;\n  padding-block: 0;\n}\n.form-control[data-v-662cf2e2]:focus {\n  outline: none;\n  border-color: #2563eb;\n  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);\n}\n.form-control[data-v-662cf2e2]:disabled {\n  background: #f3f4f6;\n  color: #9ca3af;\n  cursor: not-allowed;\n}\n.text-info[data-v-662cf2e2] {\n  color: #2563eb;\n}\n.border-danger[data-v-662cf2e2] {\n  border-color: #ef4444 !important;\n}\n.text-danger[data-v-662cf2e2] {\n  color: #ef4444;\n}\n.validation-alerts[data-v-662cf2e2] {\n  padding: 10px 15px;\n  background: #fef2f2;\n}\n.alert[data-v-662cf2e2] {\n  padding: 8px 12px;\n  margin-bottom: 5px;\n  border-radius: 6px;\n}\n.alert-danger[data-v-662cf2e2] {\n  background: #fee2e2;\n  color: #dc2626;\n}\n.cp-body[data-v-662cf2e2] {\n  display: flex;\n  flex: 1;\n  overflow: hidden;\n}\n.cp-left-panel[data-v-662cf2e2] {\n  width: 280px;\n  background: white;\n  border-right: 1px solid #e5e7eb;\n  display: flex;\n  flex-direction: column;\n}\n.panel-header[data-v-662cf2e2] {\n  padding: 14px 12px;\n  border-bottom: 1px solid #e5e7eb;\n}\n.panel-header h4[data-v-662cf2e2] {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111827;\n  margin: 0 0 2px 0;\n}\n.panel-subtitle[data-v-662cf2e2] {\n  font-size: 12px;\n  color: #9ca3af;\n}\n.workload-summary[data-v-662cf2e2] {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 6px;\n  padding: 10px 12px;\n  background: #f9fafb;\n  border-bottom: 1px solid #e5e7eb;\n}\n.summary-item[data-v-662cf2e2] {\n  display: flex;\n  gap: 5px;\n  font-size: 11px;\n}\n.summary-item .label[data-v-662cf2e2] {\n  color: #9ca3af;\n}\n.summary-item .value[data-v-662cf2e2] {\n  font-weight: 600;\n  color: #111827;\n}\n.workload-list[data-v-662cf2e2] {\n  flex: 1;\n  overflow-y: auto;\n  padding: 10px;\n}\n.empty-state[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  padding: 40px 20px;\n  color: #9ca3af;\n}\n.empty-icon[data-v-662cf2e2] {\n  font-size: 32px;\n  margin-bottom: 12px;\n  opacity: 0.5;\n}\n.empty-text[data-v-662cf2e2] {\n  font-size: 13px;\n  text-align: center;\n}\n.workload-item[data-v-662cf2e2] {\n  padding: 10px 12px;\n  border-radius: 8px;\n  border: 1px solid #e5e7eb;\n  background: white;\n  margin-bottom: 8px;\n  border-left: 3px solid transparent;\n  cursor: grab;\n  transition: all 0.2s;\n}\n.workload-item[data-v-662cf2e2]:hover {\n  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);\n}\n.workload-item.fully-allocated[data-v-662cf2e2] {\n  border-left-color: #10b981;\n  background: #f9fafb;\n  opacity: 0.7;\n  cursor: not-allowed;\n}\n.workload-item.partial-allocated[data-v-662cf2e2] {\n  border-left-color: #f59e0b;\n  background: white;\n}\n.workload-item.pending[data-v-662cf2e2] {\n  border-left-color: #3b82f6;\n}\n.workload-item.invalid[data-v-662cf2e2] {\n  border-left-color: #ef4444;\n  opacity: 0.5;\n  background: #fef2f2;\n  cursor: not-allowed;\n}\n.workload-item.locked[data-v-662cf2e2] {\n  border-left-color: #8b5cf6;\n  opacity: 0.6;\n  background: #faf5ff;\n  cursor: not-allowed;\n}\n.workload-item[data-v-662cf2e2]:active {\n  cursor: grabbing;\n}\n.item-header[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 5px;\n}\n.drag-handle[data-v-662cf2e2] {\n  color: #d1d5db;\n  cursor: grab;\n  font-size: 12px;\n  margin-right: 6px;\n  user-select: none;\n}\n.item-name[data-v-662cf2e2] {\n  font-weight: 600;\n  color: #111827;\n  flex: 1;\n}\n.item-qty[data-v-662cf2e2] {\n  background: #f3f4f6;\n  color: #374151;\n  padding: 2px 8px;\n  border-radius: 10px;\n  font-size: 11px;\n  font-weight: 600;\n}\n.item-detail[data-v-662cf2e2] {\n  font-size: 12px;\n  color: #6b7280;\n}\n.item-minutes[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #9ca3af;\n  margin-top: 5px;\n}\n.item-progress[data-v-662cf2e2] {\n  height: 3px;\n  background: #f3f4f6;\n  border-radius: 2px;\n  margin-top: 6px;\n  overflow: hidden;\n}\n.item-progress-fill[data-v-662cf2e2] {\n  height: 100%;\n  border-radius: 2px;\n  transition: width 0.3s;\n}\n.item-progress-fill.full[data-v-662cf2e2] {\n  background: #10b981;\n}\n.item-progress-fill.partial[data-v-662cf2e2] {\n  background: #f59e0b;\n}\n.item-progress-fill.pending[data-v-662cf2e2] {\n  background: #3b82f6;\n}\n.allocation-status[data-v-662cf2e2] {\n  font-size: 11px;\n  margin-top: 5px;\n  font-weight: 600;\n}\n.allocation-status.full[data-v-662cf2e2] {\n  color: #10b981;\n}\n.allocation-status.partial[data-v-662cf2e2] {\n  color: #f59e0b;\n}\n.allocation-status.pending[data-v-662cf2e2] {\n  color: #3b82f6;\n}\n.invalid-reason[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #ef4444;\n  margin-top: 5px;\n}\n.locked-reason[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #8b5cf6;\n  font-weight: 600;\n  margin-top: 5px;\n}\n.cp-right-panel[data-v-662cf2e2] {\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n}\n.calendar-header[data-v-662cf2e2] {\n  background: white;\n  padding: 10px 16px;\n  border-bottom: 1px solid #e5e7eb;\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n.calendar-header h4[data-v-662cf2e2] {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111827;\n  margin: 0;\n}\n.calendar-legend[data-v-662cf2e2] {\n  display: flex;\n  gap: 15px;\n}\n.legend-item[data-v-662cf2e2] {\n  display: flex;\n  align-items: center;\n  gap: 5px;\n  font-size: 12px;\n  color: #6b7280;\n}\n.dot[data-v-662cf2e2] {\n  width: 8px;\n  height: 8px;\n  border-radius: 50%;\n}\n.dot.available[data-v-662cf2e2] {\n  background: white;\n  border: 1px solid #e5e7eb;\n}\n.dot.allocated[data-v-662cf2e2] {\n  background: #f8fafc;\n  border: 1px solid #cbd5e1;\n}\n.dot.full[data-v-662cf2e2] {\n  background: #fef2f2;\n  border: 1px solid #fca5a5;\n}\n.dot.conflict[data-v-662cf2e2] {\n  background: #fef2f2;\n  border: 2px solid #ef4444;\n}\n.calendar-wrapper[data-v-662cf2e2] {\n  flex: 1;\n  overflow: auto;\n  background: white;\n}\n.calendar-table[data-v-662cf2e2] {\n  width: 100%;\n  border-collapse: collapse;\n}\n.calendar-table th[data-v-662cf2e2],\n.calendar-table td[data-v-662cf2e2] {\n  border: 1px solid #e5e7eb;\n  min-width: 130px;\n}\n.machine-header[data-v-662cf2e2] {\n  background: #f9fafb;\n  padding: 10px;\n  font-weight: 600;\n  font-size: 13px;\n  color: #111827;\n  position: sticky;\n  left: 0;\n  z-index: 10;\n}\n.date-header[data-v-662cf2e2] {\n  background: #f9fafb;\n  padding: 10px 8px;\n  text-align: center;\n}\n.date-header.weekend[data-v-662cf2e2] {\n  background: #fef3c7;\n}\n.date-header.past-date[data-v-662cf2e2] {\n  background: #fee2e2;\n}\n.date-cell[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n.day-date[data-v-662cf2e2] {\n  font-weight: 600;\n  font-size: 12px;\n  color: #111827;\n}\n.shift-info[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #6b7280;\n}\n.machine-cell[data-v-662cf2e2] {\n  background: #f9fafb;\n  padding: 12px;\n  border-right: 1px solid #e5e7eb;\n  position: sticky;\n  left: 0;\n  z-index: 10;\n}\n.machine-info[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n}\n.machine-title[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n.machine-id[data-v-662cf2e2] {\n  font-weight: 600;\n  font-size: 13px;\n  color: #111827;\n}\n.machine-name[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #6b7280;\n  margin-top: 2px;\n}\n.machine-utilization[data-v-662cf2e2] {\n  font-size: 11px;\n  font-weight: 600;\n  padding: 1px 6px;\n  border-radius: 4px;\n}\n.util-low[data-v-662cf2e2] {\n  background: #ecfdf5;\n  color: #059669;\n}\n.util-medium[data-v-662cf2e2] {\n  background: #fef3c7;\n  color: #d97706;\n}\n.util-high[data-v-662cf2e2] {\n  background: #fee2e2;\n  color: #dc2626;\n}\n.calendar-cell[data-v-662cf2e2] {\n  padding: 6px 8px;\n  vertical-align: top;\n  min-height: 80px;\n  transition: background 0.2s;\n}\n.cell-available[data-v-662cf2e2] {\n  background: white;\n}\n.cell-allocated[data-v-662cf2e2] {\n  background: #f8fafc;\n}\n.cell-full[data-v-662cf2e2] {\n  background: #fef2f2;\n}\n.cell-conflict[data-v-662cf2e2] {\n  background: #fef2f2;\n  border: 2px solid #ef4444;\n}\n.calendar-cell[data-v-662cf2e2]:hover {\n  box-shadow: inset 0 0 0 2px #3b82f6;\n}\n.cell-content[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.allocation-item[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  padding: 6px 8px;\n  border-radius: 6px;\n  font-size: 12px;\n  background: white;\n  border-left: 3px solid;\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);\n  cursor: grab;\n  border-top: 1px solid #f3f4f6;\n  border-right: 1px solid #f3f4f6;\n  border-bottom: 1px solid #f3f4f6;\n}\n.allocation-item[data-v-662cf2e2]:hover {\n  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n}\n.allocation-item[data-v-662cf2e2]:active {\n  cursor: grabbing;\n}\n.allocation-item.conflict[data-v-662cf2e2] {\n  border: 2px solid #ef4444;\n  border-left: 3px solid #ef4444;\n  animation: pulse-662cf2e2 1.5s infinite;\n}\n@keyframes pulse-662cf2e2 {\n  0% {\n    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);\n  }\n  70% {\n    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);\n  }\n  100% {\n    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);\n  }\n}\n.alloc-header[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n.alloc-footer[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-top: 2px;\n}\n.alloc-item[data-v-662cf2e2] {\n  font-weight: 600;\n  color: #111827;\n}\n.alloc-qty[data-v-662cf2e2] {\n  background: #f3f4f6;\n  padding: 1px 6px;\n  border-radius: 4px;\n  font-size: 11px;\n  font-weight: 600;\n  color: #374151;\n}\n.alloc-process[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #6b7280;\n}\n.alloc-mins[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #6b7280;\n}\n.btn-remove[data-v-662cf2e2] {\n  width: 18px;\n  height: 18px;\n  font-size: 12px;\n  border-radius: 4px;\n  background: transparent;\n  border: none;\n  cursor: pointer;\n  line-height: 1;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #9ca3af;\n  opacity: 0;\n  transition: opacity 0.15s;\n}\n.allocation-item:hover .btn-remove[data-v-662cf2e2] {\n  opacity: 1;\n}\n.btn-remove[data-v-662cf2e2]:hover {\n  background: #fee2e2;\n  color: #ef4444;\n}\n.cell-summary[data-v-662cf2e2] {\n  margin-top: auto;\n  padding-top: 5px;\n  border-top: 1px dashed #e5e7eb;\n  font-size: 11px;\n  text-align: right;\n}\n.used-minutes[data-v-662cf2e2] {\n  font-weight: 600;\n  color: #111827;\n}\n.remaining-minutes[data-v-662cf2e2] {\n  color: #9ca3af;\n}\n.capacity-bar[data-v-662cf2e2] {\n  height: 6px;\n  background: #f3f4f6;\n  border-radius: 3px;\n  overflow: hidden;\n  margin-top: 2px;\n}\n.capacity-fill[data-v-662cf2e2] {\n  height: 100%;\n  border-radius: 3px;\n  transition: width 0.3s;\n}\n.capacity-fill.bar-ok[data-v-662cf2e2] {\n  background: #10b981;\n}\n.capacity-fill.bar-warning[data-v-662cf2e2] {\n  background: #f59e0b;\n}\n.capacity-fill.bar-full[data-v-662cf2e2] {\n  background: #ef4444;\n}\n.modal-overlay[data-v-662cf2e2] {\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  background: rgba(0, 0, 0, 0.5);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 1000;\n}\n.modal-content[data-v-662cf2e2] {\n  background: white;\n  padding: 24px;\n  border-radius: 12px;\n  min-width: 300px;\n  max-width: 400px;\n}\n.modal-content h4[data-v-662cf2e2] {\n  font-size: 16px;\n  font-weight: 600;\n  color: #111827;\n  margin: 0 0 15px 0;\n}\n.modal-actions[data-v-662cf2e2] {\n  display: flex;\n  gap: 10px;\n  justify-content: flex-end;\n  margin-top: 15px;\n}\n.btn[data-v-662cf2e2] {\n  padding: 7px 16px;\n  border: none;\n  border-radius: 8px;\n  cursor: pointer;\n  font-size: 13px;\n  font-weight: 500;\n}\n.btn-primary[data-v-662cf2e2] {\n  background: #2563eb;\n  color: white;\n}\n.btn-primary[data-v-662cf2e2]:hover {\n  background: #1d4ed8;\n}\n.btn-default[data-v-662cf2e2] {\n  background: white;\n  border: 1px solid #e5e7eb;\n  color: #374151;\n}\n.btn-default[data-v-662cf2e2]:hover {\n  background: #f9fafb;\n}\n.btn-secondary[data-v-662cf2e2] {\n  background: #f3f4f6;\n  color: #374151;\n}\n.btn-secondary[data-v-662cf2e2]:hover {\n  background: #e5e7eb;\n}\n.btn[data-v-662cf2e2]:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n.context-menu[data-v-662cf2e2] {\n  position: fixed;\n  background: white;\n  border: 1px solid #e5e7eb;\n  border-radius: 8px;\n  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);\n  z-index: 1000;\n  min-width: 150px;\n  padding: 4px;\n}\n.menu-item[data-v-662cf2e2] {\n  padding: 8px 14px;\n  cursor: pointer;\n  font-size: 13px;\n  border-radius: 4px;\n  margin: 2px 0;\n  color: #374151;\n}\n.menu-item[data-v-662cf2e2]:hover {\n  background: #f3f4f6;\n}\n.menu-item.text-danger[data-v-662cf2e2] {\n  color: #ef4444;\n}\n.menu-item.text-danger[data-v-662cf2e2]:hover {\n  background: #fef2f2;\n}\n/*# sourceMappingURL=albion.bundle.CLSGCBOR.css.map */\n");
+frappe.dom.set_style("/* sfc-style:/home/anas/frappe-15/apps/albion/albion/public/js/components/OrderMatrix.vue?type=style&index=0 */\n.order-matrix[data-v-736a6fcc] {\n  margin-top: 20px;\n}\n.item-section[data-v-736a6fcc] {\n  margin-bottom: 30px;\n  padding: 15px;\n  border: 1px solid #d1d8dd;\n  border-radius: 4px;\n}\n.item-header[data-v-736a6fcc] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 15px;\n  padding-bottom: 10px;\n  border-bottom: 1px solid #d1d8dd;\n}\n.item-title[data-v-736a6fcc] {\n  margin: 0;\n}\n.item-actions[data-v-736a6fcc] {\n  display: flex;\n  gap: 8px;\n}\n.qty-input[data-v-736a6fcc] {\n  width: 80px;\n  text-align: right;\n}\n.colour-header[data-v-736a6fcc],\n.colour-cell[data-v-736a6fcc] {\n  min-width: 100px;\n  font-weight: bold;\n}\n.size-header[data-v-736a6fcc] {\n  min-width: 80px;\n  text-align: center;\n}\n.total-header[data-v-736a6fcc],\n.total-cell[data-v-736a6fcc] {\n  min-width: 80px;\n  text-align: right;\n  font-weight: bold;\n}\n\n/* sfc-style:/home/anas/frappe-15/apps/albion/albion/public/js/components/CapacityPlanning.vue?type=style&index=0 */\n.capacity-planning[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n  background: #f9fafb;\n}\n.cp-header[data-v-662cf2e2] {\n  background: white;\n  padding: 12px 16px;\n  border-bottom: 1px solid #e5e7eb;\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);\n}\n.cp-filters[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: end;\n}\n.filter-group[data-v-662cf2e2] {\n  display: flex;\n  gap: 12px;\n  align-items: end;\n  flex-wrap: wrap;\n}\n.action-group[data-v-662cf2e2] {\n  display: flex;\n  gap: 8px;\n  align-items: end;\n}\n.form-group[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n.form-group label[data-v-662cf2e2] {\n  font-size: 12px;\n  font-weight: 500;\n  color: #374151;\n}\n.form-control[data-v-662cf2e2] {\n  min-width: unset;\n  width: 100%;\n  padding: 7px 12px;\n  border: 1px solid #e5e7eb;\n  border-radius: 8px;\n  font-size: 13px;\n  background: white;\n  transition: border-color 0.2s, box-shadow 0.2s;\n}\nselect.form-control[data-v-662cf2e2] {\n  -webkit-appearance: menulist;\n  -moz-appearance: menulist;\n  appearance: menulist;\n  padding-block: 0;\n}\n.form-control[data-v-662cf2e2]:focus {\n  outline: none;\n  border-color: #2563eb;\n  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);\n}\n.form-control[data-v-662cf2e2]:disabled {\n  background: #f3f4f6;\n  color: #9ca3af;\n  cursor: not-allowed;\n}\n.text-info[data-v-662cf2e2] {\n  color: #2563eb;\n}\n.border-danger[data-v-662cf2e2] {\n  border-color: #ef4444 !important;\n}\n.text-danger[data-v-662cf2e2] {\n  color: #ef4444;\n}\n.validation-alerts[data-v-662cf2e2] {\n  padding: 10px 15px;\n  background: #fef2f2;\n}\n.alert[data-v-662cf2e2] {\n  padding: 8px 12px;\n  margin-bottom: 5px;\n  border-radius: 6px;\n}\n.alert-danger[data-v-662cf2e2] {\n  background: #fee2e2;\n  color: #dc2626;\n}\n.cp-body[data-v-662cf2e2] {\n  display: flex;\n  flex: 1;\n  overflow: hidden;\n}\n.cp-left-panel[data-v-662cf2e2] {\n  width: 280px;\n  background: white;\n  border-right: 1px solid #e5e7eb;\n  display: flex;\n  flex-direction: column;\n}\n.panel-header[data-v-662cf2e2] {\n  padding: 14px 12px;\n  border-bottom: 1px solid #e5e7eb;\n}\n.panel-header h4[data-v-662cf2e2] {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111827;\n  margin: 0 0 2px 0;\n}\n.panel-subtitle[data-v-662cf2e2] {\n  font-size: 12px;\n  color: #9ca3af;\n}\n.workload-summary[data-v-662cf2e2] {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 6px;\n  padding: 10px 12px;\n  background: #f9fafb;\n  border-bottom: 1px solid #e5e7eb;\n}\n.summary-item[data-v-662cf2e2] {\n  display: flex;\n  gap: 5px;\n  font-size: 11px;\n}\n.summary-item .label[data-v-662cf2e2] {\n  color: #9ca3af;\n}\n.summary-item .value[data-v-662cf2e2] {\n  font-weight: 600;\n  color: #111827;\n}\n.workload-list[data-v-662cf2e2] {\n  flex: 1;\n  overflow-y: auto;\n  padding: 10px;\n}\n.empty-state[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  padding: 40px 20px;\n  color: #9ca3af;\n}\n.empty-icon[data-v-662cf2e2] {\n  font-size: 32px;\n  margin-bottom: 12px;\n  opacity: 0.5;\n}\n.empty-text[data-v-662cf2e2] {\n  font-size: 13px;\n  text-align: center;\n}\n.workload-item[data-v-662cf2e2] {\n  padding: 10px 12px;\n  border-radius: 8px;\n  border: 1px solid #e5e7eb;\n  background: white;\n  margin-bottom: 8px;\n  border-left: 3px solid transparent;\n  cursor: grab;\n  transition: all 0.2s;\n}\n.workload-item[data-v-662cf2e2]:hover {\n  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);\n}\n.workload-item.fully-allocated[data-v-662cf2e2] {\n  border-left-color: #10b981;\n  background: #f9fafb;\n  opacity: 0.7;\n  cursor: not-allowed;\n}\n.workload-item.partial-allocated[data-v-662cf2e2] {\n  border-left-color: #f59e0b;\n  background: white;\n}\n.workload-item.pending[data-v-662cf2e2] {\n  border-left-color: #3b82f6;\n}\n.workload-item.invalid[data-v-662cf2e2] {\n  border-left-color: #ef4444;\n  opacity: 0.5;\n  background: #fef2f2;\n  cursor: not-allowed;\n}\n.workload-item.locked[data-v-662cf2e2] {\n  border-left-color: #8b5cf6;\n  opacity: 0.6;\n  background: #faf5ff;\n  cursor: not-allowed;\n}\n.workload-item[data-v-662cf2e2]:active {\n  cursor: grabbing;\n}\n.item-header[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 5px;\n}\n.drag-handle[data-v-662cf2e2] {\n  color: #d1d5db;\n  cursor: grab;\n  font-size: 12px;\n  margin-right: 6px;\n  user-select: none;\n}\n.item-name[data-v-662cf2e2] {\n  font-weight: 600;\n  color: #111827;\n  flex: 1;\n}\n.item-qty[data-v-662cf2e2] {\n  background: #f3f4f6;\n  color: #374151;\n  padding: 2px 8px;\n  border-radius: 10px;\n  font-size: 11px;\n  font-weight: 600;\n}\n.item-detail[data-v-662cf2e2] {\n  font-size: 12px;\n  color: #6b7280;\n}\n.item-minutes[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #9ca3af;\n  margin-top: 5px;\n}\n.item-progress[data-v-662cf2e2] {\n  height: 3px;\n  background: #f3f4f6;\n  border-radius: 2px;\n  margin-top: 6px;\n  overflow: hidden;\n}\n.item-progress-fill[data-v-662cf2e2] {\n  height: 100%;\n  border-radius: 2px;\n  transition: width 0.3s;\n}\n.item-progress-fill.full[data-v-662cf2e2] {\n  background: #10b981;\n}\n.item-progress-fill.partial[data-v-662cf2e2] {\n  background: #f59e0b;\n}\n.item-progress-fill.pending[data-v-662cf2e2] {\n  background: #3b82f6;\n}\n.allocation-status[data-v-662cf2e2] {\n  font-size: 11px;\n  margin-top: 5px;\n  font-weight: 600;\n}\n.allocation-status.full[data-v-662cf2e2] {\n  color: #10b981;\n}\n.allocation-status.partial[data-v-662cf2e2] {\n  color: #f59e0b;\n}\n.allocation-status.pending[data-v-662cf2e2] {\n  color: #3b82f6;\n}\n.invalid-reason[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #ef4444;\n  margin-top: 5px;\n}\n.locked-reason[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #8b5cf6;\n  font-weight: 600;\n  margin-top: 5px;\n}\n.cp-right-panel[data-v-662cf2e2] {\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n}\n.calendar-header[data-v-662cf2e2] {\n  background: white;\n  padding: 10px 16px;\n  border-bottom: 1px solid #e5e7eb;\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n.calendar-header h4[data-v-662cf2e2] {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111827;\n  margin: 0;\n}\n.calendar-legend[data-v-662cf2e2] {\n  display: flex;\n  gap: 15px;\n}\n.legend-item[data-v-662cf2e2] {\n  display: flex;\n  align-items: center;\n  gap: 5px;\n  font-size: 12px;\n  color: #6b7280;\n}\n.dot[data-v-662cf2e2] {\n  width: 8px;\n  height: 8px;\n  border-radius: 50%;\n}\n.dot.available[data-v-662cf2e2] {\n  background: white;\n  border: 1px solid #e5e7eb;\n}\n.dot.allocated[data-v-662cf2e2] {\n  background: #f8fafc;\n  border: 1px solid #cbd5e1;\n}\n.dot.full[data-v-662cf2e2] {\n  background: #fef2f2;\n  border: 1px solid #fca5a5;\n}\n.dot.conflict[data-v-662cf2e2] {\n  background: #fef2f2;\n  border: 2px solid #ef4444;\n}\n.calendar-wrapper[data-v-662cf2e2] {\n  flex: 1;\n  overflow: auto;\n  background: white;\n}\n.calendar-table[data-v-662cf2e2] {\n  width: 100%;\n  border-collapse: collapse;\n}\n.calendar-table th[data-v-662cf2e2],\n.calendar-table td[data-v-662cf2e2] {\n  border: 1px solid #e5e7eb;\n  min-width: 130px;\n}\n.machine-header[data-v-662cf2e2] {\n  background: #f9fafb;\n  padding: 10px;\n  font-weight: 600;\n  font-size: 13px;\n  color: #111827;\n  position: sticky;\n  left: 0;\n  z-index: 10;\n}\n.date-header[data-v-662cf2e2] {\n  background: #f9fafb;\n  padding: 10px 8px;\n  text-align: center;\n}\n.date-header.weekend[data-v-662cf2e2] {\n  background: #fef3c7;\n}\n.date-header.past-date[data-v-662cf2e2] {\n  background: #fee2e2;\n}\n.date-cell[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n.day-date[data-v-662cf2e2] {\n  font-weight: 600;\n  font-size: 12px;\n  color: #111827;\n}\n.shift-info[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #6b7280;\n}\n.machine-cell[data-v-662cf2e2] {\n  background: #f9fafb;\n  padding: 12px;\n  border-right: 1px solid #e5e7eb;\n  position: sticky;\n  left: 0;\n  z-index: 10;\n}\n.machine-info[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n}\n.machine-title[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n.machine-id[data-v-662cf2e2] {\n  font-weight: 600;\n  font-size: 13px;\n  color: #111827;\n}\n.machine-name[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #6b7280;\n  margin-top: 2px;\n}\n.machine-utilization[data-v-662cf2e2] {\n  font-size: 11px;\n  font-weight: 600;\n  padding: 1px 6px;\n  border-radius: 4px;\n}\n.util-low[data-v-662cf2e2] {\n  background: #ecfdf5;\n  color: #059669;\n}\n.util-medium[data-v-662cf2e2] {\n  background: #fef3c7;\n  color: #d97706;\n}\n.util-high[data-v-662cf2e2] {\n  background: #fee2e2;\n  color: #dc2626;\n}\n.calendar-cell[data-v-662cf2e2] {\n  padding: 6px 8px;\n  vertical-align: top;\n  min-height: 80px;\n  transition: background 0.2s;\n}\n.cell-available[data-v-662cf2e2] {\n  background: white;\n}\n.cell-allocated[data-v-662cf2e2] {\n  background: #f8fafc;\n}\n.cell-full[data-v-662cf2e2] {\n  background: #fef2f2;\n}\n.cell-conflict[data-v-662cf2e2] {\n  background: #fef2f2;\n  border: 2px solid #ef4444;\n}\n.calendar-cell[data-v-662cf2e2]:hover {\n  box-shadow: inset 0 0 0 2px #3b82f6;\n}\n.cell-content[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.allocation-item[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  padding: 6px 8px;\n  border-radius: 6px;\n  font-size: 12px;\n  background: white;\n  border-left: 3px solid;\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);\n  cursor: grab;\n  border-top: 1px solid #f3f4f6;\n  border-right: 1px solid #f3f4f6;\n  border-bottom: 1px solid #f3f4f6;\n}\n.allocation-item[data-v-662cf2e2]:hover {\n  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n}\n.allocation-item[data-v-662cf2e2]:active {\n  cursor: grabbing;\n}\n.allocation-item.conflict[data-v-662cf2e2] {\n  border: 2px solid #ef4444;\n  border-left: 3px solid #ef4444;\n  animation: pulse-662cf2e2 1.5s infinite;\n}\n@keyframes pulse-662cf2e2 {\n  0% {\n    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);\n  }\n  70% {\n    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);\n  }\n  100% {\n    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);\n  }\n}\n.alloc-header[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n.alloc-footer[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-top: 2px;\n}\n.alloc-item[data-v-662cf2e2] {\n  font-weight: 600;\n  color: #111827;\n}\n.alloc-qty[data-v-662cf2e2] {\n  background: #f3f4f6;\n  padding: 1px 6px;\n  border-radius: 4px;\n  font-size: 11px;\n  font-weight: 600;\n  color: #374151;\n}\n.alloc-process[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #6b7280;\n}\n.alloc-mins[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #6b7280;\n}\n.btn-remove[data-v-662cf2e2] {\n  width: 18px;\n  height: 18px;\n  font-size: 12px;\n  border-radius: 4px;\n  background: transparent;\n  border: none;\n  cursor: pointer;\n  line-height: 1;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #9ca3af;\n  opacity: 0;\n  transition: opacity 0.15s;\n}\n.allocation-item:hover .btn-remove[data-v-662cf2e2] {\n  opacity: 1;\n}\n.btn-remove[data-v-662cf2e2]:hover {\n  background: #fee2e2;\n  color: #ef4444;\n}\n.cell-summary[data-v-662cf2e2] {\n  margin-top: auto;\n  padding-top: 5px;\n  border-top: 1px dashed #e5e7eb;\n  font-size: 11px;\n  text-align: right;\n}\n.used-minutes[data-v-662cf2e2] {\n  font-weight: 600;\n  color: #111827;\n}\n.remaining-minutes[data-v-662cf2e2] {\n  color: #9ca3af;\n}\n.capacity-bar[data-v-662cf2e2] {\n  height: 6px;\n  background: #f3f4f6;\n  border-radius: 3px;\n  overflow: hidden;\n  margin-top: 2px;\n}\n.capacity-fill[data-v-662cf2e2] {\n  height: 100%;\n  border-radius: 3px;\n  transition: width 0.3s;\n}\n.capacity-fill.bar-ok[data-v-662cf2e2] {\n  background: #10b981;\n}\n.capacity-fill.bar-warning[data-v-662cf2e2] {\n  background: #f59e0b;\n}\n.capacity-fill.bar-full[data-v-662cf2e2] {\n  background: #ef4444;\n}\n.modal-overlay[data-v-662cf2e2] {\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  background: rgba(0, 0, 0, 0.5);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 1000;\n}\n.modal-content[data-v-662cf2e2] {\n  background: white;\n  padding: 24px;\n  border-radius: 12px;\n  min-width: 300px;\n  max-width: 400px;\n}\n.modal-content h4[data-v-662cf2e2] {\n  font-size: 16px;\n  font-weight: 600;\n  color: #111827;\n  margin: 0 0 15px 0;\n}\n.modal-actions[data-v-662cf2e2] {\n  display: flex;\n  gap: 10px;\n  justify-content: flex-end;\n  margin-top: 15px;\n}\n.btn[data-v-662cf2e2] {\n  padding: 7px 16px;\n  border: none;\n  border-radius: 8px;\n  cursor: pointer;\n  font-size: 13px;\n  font-weight: 500;\n}\n.btn-primary[data-v-662cf2e2] {\n  background: #2563eb;\n  color: white;\n}\n.btn-primary[data-v-662cf2e2]:hover {\n  background: #1d4ed8;\n}\n.btn-default[data-v-662cf2e2] {\n  background: white;\n  border: 1px solid #e5e7eb;\n  color: #374151;\n}\n.btn-default[data-v-662cf2e2]:hover {\n  background: #f9fafb;\n}\n.btn-secondary[data-v-662cf2e2] {\n  background: #f3f4f6;\n  color: #374151;\n}\n.btn-secondary[data-v-662cf2e2]:hover {\n  background: #e5e7eb;\n}\n.btn[data-v-662cf2e2]:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n.context-menu[data-v-662cf2e2] {\n  position: fixed;\n  background: white;\n  border: 1px solid #e5e7eb;\n  border-radius: 8px;\n  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);\n  z-index: 1000;\n  min-width: 150px;\n  padding: 4px;\n}\n.menu-item[data-v-662cf2e2] {\n  padding: 8px 14px;\n  cursor: pointer;\n  font-size: 13px;\n  border-radius: 4px;\n  margin: 2px 0;\n  color: #374151;\n}\n.menu-item[data-v-662cf2e2]:hover {\n  background: #f3f4f6;\n}\n.menu-item.text-danger[data-v-662cf2e2] {\n  color: #ef4444;\n}\n.menu-item.text-danger[data-v-662cf2e2]:hover {\n  background: #fef2f2;\n}\n.shift-modal[data-v-662cf2e2] {\n  background: white;\n  padding: 24px;\n  border-radius: 12px;\n  min-width: 500px;\n  max-width: 700px;\n  max-height: 80vh;\n  display: flex;\n  flex-direction: column;\n}\n.shift-modal h4[data-v-662cf2e2] {\n  font-size: 16px;\n  font-weight: 600;\n  color: #111827;\n  margin: 0 0 12px 0;\n}\n.shift-explanation[data-v-662cf2e2] {\n  background: #eff6ff;\n  border: 1px solid #bfdbfe;\n  border-radius: 8px;\n  padding: 10px 14px;\n  margin-bottom: 14px;\n  font-size: 13px;\n  color: #1e40af;\n}\n.shift-explanation p[data-v-662cf2e2] {\n  margin: 0 0 4px 0;\n}\n.shift-explanation p[data-v-662cf2e2]:last-child {\n  margin-bottom: 0;\n}\n.shift-table-wrapper[data-v-662cf2e2] {\n  max-height: 300px;\n  overflow-y: auto;\n  border: 1px solid #e5e7eb;\n  border-radius: 8px;\n  margin-bottom: 14px;\n}\n.shift-table[data-v-662cf2e2] {\n  width: 100%;\n  border-collapse: collapse;\n  font-size: 12px;\n}\n.shift-table th[data-v-662cf2e2] {\n  background: #f9fafb;\n  padding: 8px 10px;\n  text-align: left;\n  font-weight: 600;\n  color: #374151;\n  border-bottom: 1px solid #e5e7eb;\n  position: sticky;\n  top: 0;\n}\n.shift-table td[data-v-662cf2e2] {\n  padding: 6px 10px;\n  border-bottom: 1px solid #f3f4f6;\n  color: #374151;\n}\n.shift-table tr:last-child td[data-v-662cf2e2] {\n  border-bottom: none;\n}\n/*# sourceMappingURL=albion.bundle.EEJ2JA4C.css.map */\n");
 (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropSymbols = Object.getOwnPropertySymbols;
@@ -8259,6 +8259,8 @@ Expected function or array of functions, received type ${typeof value}.`
       const showDropModal = ref(false);
       const dropQuantity = ref(0);
       const pendingDrop = ref(null);
+      const showShiftModal = ref(false);
+      const shiftModalData = ref(null);
       const contextMenu = ref({ show: false, x: 0, y: 0 });
       const today = new Date();
       startDate.value = today.toISOString().split("T")[0];
@@ -8551,6 +8553,137 @@ Expected function or array of functions, received type ${typeof value}.`
         const locked = getLockedViewType(item.item);
         return locked ? VIEW_TYPE_LABELS[locked] : "";
       }
+      function getDateAtOffset(dateStr, offset) {
+        const dates = dateRange.value;
+        const idx = dates.indexOf(dateStr);
+        if (idx < 0)
+          return null;
+        const target = idx + offset;
+        return target >= 0 && target < dates.length ? dates[target] : null;
+      }
+      function simulateAutoSplit(machineId, startDateStr, totalQty, minutesPerUnit) {
+        const plan = [];
+        let remaining = totalQty;
+        let currentDate = startDateStr;
+        let isFirstDay = true;
+        while (remaining >= MIN_BATCH_SIZE && currentDate) {
+          const totalMin = getShiftMinutes(currentDate);
+          let availMin;
+          if (isFirstDay) {
+            const usedMin = getUsedMinutes(machineId, currentDate);
+            availMin = totalMin - usedMin;
+            isFirstDay = false;
+          } else {
+            availMin = totalMin;
+          }
+          if (availMin > 0) {
+            const fitQty = Math.floor(availMin / minutesPerUnit);
+            const allocQty = Math.min(remaining, fitQty);
+            if (allocQty >= MIN_BATCH_SIZE) {
+              plan.push({
+                dateStr: currentDate,
+                allocQty,
+                allocMinutes: allocQty * minutesPerUnit
+              });
+              remaining -= allocQty;
+            }
+          }
+          currentDate = getNextDate(currentDate);
+        }
+        return plan;
+      }
+      function computeShiftPlan(machineId, dropDateStr, workloadPlan, excludeKey = null) {
+        const remaining = {};
+        const dates = dateRange.value;
+        const dropIdx = dates.indexOf(dropDateStr);
+        if (dropIdx < 0)
+          return { affected: [] };
+        for (let i = dropIdx + 1; i < dates.length; i++) {
+          const d = dates[i];
+          remaining[d] = getShiftMinutes(d);
+        }
+        workloadPlan.forEach((p2) => {
+          if (p2.dateStr !== dropDateStr && remaining[p2.dateStr] !== void 0) {
+            remaining[p2.dateStr] -= p2.allocMinutes;
+          }
+        });
+        const displaced = allocations.value.filter((a) => a.machine_id === machineId && a.operation_date > dropDateStr && a.key !== excludeKey).sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+        if (displaced.length === 0)
+          return { affected: [] };
+        const affected = [];
+        displaced.forEach((a) => {
+          const allocIdx = dates.indexOf(a.operation_date);
+          if (allocIdx < 0)
+            return;
+          let placed = false;
+          for (let i = allocIdx; i < dates.length; i++) {
+            const d = dates[i];
+            if (remaining[d] === void 0)
+              continue;
+            if (remaining[d] >= a.allocated_minutes) {
+              remaining[d] -= a.allocated_minutes;
+              if (d !== a.operation_date) {
+                affected.push({
+                  allocation: a,
+                  currentDate: a.operation_date,
+                  newDate: d
+                });
+              }
+              placed = true;
+              break;
+            }
+          }
+          if (!placed) {
+            affected.push({
+              allocation: a,
+              currentDate: a.operation_date,
+              newDate: null
+            });
+          }
+        });
+        return { affected };
+      }
+      function executeAutoSplit(machineId, startDate2, qty, minutesPerUnit, item, colour, size, order, process2) {
+        const allocOrder = order || selectedOrder.value;
+        const allocProcess = process2 || selectedProcess.value;
+        let remainingQty = qty;
+        let currentDate = startDate2;
+        let allocationsMade = 0;
+        const allocationKeys = [];
+        while (remainingQty >= MIN_BATCH_SIZE && currentDate) {
+          const shift = getShiftForDate(currentDate);
+          const usedMin = getUsedMinutes(machineId, currentDate);
+          const totalMin = getShiftMinutes(currentDate);
+          const availMin = totalMin - usedMin;
+          if (availMin <= 0) {
+            currentDate = getNextDate(currentDate);
+            continue;
+          }
+          const fitQty = Math.floor(availMin / minutesPerUnit);
+          const allocQty = Math.min(remainingQty, fitQty);
+          if (allocQty >= MIN_BATCH_SIZE) {
+            const key = `${machineId}-${currentDate}-${Date.now()}-${allocationsMade}`;
+            allocations.value.push({
+              key,
+              machine_id: machineId,
+              operation_date: currentDate,
+              shift: (shift == null ? void 0 : shift.name) || "",
+              order: allocOrder,
+              item,
+              process: allocProcess,
+              colour,
+              size,
+              quantity: allocQty,
+              allocated_minutes: allocQty * minutesPerUnit
+            });
+            allocationKeys.push(key);
+            remainingQty -= allocQty;
+            allocationsMade++;
+          }
+          currentDate = getNextDate(currentDate);
+        }
+        return { allocationKeys, allocationsMade, remainingQty };
+      }
       function saveAction(type, data) {
         actionHistory.value.push({ type, data, timestamp: Date.now() });
         if (actionHistory.value.length > 20) {
@@ -8588,6 +8721,45 @@ Expected function or array of functions, received type ${typeof value}.`
             const pmIdx = allocations.value.findIndex((a) => a.key === action.data.newKey);
             if (pmIdx > -1)
               allocations.value.splice(pmIdx, 1);
+            break;
+          case "shift_and_add":
+            action.data.addedKeys.forEach((key) => {
+              const idx = allocations.value.findIndex((a) => a.key === key);
+              if (idx > -1)
+                allocations.value.splice(idx, 1);
+            });
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
+              const a = allocations.value.find((al) => al.key === key);
+              if (a) {
+                a.operation_date = oldDate;
+                a.shift = oldShift || "";
+              }
+            });
+            break;
+          case "shift_and_move":
+            action.data.addedKeys.forEach((key) => {
+              const idx = allocations.value.findIndex((a) => a.key === key);
+              if (idx > -1)
+                allocations.value.splice(idx, 1);
+            });
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
+              const a = allocations.value.find((al) => al.key === key);
+              if (a) {
+                a.operation_date = oldDate;
+                a.shift = oldShift || "";
+              }
+            });
+            if (action.data.sourceRemoved) {
+              if (action.data.sourceSnapshot) {
+                allocations.value.push(action.data.sourceSnapshot);
+              }
+            } else {
+              const src = allocations.value.find((a) => a.key === action.data.sourceKey);
+              if (src) {
+                src.quantity += action.data.movedQty;
+                src.allocated_minutes += action.data.movedMinutes;
+              }
+            }
             break;
         }
         frappe.show_alert({ message: __("Action undone"), indicator: "blue" });
@@ -8723,13 +8895,6 @@ Expected function or array of functions, received type ${typeof value}.`
         const availableMinutes = totalMinutes - usedMinutes;
         const minutesPerUnit = actualAlloc.quantity > 0 ? actualAlloc.allocated_minutes / actualAlloc.quantity : 0;
         const availableCapacityQty = minutesPerUnit > 0 ? Math.floor(availableMinutes / minutesPerUnit) : 0;
-        if (availableCapacityQty < MIN_BATCH_SIZE) {
-          frappe.show_alert({
-            message: __("No capacity available on target cell"),
-            indicator: "red"
-          });
-          return;
-        }
         pendingDrop.value = {
           type: "move",
           machineId: newMachineId,
@@ -8740,10 +8905,27 @@ Expected function or array of functions, received type ${typeof value}.`
           size: actualAlloc.size,
           minutesPerUnit,
           maxQty: actualAlloc.quantity,
-          availableCapacityQty
+          availableCapacityQty,
+          order: actualAlloc.order,
+          process: actualAlloc.process
         };
-        dropQuantity.value = Math.min(actualAlloc.quantity, availableCapacityQty);
+        dropQuantity.value = actualAlloc.quantity;
         showDropModal.value = true;
+      }
+      function handleMoveSource(sourceAlloc, qty, minutesPerUnit) {
+        const oldQty = sourceAlloc.quantity;
+        const oldMinutes = sourceAlloc.allocated_minutes;
+        const movedMinutes = qty * minutesPerUnit;
+        if (qty === sourceAlloc.quantity) {
+          const idx = allocations.value.findIndex((a) => a.key === sourceAlloc.key);
+          if (idx > -1)
+            allocations.value.splice(idx, 1);
+          return { sourceRemoved: true, oldQty, oldMinutes, sourceSnapshot: __spreadValues({}, sourceAlloc) };
+        } else {
+          sourceAlloc.quantity -= qty;
+          sourceAlloc.allocated_minutes -= movedMinutes;
+          return { sourceRemoved: false, oldQty, oldMinutes, movedQty: qty, movedMinutes };
+        }
       }
       function confirmDrop() {
         if (!pendingDrop.value)
@@ -8755,42 +8937,42 @@ Expected function or array of functions, received type ${typeof value}.`
           return;
         }
         if (pd.type === "workload") {
-          let remainingQty = qty;
-          let currentDate = pd.dateStr;
-          let allocationsMade = 0;
-          const allocationKeys = [];
-          while (remainingQty >= MIN_BATCH_SIZE && currentDate) {
-            const shift = getShiftForDate(currentDate);
-            const usedMin = getUsedMinutes(pd.machineId, currentDate);
-            const totalMin = getShiftMinutes(currentDate);
-            const availMin = totalMin - usedMin;
-            if (availMin <= 0) {
-              currentDate = getNextDate(currentDate);
-              continue;
+          const dropDayUsed = getUsedMinutes(pd.machineId, pd.dateStr);
+          const dropDayTotal = getShiftMinutes(pd.dateStr);
+          const dropDayAvail = dropDayTotal - dropDayUsed;
+          const dropDayFitQty = pd.minutesPerUnit > 0 ? Math.floor(dropDayAvail / pd.minutesPerUnit) : 0;
+          if (qty > dropDayFitQty) {
+            const workloadPlan = simulateAutoSplit(pd.machineId, pd.dateStr, qty, pd.minutesPerUnit);
+            const { affected } = computeShiftPlan(pd.machineId, pd.dateStr, workloadPlan);
+            if (affected.length > 0) {
+              const outOfBounds = affected.some((a) => a.newDate === null);
+              if (outOfBounds) {
+                frappe.show_alert({
+                  message: __("Cannot shift: some allocations would be pushed beyond the calendar date range. Extend end date first."),
+                  indicator: "red"
+                });
+                return;
+              }
+              shiftModalData.value = {
+                type: "workload",
+                affectedAllocations: affected,
+                newWorkloadPlan: workloadPlan,
+                pendingDropData: __spreadValues({}, pd),
+                dropQty: qty
+              };
+              showShiftModal.value = true;
+              return;
             }
-            const fitQty = Math.floor(availMin / pd.minutesPerUnit);
-            const allocQty = Math.min(remainingQty, fitQty);
-            if (allocQty >= MIN_BATCH_SIZE) {
-              const key = `${pd.machineId}-${currentDate}-${Date.now()}-${allocationsMade}`;
-              allocations.value.push({
-                key,
-                machine_id: pd.machineId,
-                operation_date: currentDate,
-                shift: (shift == null ? void 0 : shift.name) || "",
-                order: selectedOrder.value,
-                item: pd.item,
-                process: selectedProcess.value,
-                colour: pd.colour,
-                size: pd.size,
-                quantity: allocQty,
-                allocated_minutes: allocQty * pd.minutesPerUnit
-              });
-              allocationKeys.push(key);
-              remainingQty -= allocQty;
-              allocationsMade++;
-            }
-            currentDate = getNextDate(currentDate);
           }
+          const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
+            pd.machineId,
+            pd.dateStr,
+            qty,
+            pd.minutesPerUnit,
+            pd.item,
+            pd.colour,
+            pd.size
+          );
           if (allocationsMade > 0) {
             saveAction("add", { keys: allocationKeys });
             if (remainingQty > 0) {
@@ -8808,42 +8990,91 @@ Expected function or array of functions, received type ${typeof value}.`
             closeDropModal();
             return;
           }
-          const shift = getShiftForDate(pd.dateStr);
-          if (qty === sourceAlloc.quantity) {
-            const oldMachineId = sourceAlloc.machine_id;
-            const oldDate = sourceAlloc.operation_date;
-            sourceAlloc.machine_id = pd.machineId;
-            sourceAlloc.operation_date = pd.dateStr;
-            sourceAlloc.shift = (shift == null ? void 0 : shift.name) || "";
-            saveAction("move", { key: sourceAlloc.key, oldMachineId, oldDate });
-            frappe.show_alert({ message: __("Allocation moved successfully"), indicator: "green" });
+          if (qty > pd.availableCapacityQty) {
+            const workloadPlan = simulateAutoSplit(pd.machineId, pd.dateStr, qty, pd.minutesPerUnit);
+            const excludeKey = sourceAlloc.machine_id === pd.machineId ? sourceAlloc.key : null;
+            const { affected } = computeShiftPlan(pd.machineId, pd.dateStr, workloadPlan, excludeKey);
+            if (affected.length > 0) {
+              const outOfBounds = affected.some((a) => a.newDate === null);
+              if (outOfBounds) {
+                frappe.show_alert({
+                  message: __("Cannot shift: some allocations would be pushed beyond the calendar date range. Extend end date first."),
+                  indicator: "red"
+                });
+                return;
+              }
+              shiftModalData.value = {
+                type: "move",
+                affectedAllocations: affected,
+                newWorkloadPlan: workloadPlan,
+                pendingDropData: __spreadValues({}, pd),
+                dropQty: qty,
+                sourceKey: sourceAlloc.key,
+                sourceSnapshot: __spreadValues({}, sourceAlloc)
+              };
+              showShiftModal.value = true;
+              return;
+            }
+            const sourceResult = handleMoveSource(sourceAlloc, qty, pd.minutesPerUnit);
+            const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
+              pd.machineId,
+              pd.dateStr,
+              qty,
+              pd.minutesPerUnit,
+              pd.item,
+              pd.colour,
+              pd.size,
+              pd.order,
+              pd.process
+            );
+            if (allocationsMade > 0 || sourceResult.sourceRemoved) {
+              saveAction("shift_and_move", {
+                addedKeys: allocationKeys,
+                shiftedAllocations: [],
+                sourceRemoved: sourceResult.sourceRemoved,
+                sourceKey: pd.allocKey,
+                sourceSnapshot: sourceResult.sourceSnapshot || null,
+                movedQty: qty,
+                movedMinutes: qty * pd.minutesPerUnit
+              });
+              frappe.show_alert({ message: __(`Moved ${qty - remainingQty} units across ${allocationsMade} day(s)`), indicator: "green" });
+            }
           } else {
-            const movedMinutes = qty * pd.minutesPerUnit;
-            const oldQty = sourceAlloc.quantity;
-            const oldMinutes = sourceAlloc.allocated_minutes;
-            sourceAlloc.quantity -= qty;
-            sourceAlloc.allocated_minutes -= movedMinutes;
-            const newKey = `${pd.machineId}-${pd.dateStr}-${Date.now()}-pmove`;
-            allocations.value.push({
-              key: newKey,
-              machine_id: pd.machineId,
-              operation_date: pd.dateStr,
-              shift: (shift == null ? void 0 : shift.name) || "",
-              order: sourceAlloc.order,
-              item: sourceAlloc.item,
-              process: sourceAlloc.process,
-              colour: sourceAlloc.colour,
-              size: sourceAlloc.size,
-              quantity: qty,
-              allocated_minutes: movedMinutes
-            });
-            saveAction("partial_move", {
-              sourceKey: sourceAlloc.key,
-              newKey,
-              movedQty: qty,
-              movedMinutes
-            });
-            frappe.show_alert({ message: __(`Moved ${qty} units, ${sourceAlloc.quantity} remain in source`), indicator: "green" });
+            const shift = getShiftForDate(pd.dateStr);
+            if (qty === sourceAlloc.quantity) {
+              const oldMachineId = sourceAlloc.machine_id;
+              const oldDate = sourceAlloc.operation_date;
+              sourceAlloc.machine_id = pd.machineId;
+              sourceAlloc.operation_date = pd.dateStr;
+              sourceAlloc.shift = (shift == null ? void 0 : shift.name) || "";
+              saveAction("move", { key: sourceAlloc.key, oldMachineId, oldDate });
+              frappe.show_alert({ message: __("Allocation moved successfully"), indicator: "green" });
+            } else {
+              const movedMinutes = qty * pd.minutesPerUnit;
+              sourceAlloc.quantity -= qty;
+              sourceAlloc.allocated_minutes -= movedMinutes;
+              const newKey = `${pd.machineId}-${pd.dateStr}-${Date.now()}-pmove`;
+              allocations.value.push({
+                key: newKey,
+                machine_id: pd.machineId,
+                operation_date: pd.dateStr,
+                shift: (shift == null ? void 0 : shift.name) || "",
+                order: sourceAlloc.order,
+                item: sourceAlloc.item,
+                process: sourceAlloc.process,
+                colour: sourceAlloc.colour,
+                size: sourceAlloc.size,
+                quantity: qty,
+                allocated_minutes: movedMinutes
+              });
+              saveAction("partial_move", {
+                sourceKey: sourceAlloc.key,
+                newKey,
+                movedQty: qty,
+                movedMinutes
+              });
+              frappe.show_alert({ message: __(`Moved ${qty} units, ${sourceAlloc.quantity} remain in source`), indicator: "green" });
+            }
           }
         }
         closeDropModal();
@@ -8852,6 +9083,142 @@ Expected function or array of functions, received type ${typeof value}.`
         showDropModal.value = false;
         pendingDrop.value = null;
         dropQuantity.value = 0;
+      }
+      function closeShiftModal() {
+        showShiftModal.value = false;
+        shiftModalData.value = null;
+      }
+      function confirmShift() {
+        if (!shiftModalData.value)
+          return;
+        const sd = shiftModalData.value;
+        if (sd.type === "move") {
+          const sourceAlloc = allocations.value.find((a) => a.key === sd.sourceKey);
+          if (!sourceAlloc) {
+            frappe.show_alert({ message: __("Source allocation not found"), indicator: "red" });
+            closeShiftModal();
+            closeDropModal();
+            return;
+          }
+          const pd = sd.pendingDropData;
+          const sourceResult = handleMoveSource(sourceAlloc, sd.dropQty, pd.minutesPerUnit);
+          executeShiftAndAllocate(sd, sourceResult);
+        } else {
+          executeShiftAndAllocate(sd);
+        }
+        closeShiftModal();
+        closeDropModal();
+      }
+      function allocateWithoutShift() {
+        if (!shiftModalData.value)
+          return;
+        const sd = shiftModalData.value;
+        const pd = sd.pendingDropData;
+        if (sd.type === "move") {
+          const sourceAlloc = allocations.value.find((a) => a.key === sd.sourceKey);
+          if (!sourceAlloc) {
+            frappe.show_alert({ message: __("Source allocation not found"), indicator: "red" });
+            closeShiftModal();
+            closeDropModal();
+            return;
+          }
+          const sourceResult = handleMoveSource(sourceAlloc, sd.dropQty, pd.minutesPerUnit);
+          const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
+            pd.machineId,
+            pd.dateStr,
+            sd.dropQty,
+            pd.minutesPerUnit,
+            pd.item,
+            pd.colour,
+            pd.size,
+            pd.order,
+            pd.process
+          );
+          if (allocationsMade > 0 || sourceResult.sourceRemoved) {
+            saveAction("shift_and_move", {
+              addedKeys: allocationKeys,
+              shiftedAllocations: [],
+              sourceRemoved: sourceResult.sourceRemoved,
+              sourceKey: pd.allocKey,
+              sourceSnapshot: sourceResult.sourceSnapshot || null,
+              movedQty: sd.dropQty,
+              movedMinutes: sd.dropQty * pd.minutesPerUnit
+            });
+            frappe.show_alert({ message: __(`Moved ${sd.dropQty - remainingQty} units across ${allocationsMade} day(s)`), indicator: "green" });
+          } else {
+            frappe.show_alert({ message: __("No capacity available"), indicator: "red" });
+          }
+        } else {
+          const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
+            pd.machineId,
+            pd.dateStr,
+            sd.dropQty,
+            pd.minutesPerUnit,
+            pd.item,
+            pd.colour,
+            pd.size
+          );
+          if (allocationsMade > 0) {
+            saveAction("add", { keys: allocationKeys });
+            if (remainingQty > 0) {
+              frappe.show_alert({ message: __(`Allocated across ${allocationsMade} day(s). ${remainingQty} units could not be allocated (no capacity)`), indicator: "orange" });
+            } else {
+              frappe.show_alert({ message: __(`Allocated ${sd.dropQty} units across ${allocationsMade} day(s)`), indicator: "green" });
+            }
+          } else {
+            frappe.show_alert({ message: __("No capacity available"), indicator: "red" });
+          }
+        }
+        closeShiftModal();
+        closeDropModal();
+      }
+      function executeShiftAndAllocate(shiftData, sourceResult) {
+        const { affectedAllocations, pendingDropData: pd, dropQty, type } = shiftData;
+        const shiftedAllocations = [];
+        affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
+          shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift });
+          allocation.operation_date = newDate;
+          const newShift = getShiftForDate(newDate);
+          allocation.shift = (newShift == null ? void 0 : newShift.name) || "";
+        });
+        const orderForSplit = type === "move" ? pd.order : void 0;
+        const processForSplit = type === "move" ? pd.process : void 0;
+        const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
+          pd.machineId,
+          pd.dateStr,
+          dropQty,
+          pd.minutesPerUnit,
+          pd.item,
+          pd.colour,
+          pd.size,
+          orderForSplit,
+          processForSplit
+        );
+        const shiftCount = shiftedAllocations.length;
+        if (type === "move" && sourceResult) {
+          saveAction("shift_and_move", {
+            addedKeys: allocationKeys,
+            shiftedAllocations,
+            sourceRemoved: sourceResult.sourceRemoved,
+            sourceKey: shiftData.sourceKey,
+            sourceSnapshot: sourceResult.sourceSnapshot || null,
+            movedQty: dropQty,
+            movedMinutes: dropQty * pd.minutesPerUnit
+          });
+        } else if (allocationsMade > 0 || shiftedAllocations.length > 0) {
+          saveAction("shift_and_add", {
+            addedKeys: allocationKeys,
+            shiftedAllocations
+          });
+        }
+        if (allocationsMade > 0) {
+          frappe.show_alert({
+            message: __(`Shifted ${shiftCount} allocation(s). Allocated ${dropQty - remainingQty} units across ${allocationsMade} day(s).`),
+            indicator: "green"
+          });
+        } else {
+          frappe.show_alert({ message: __("Shift completed but no new allocations could be made"), indicator: "orange" });
+        }
       }
       async function removeAllocation(alloc) {
         var _a;
@@ -9133,7 +9500,7 @@ Expected function or array of functions, received type ${typeof value}.`
         loadExistingAllocations,
         refreshCalendar
       });
-      const __returned__ = { emit: emit2, orders, processes, machines, selectedOrder, selectedProcess, viewType, startDate, endDate, orderData, shiftCalendars, defaultShift, allocations, actionHistory, validationErrors, showSplitModal, showEditModal, selectedAllocation, splitQuantity, editQuantity, showDropModal, dropQuantity, pendingDrop, contextMenu, today, nextMonth, MIN_BATCH_SIZE, dateRange, availableProcesses, workloadItems, fullyAllocatedCount, partialAllocatedCount, pendingCount, loadData, getProcessMinutes, isValidForProcess, formatDayName, formatDate, getShiftForDate, getShiftMinutes, isWeekend, isPastDate, getDateHeaderClass, getAllocations, getUsedMinutes, getCapacityPercentage, getCapacityBarClass, getCellClass, getMachineUtilization, getUtilizationClass, hasConflict, getAllocationColor, getAllocationTooltip, getAllocatedQuantity, getAllocationStatus, isItemAllocated, getLockedViewType, isLockedToOtherView, VIEW_TYPE_LABELS, getLockedViewTypeLabel, saveAction, undoLastAction, onDragStart, onAllocationDragStart, getNextDate, onDrop, moveAllocation, confirmDrop, closeDropModal, removeAllocation, selectAllocation, closeContextMenu, openSplitModal, closeSplitModal, confirmSplit, openEditModal, closeEditModal, confirmEdit, mergeAllocations, deleteSelectedAllocation, onOrderChange, onProcessChange, refreshCalendar, loadShiftCalendars, loadAllAllocations, loadExistingAllocations, saveAllocations, ref, computed: computed2, onMounted, onUnmounted, watch: watch2 };
+      const __returned__ = { emit: emit2, orders, processes, machines, selectedOrder, selectedProcess, viewType, startDate, endDate, orderData, shiftCalendars, defaultShift, allocations, actionHistory, validationErrors, showSplitModal, showEditModal, selectedAllocation, splitQuantity, editQuantity, showDropModal, dropQuantity, pendingDrop, showShiftModal, shiftModalData, contextMenu, today, nextMonth, MIN_BATCH_SIZE, dateRange, availableProcesses, workloadItems, fullyAllocatedCount, partialAllocatedCount, pendingCount, loadData, getProcessMinutes, isValidForProcess, formatDayName, formatDate, getShiftForDate, getShiftMinutes, isWeekend, isPastDate, getDateHeaderClass, getAllocations, getUsedMinutes, getCapacityPercentage, getCapacityBarClass, getCellClass, getMachineUtilization, getUtilizationClass, hasConflict, getAllocationColor, getAllocationTooltip, getAllocatedQuantity, getAllocationStatus, isItemAllocated, getLockedViewType, isLockedToOtherView, VIEW_TYPE_LABELS, getLockedViewTypeLabel, getDateAtOffset, simulateAutoSplit, computeShiftPlan, executeAutoSplit, saveAction, undoLastAction, onDragStart, onAllocationDragStart, getNextDate, onDrop, moveAllocation, handleMoveSource, confirmDrop, closeDropModal, closeShiftModal, confirmShift, allocateWithoutShift, executeShiftAndAllocate, removeAllocation, selectAllocation, closeContextMenu, openSplitModal, closeSplitModal, confirmSplit, openEditModal, closeEditModal, confirmEdit, mergeAllocations, deleteSelectedAllocation, onOrderChange, onProcessChange, refreshCalendar, loadShiftCalendars, loadAllAllocations, loadExistingAllocations, saveAllocations, ref, computed: computed2, onMounted, onUnmounted, watch: watch2 };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
     }
@@ -9297,6 +9664,22 @@ Expected function or array of functions, received type ${typeof value}.`
   var _hoisted_103 = { class: "form-group" };
   var _hoisted_104 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Quantity", -1));
   var _hoisted_105 = ["max"];
+  var _hoisted_106 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Shift Allocations Forward", -1));
+  var _hoisted_107 = { class: "shift-explanation" };
+  var _hoisted_108 = { class: "shift-table-wrapper" };
+  var _hoisted_109 = { class: "shift-table" };
+  var _hoisted_110 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("thead", null, [
+    /* @__PURE__ */ createBaseVNode("tr", null, [
+      /* @__PURE__ */ createBaseVNode("th", null, "Order"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Item"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Process"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Qty"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Current Date"),
+      /* @__PURE__ */ createBaseVNode("th"),
+      /* @__PURE__ */ createBaseVNode("th", null, "New Date")
+    ])
+  ], -1));
+  var _hoisted_111 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("td", null, "\u2192", -1));
   function render2(_ctx, _cache, $props, $setup, $data, $options) {
     var _a, _b, _c;
     return openBlock(), createElementBlock("div", _hoisted_14, [
@@ -9656,7 +10039,7 @@ Expected function or array of functions, received type ${typeof value}.`
           createBaseVNode("div", _hoisted_99, [
             createBaseVNode("label", null, "Remaining (max): " + toDisplayString($setup.pendingDrop.maxQty) + " units", 1)
           ]),
-          $setup.pendingDrop.type === "workload" && $setup.dropQuantity > $setup.pendingDrop.availableCapacityQty ? (openBlock(), createElementBlock("div", _hoisted_100, [..._hoisted_1022])) : createCommentVNode("v-if", true),
+          $setup.dropQuantity > $setup.pendingDrop.availableCapacityQty ? (openBlock(), createElementBlock("div", _hoisted_100, [..._hoisted_1022])) : createCommentVNode("v-if", true),
           createBaseVNode("div", _hoisted_103, [
             _hoisted_104,
             withDirectives(createBaseVNode("input", {
@@ -9686,9 +10069,68 @@ Expected function or array of functions, received type ${typeof value}.`
           ])
         ])
       ])) : createCommentVNode("v-if", true),
+      createCommentVNode(" Shift Confirmation Modal "),
+      $setup.showShiftModal && $setup.shiftModalData ? (openBlock(), createElementBlock("div", {
+        key: 4,
+        class: "modal-overlay",
+        onClick: $setup.closeShiftModal
+      }, [
+        createBaseVNode("div", {
+          class: "shift-modal",
+          onClick: _cache[12] || (_cache[12] = withModifiers(() => {
+          }, ["stop"]))
+        }, [
+          _hoisted_106,
+          createBaseVNode("div", _hoisted_107, [
+            createBaseVNode("p", null, [
+              createTextVNode("The new workload needs "),
+              createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.newWorkloadPlan.length), 1),
+              createTextVNode(" day(s) on "),
+              createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.pendingDropData.machineId), 1),
+              createTextVNode(".")
+            ]),
+            createBaseVNode("p", null, [
+              createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.affectedAllocations.length), 1),
+              createTextVNode(" existing allocation(s) will be shifted forward to make room.")
+            ])
+          ]),
+          createBaseVNode("div", _hoisted_108, [
+            createBaseVNode("table", _hoisted_109, [
+              _hoisted_110,
+              createBaseVNode("tbody", null, [
+                (openBlock(true), createElementBlock(Fragment, null, renderList($setup.shiftModalData.affectedAllocations, (entry, idx) => {
+                  return openBlock(), createElementBlock("tr", { key: idx }, [
+                    createBaseVNode("td", null, toDisplayString(entry.allocation.order), 1),
+                    createBaseVNode("td", null, toDisplayString(entry.allocation.item), 1),
+                    createBaseVNode("td", null, toDisplayString(entry.allocation.process), 1),
+                    createBaseVNode("td", null, toDisplayString(entry.allocation.quantity), 1),
+                    createBaseVNode("td", null, toDisplayString(entry.currentDate), 1),
+                    _hoisted_111,
+                    createBaseVNode("td", null, toDisplayString(entry.newDate), 1)
+                  ]);
+                }), 128))
+              ])
+            ])
+          ]),
+          createBaseVNode("div", { class: "modal-actions" }, [
+            createBaseVNode("button", {
+              class: "btn btn-primary",
+              onClick: $setup.confirmShift
+            }, "Shift & Allocate"),
+            createBaseVNode("button", {
+              class: "btn btn-default",
+              onClick: $setup.allocateWithoutShift
+            }, "Allocate Without Shifting"),
+            createBaseVNode("button", {
+              class: "btn btn-secondary",
+              onClick: $setup.closeShiftModal
+            }, "Cancel")
+          ])
+        ])
+      ])) : createCommentVNode("v-if", true),
       createCommentVNode(" Right-click Context Menu "),
       $setup.contextMenu.show ? (openBlock(), createElementBlock("div", {
-        key: 4,
+        key: 5,
         class: "context-menu",
         style: normalizeStyle({ top: $setup.contextMenu.y + "px", left: $setup.contextMenu.x + "px" })
       }, [
@@ -9808,4 +10250,4 @@ Expected function or array of functions, received type ${typeof value}.`
 * (c) 2018-present Yuxi (Evan) You and Vue contributors
 * @license MIT
 **/
-//# sourceMappingURL=albion.bundle.N7HHMFE6.js.map
+//# sourceMappingURL=albion.bundle.FBQ2EXPP.js.map

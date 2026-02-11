@@ -261,7 +261,7 @@
                 <div class="form-group">
                     <label>Remaining (max): {{ pendingDrop.maxQty }} units</label>
                 </div>
-                <div class="form-group" v-if="pendingDrop.type === 'workload' && dropQuantity > pendingDrop.availableCapacityQty">
+                <div class="form-group" v-if="dropQuantity > pendingDrop.availableCapacityQty">
                     <label class="text-info">Excess will be split across subsequent days</label>
                 </div>
                 <div class="form-group">
@@ -271,6 +271,48 @@
                 <div class="modal-actions">
                     <button class="btn btn-primary" @click="confirmDrop">Allocate</button>
                     <button class="btn btn-secondary" @click="closeDropModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shift Confirmation Modal -->
+        <div v-if="showShiftModal && shiftModalData" class="modal-overlay" @click="closeShiftModal">
+            <div class="shift-modal" @click.stop>
+                <h4>Shift Allocations Forward</h4>
+                <div class="shift-explanation">
+                    <p>The new workload needs <strong>{{ shiftModalData.newWorkloadPlan.length }}</strong> day(s) on <strong>{{ shiftModalData.pendingDropData.machineId }}</strong>.</p>
+                    <p><strong>{{ shiftModalData.affectedAllocations.length }}</strong> existing allocation(s) will be shifted forward to make room.</p>
+                </div>
+                <div class="shift-table-wrapper">
+                    <table class="shift-table">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Item</th>
+                                <th>Process</th>
+                                <th>Qty</th>
+                                <th>Current Date</th>
+                                <th></th>
+                                <th>New Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(entry, idx) in shiftModalData.affectedAllocations" :key="idx">
+                                <td>{{ entry.allocation.order }}</td>
+                                <td>{{ entry.allocation.item }}</td>
+                                <td>{{ entry.allocation.process }}</td>
+                                <td>{{ entry.allocation.quantity }}</td>
+                                <td>{{ entry.currentDate }}</td>
+                                <td>&rarr;</td>
+                                <td>{{ entry.newDate }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" @click="confirmShift">Shift &amp; Allocate</button>
+                    <button class="btn btn-default" @click="allocateWithoutShift">Allocate Without Shifting</button>
+                    <button class="btn btn-secondary" @click="closeShiftModal">Cancel</button>
                 </div>
             </div>
         </div>
@@ -318,6 +360,10 @@ const editQuantity = ref(0);
 const showDropModal = ref(false);
 const dropQuantity = ref(0);
 const pendingDrop = ref(null);
+
+// Shift modal state
+const showShiftModal = ref(false);
+const shiftModalData = ref(null);
 
 // Context menu
 const contextMenu = ref({ show: false, x: 0, y: 0 });
@@ -647,6 +693,164 @@ function getLockedViewTypeLabel(item) {
     return locked ? VIEW_TYPE_LABELS[locked] : '';
 }
 
+// Shift helpers
+function getDateAtOffset(dateStr, offset) {
+    const dates = dateRange.value;
+    const idx = dates.indexOf(dateStr);
+    if (idx < 0) return null;
+    const target = idx + offset;
+    return target >= 0 && target < dates.length ? dates[target] : null;
+}
+
+function simulateAutoSplit(machineId, startDateStr, totalQty, minutesPerUnit) {
+    const plan = [];
+    let remaining = totalQty;
+    let currentDate = startDateStr;
+    let isFirstDay = true;
+
+    while (remaining >= MIN_BATCH_SIZE && currentDate) {
+        const totalMin = getShiftMinutes(currentDate);
+        let availMin;
+        if (isFirstDay) {
+            // Use actual available capacity on drop day
+            const usedMin = getUsedMinutes(machineId, currentDate);
+            availMin = totalMin - usedMin;
+            isFirstDay = false;
+        } else {
+            // Assume full shift capacity on subsequent days
+            availMin = totalMin;
+        }
+
+        if (availMin > 0) {
+            const fitQty = Math.floor(availMin / minutesPerUnit);
+            const allocQty = Math.min(remaining, fitQty);
+            if (allocQty >= MIN_BATCH_SIZE) {
+                plan.push({
+                    dateStr: currentDate,
+                    allocQty,
+                    allocMinutes: allocQty * minutesPerUnit
+                });
+                remaining -= allocQty;
+            }
+        }
+        currentDate = getNextDate(currentDate);
+    }
+    return plan;
+}
+
+function computeShiftPlan(machineId, dropDateStr, workloadPlan, excludeKey = null) {
+    // Build remaining capacity map for all dates after drop date
+    const remaining = {};
+    const dates = dateRange.value;
+    const dropIdx = dates.indexOf(dropDateStr);
+    if (dropIdx < 0) return { affected: [] };
+
+    // Initialize remaining capacity for all dates after drop
+    for (let i = dropIdx + 1; i < dates.length; i++) {
+        const d = dates[i];
+        remaining[d] = getShiftMinutes(d);
+        // Subtract current usage on this machine (excluding allocations that will be displaced)
+        // We only subtract non-displaceable usage (other machines won't matter)
+    }
+
+    // Subtract new workload minutes from remaining capacity
+    workloadPlan.forEach(p => {
+        if (p.dateStr !== dropDateStr && remaining[p.dateStr] !== undefined) {
+            remaining[p.dateStr] -= p.allocMinutes;
+        }
+    });
+
+    // Collect all allocations on this machine after drop date, sorted by date asc
+    const displaced = allocations.value
+        .filter(a => a.machine_id === machineId && a.operation_date > dropDateStr && a.key !== excludeKey)
+        .sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+
+    if (displaced.length === 0) return { affected: [] };
+
+    // Greedy packing: for each displaced allocation, find earliest date >= its current date with enough capacity
+    const affected = [];
+    displaced.forEach(a => {
+        const allocIdx = dates.indexOf(a.operation_date);
+        if (allocIdx < 0) return;
+
+        let placed = false;
+        for (let i = allocIdx; i < dates.length; i++) {
+            const d = dates[i];
+            if (remaining[d] === undefined) continue;
+            if (remaining[d] >= a.allocated_minutes) {
+                remaining[d] -= a.allocated_minutes;
+                if (d !== a.operation_date) {
+                    affected.push({
+                        allocation: a,
+                        currentDate: a.operation_date,
+                        newDate: d
+                    });
+                }
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) {
+            // Out of bounds — no date with enough capacity
+            affected.push({
+                allocation: a,
+                currentDate: a.operation_date,
+                newDate: null
+            });
+        }
+    });
+
+    return { affected };
+}
+
+function executeAutoSplit(machineId, startDate, qty, minutesPerUnit, item, colour, size, order, process) {
+    const allocOrder = order || selectedOrder.value;
+    const allocProcess = process || selectedProcess.value;
+    let remainingQty = qty;
+    let currentDate = startDate;
+    let allocationsMade = 0;
+    const allocationKeys = [];
+
+    while (remainingQty >= MIN_BATCH_SIZE && currentDate) {
+        const shift = getShiftForDate(currentDate);
+        const usedMin = getUsedMinutes(machineId, currentDate);
+        const totalMin = getShiftMinutes(currentDate);
+        const availMin = totalMin - usedMin;
+
+        if (availMin <= 0) {
+            currentDate = getNextDate(currentDate);
+            continue;
+        }
+
+        const fitQty = Math.floor(availMin / minutesPerUnit);
+        const allocQty = Math.min(remainingQty, fitQty);
+
+        if (allocQty >= MIN_BATCH_SIZE) {
+            const key = `${machineId}-${currentDate}-${Date.now()}-${allocationsMade}`;
+            allocations.value.push({
+                key,
+                machine_id: machineId,
+                operation_date: currentDate,
+                shift: shift?.name || '',
+                order: allocOrder,
+                item,
+                process: allocProcess,
+                colour,
+                size,
+                quantity: allocQty,
+                allocated_minutes: allocQty * minutesPerUnit
+            });
+            allocationKeys.push(key);
+            remainingQty -= allocQty;
+            allocationsMade++;
+        }
+
+        currentDate = getNextDate(currentDate);
+    }
+
+    return { allocationKeys, allocationsMade, remainingQty };
+}
+
 // Save action to history for undo
 function saveAction(type, data) {
     actionHistory.value.push({ type, data, timestamp: Date.now() });
@@ -689,6 +893,48 @@ function undoLastAction() {
             // Remove the new allocation
             const pmIdx = allocations.value.findIndex(a => a.key === action.data.newKey);
             if (pmIdx > -1) allocations.value.splice(pmIdx, 1);
+            break;
+        case 'shift_and_add':
+            // Remove newly added allocations
+            action.data.addedKeys.forEach(key => {
+                const idx = allocations.value.findIndex(a => a.key === key);
+                if (idx > -1) allocations.value.splice(idx, 1);
+            });
+            // Restore shifted allocations to original dates
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
+                const a = allocations.value.find(al => al.key === key);
+                if (a) {
+                    a.operation_date = oldDate;
+                    a.shift = oldShift || '';
+                }
+            });
+            break;
+        case 'shift_and_move':
+            // Remove newly added allocations
+            action.data.addedKeys.forEach(key => {
+                const idx = allocations.value.findIndex(a => a.key === key);
+                if (idx > -1) allocations.value.splice(idx, 1);
+            });
+            // Restore shifted allocations to original dates
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
+                const a = allocations.value.find(al => al.key === key);
+                if (a) {
+                    a.operation_date = oldDate;
+                    a.shift = oldShift || '';
+                }
+            });
+            // Restore source allocation
+            if (action.data.sourceRemoved) {
+                if (action.data.sourceSnapshot) {
+                    allocations.value.push(action.data.sourceSnapshot);
+                }
+            } else {
+                const src = allocations.value.find(a => a.key === action.data.sourceKey);
+                if (src) {
+                    src.quantity += action.data.movedQty;
+                    src.allocated_minutes += action.data.movedMinutes;
+                }
+            }
             break;
     }
 
@@ -868,14 +1114,6 @@ function moveAllocation(alloc, newMachineId, newDateStr) {
     const minutesPerUnit = actualAlloc.quantity > 0 ? actualAlloc.allocated_minutes / actualAlloc.quantity : 0;
     const availableCapacityQty = minutesPerUnit > 0 ? Math.floor(availableMinutes / minutesPerUnit) : 0;
 
-    if (availableCapacityQty < MIN_BATCH_SIZE) {
-        frappe.show_alert({
-            message: __('No capacity available on target cell'),
-            indicator: 'red'
-        });
-        return;
-    }
-
     pendingDrop.value = {
         type: 'move',
         machineId: newMachineId,
@@ -886,10 +1124,30 @@ function moveAllocation(alloc, newMachineId, newDateStr) {
         size: actualAlloc.size,
         minutesPerUnit,
         maxQty: actualAlloc.quantity,
-        availableCapacityQty
+        availableCapacityQty,
+        order: actualAlloc.order,
+        process: actualAlloc.process
     };
-    dropQuantity.value = Math.min(actualAlloc.quantity, availableCapacityQty);
+    dropQuantity.value = actualAlloc.quantity;
     showDropModal.value = true;
+}
+
+function handleMoveSource(sourceAlloc, qty, minutesPerUnit) {
+    const oldQty = sourceAlloc.quantity;
+    const oldMinutes = sourceAlloc.allocated_minutes;
+    const movedMinutes = qty * minutesPerUnit;
+
+    if (qty === sourceAlloc.quantity) {
+        // Remove source entirely
+        const idx = allocations.value.findIndex(a => a.key === sourceAlloc.key);
+        if (idx > -1) allocations.value.splice(idx, 1);
+        return { sourceRemoved: true, oldQty, oldMinutes, sourceSnapshot: { ...sourceAlloc } };
+    } else {
+        // Reduce source
+        sourceAlloc.quantity -= qty;
+        sourceAlloc.allocated_minutes -= movedMinutes;
+        return { sourceRemoved: false, oldQty, oldMinutes, movedQty: qty, movedMinutes };
+    }
 }
 
 function confirmDrop() {
@@ -904,47 +1162,45 @@ function confirmDrop() {
     }
 
     if (pd.type === 'workload') {
-        let remainingQty = qty;
-        let currentDate = pd.dateStr;
-        let allocationsMade = 0;
-        const allocationKeys = [];
+        // Check if overflow will happen and shifting may be needed
+        const dropDayUsed = getUsedMinutes(pd.machineId, pd.dateStr);
+        const dropDayTotal = getShiftMinutes(pd.dateStr);
+        const dropDayAvail = dropDayTotal - dropDayUsed;
+        const dropDayFitQty = pd.minutesPerUnit > 0 ? Math.floor(dropDayAvail / pd.minutesPerUnit) : 0;
 
-        while (remainingQty >= MIN_BATCH_SIZE && currentDate) {
-            const shift = getShiftForDate(currentDate);
-            const usedMin = getUsedMinutes(pd.machineId, currentDate);
-            const totalMin = getShiftMinutes(currentDate);
-            const availMin = totalMin - usedMin;
+        if (qty > dropDayFitQty) {
+            // Overflow will happen — check if shifting is needed
+            const workloadPlan = simulateAutoSplit(pd.machineId, pd.dateStr, qty, pd.minutesPerUnit);
+            const { affected } = computeShiftPlan(pd.machineId, pd.dateStr, workloadPlan);
 
-            if (availMin <= 0) {
-                currentDate = getNextDate(currentDate);
-                continue;
+            if (affected.length > 0) {
+                // Check boundary: any shifted allocation would go beyond date range?
+                const outOfBounds = affected.some(a => a.newDate === null);
+                if (outOfBounds) {
+                    frappe.show_alert({
+                        message: __('Cannot shift: some allocations would be pushed beyond the calendar date range. Extend end date first.'),
+                        indicator: 'red'
+                    });
+                    return;
+                }
+
+                // Show shift confirmation modal
+                shiftModalData.value = {
+                    type: 'workload',
+                    affectedAllocations: affected,
+                    newWorkloadPlan: workloadPlan,
+                    pendingDropData: { ...pd },
+                    dropQty: qty
+                };
+                showShiftModal.value = true;
+                return;
             }
-
-            const fitQty = Math.floor(availMin / pd.minutesPerUnit);
-            const allocQty = Math.min(remainingQty, fitQty);
-
-            if (allocQty >= MIN_BATCH_SIZE) {
-                const key = `${pd.machineId}-${currentDate}-${Date.now()}-${allocationsMade}`;
-                allocations.value.push({
-                    key,
-                    machine_id: pd.machineId,
-                    operation_date: currentDate,
-                    shift: shift?.name || '',
-                    order: selectedOrder.value,
-                    item: pd.item,
-                    process: selectedProcess.value,
-                    colour: pd.colour,
-                    size: pd.size,
-                    quantity: allocQty,
-                    allocated_minutes: allocQty * pd.minutesPerUnit
-                });
-                allocationKeys.push(key);
-                remainingQty -= allocQty;
-                allocationsMade++;
-            }
-
-            currentDate = getNextDate(currentDate);
         }
+
+        // No shift needed — run normal auto-split
+        const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
+            pd.machineId, pd.dateStr, qty, pd.minutesPerUnit, pd.item, pd.colour, pd.size
+        );
 
         if (allocationsMade > 0) {
             saveAction('add', { keys: allocationKeys });
@@ -965,50 +1221,98 @@ function confirmDrop() {
             return;
         }
 
-        const shift = getShiftForDate(pd.dateStr);
+        if (qty > pd.availableCapacityQty) {
+            // Overflow needed — check if shifting is required
+            const workloadPlan = simulateAutoSplit(pd.machineId, pd.dateStr, qty, pd.minutesPerUnit);
+            const excludeKey = sourceAlloc.machine_id === pd.machineId ? sourceAlloc.key : null;
+            const { affected } = computeShiftPlan(pd.machineId, pd.dateStr, workloadPlan, excludeKey);
 
-        if (qty === sourceAlloc.quantity) {
-            // Full move
-            const oldMachineId = sourceAlloc.machine_id;
-            const oldDate = sourceAlloc.operation_date;
+            if (affected.length > 0) {
+                // Check boundary
+                const outOfBounds = affected.some(a => a.newDate === null);
+                if (outOfBounds) {
+                    frappe.show_alert({
+                        message: __('Cannot shift: some allocations would be pushed beyond the calendar date range. Extend end date first.'),
+                        indicator: 'red'
+                    });
+                    return;
+                }
 
-            sourceAlloc.machine_id = pd.machineId;
-            sourceAlloc.operation_date = pd.dateStr;
-            sourceAlloc.shift = shift?.name || '';
+                // Show shift confirmation modal
+                shiftModalData.value = {
+                    type: 'move',
+                    affectedAllocations: affected,
+                    newWorkloadPlan: workloadPlan,
+                    pendingDropData: { ...pd },
+                    dropQty: qty,
+                    sourceKey: sourceAlloc.key,
+                    sourceSnapshot: { ...sourceAlloc }
+                };
+                showShiftModal.value = true;
+                return;
+            }
 
-            saveAction('move', { key: sourceAlloc.key, oldMachineId, oldDate });
-            frappe.show_alert({ message: __('Allocation moved successfully'), indicator: 'green' });
+            // No shift needed but overflow — handle source then auto-split
+            const sourceResult = handleMoveSource(sourceAlloc, qty, pd.minutesPerUnit);
+            const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
+                pd.machineId, pd.dateStr, qty, pd.minutesPerUnit, pd.item, pd.colour, pd.size, pd.order, pd.process
+            );
+
+            if (allocationsMade > 0 || sourceResult.sourceRemoved) {
+                saveAction('shift_and_move', {
+                    addedKeys: allocationKeys,
+                    shiftedAllocations: [],
+                    sourceRemoved: sourceResult.sourceRemoved,
+                    sourceKey: pd.allocKey,
+                    sourceSnapshot: sourceResult.sourceSnapshot || null,
+                    movedQty: qty,
+                    movedMinutes: qty * pd.minutesPerUnit
+                });
+                frappe.show_alert({ message: __(`Moved ${qty - remainingQty} units across ${allocationsMade} day(s)`), indicator: 'green' });
+            }
         } else {
-            // Partial move
-            const movedMinutes = qty * pd.minutesPerUnit;
-            const oldQty = sourceAlloc.quantity;
-            const oldMinutes = sourceAlloc.allocated_minutes;
+            // Simple move — enough capacity on target day
+            const shift = getShiftForDate(pd.dateStr);
 
-            sourceAlloc.quantity -= qty;
-            sourceAlloc.allocated_minutes -= movedMinutes;
+            if (qty === sourceAlloc.quantity) {
+                const oldMachineId = sourceAlloc.machine_id;
+                const oldDate = sourceAlloc.operation_date;
 
-            const newKey = `${pd.machineId}-${pd.dateStr}-${Date.now()}-pmove`;
-            allocations.value.push({
-                key: newKey,
-                machine_id: pd.machineId,
-                operation_date: pd.dateStr,
-                shift: shift?.name || '',
-                order: sourceAlloc.order,
-                item: sourceAlloc.item,
-                process: sourceAlloc.process,
-                colour: sourceAlloc.colour,
-                size: sourceAlloc.size,
-                quantity: qty,
-                allocated_minutes: movedMinutes
-            });
+                sourceAlloc.machine_id = pd.machineId;
+                sourceAlloc.operation_date = pd.dateStr;
+                sourceAlloc.shift = shift?.name || '';
 
-            saveAction('partial_move', {
-                sourceKey: sourceAlloc.key,
-                newKey,
-                movedQty: qty,
-                movedMinutes
-            });
-            frappe.show_alert({ message: __(`Moved ${qty} units, ${sourceAlloc.quantity} remain in source`), indicator: 'green' });
+                saveAction('move', { key: sourceAlloc.key, oldMachineId, oldDate });
+                frappe.show_alert({ message: __('Allocation moved successfully'), indicator: 'green' });
+            } else {
+                const movedMinutes = qty * pd.minutesPerUnit;
+
+                sourceAlloc.quantity -= qty;
+                sourceAlloc.allocated_minutes -= movedMinutes;
+
+                const newKey = `${pd.machineId}-${pd.dateStr}-${Date.now()}-pmove`;
+                allocations.value.push({
+                    key: newKey,
+                    machine_id: pd.machineId,
+                    operation_date: pd.dateStr,
+                    shift: shift?.name || '',
+                    order: sourceAlloc.order,
+                    item: sourceAlloc.item,
+                    process: sourceAlloc.process,
+                    colour: sourceAlloc.colour,
+                    size: sourceAlloc.size,
+                    quantity: qty,
+                    allocated_minutes: movedMinutes
+                });
+
+                saveAction('partial_move', {
+                    sourceKey: sourceAlloc.key,
+                    newKey,
+                    movedQty: qty,
+                    movedMinutes
+                });
+                frappe.show_alert({ message: __(`Moved ${qty} units, ${sourceAlloc.quantity} remain in source`), indicator: 'green' });
+            }
         }
     }
 
@@ -1019,6 +1323,136 @@ function closeDropModal() {
     showDropModal.value = false;
     pendingDrop.value = null;
     dropQuantity.value = 0;
+}
+
+function closeShiftModal() {
+    showShiftModal.value = false;
+    shiftModalData.value = null;
+}
+
+function confirmShift() {
+    if (!shiftModalData.value) return;
+    const sd = shiftModalData.value;
+
+    if (sd.type === 'move') {
+        const sourceAlloc = allocations.value.find(a => a.key === sd.sourceKey);
+        if (!sourceAlloc) {
+            frappe.show_alert({ message: __('Source allocation not found'), indicator: 'red' });
+            closeShiftModal();
+            closeDropModal();
+            return;
+        }
+        const pd = sd.pendingDropData;
+        const sourceResult = handleMoveSource(sourceAlloc, sd.dropQty, pd.minutesPerUnit);
+        executeShiftAndAllocate(sd, sourceResult);
+    } else {
+        executeShiftAndAllocate(sd);
+    }
+
+    closeShiftModal();
+    closeDropModal();
+}
+
+function allocateWithoutShift() {
+    if (!shiftModalData.value) return;
+    const sd = shiftModalData.value;
+    const pd = sd.pendingDropData;
+
+    if (sd.type === 'move') {
+        const sourceAlloc = allocations.value.find(a => a.key === sd.sourceKey);
+        if (!sourceAlloc) {
+            frappe.show_alert({ message: __('Source allocation not found'), indicator: 'red' });
+            closeShiftModal();
+            closeDropModal();
+            return;
+        }
+        const sourceResult = handleMoveSource(sourceAlloc, sd.dropQty, pd.minutesPerUnit);
+        const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
+            pd.machineId, pd.dateStr, sd.dropQty, pd.minutesPerUnit, pd.item, pd.colour, pd.size, pd.order, pd.process
+        );
+
+        if (allocationsMade > 0 || sourceResult.sourceRemoved) {
+            saveAction('shift_and_move', {
+                addedKeys: allocationKeys,
+                shiftedAllocations: [],
+                sourceRemoved: sourceResult.sourceRemoved,
+                sourceKey: pd.allocKey,
+                sourceSnapshot: sourceResult.sourceSnapshot || null,
+                movedQty: sd.dropQty,
+                movedMinutes: sd.dropQty * pd.minutesPerUnit
+            });
+            frappe.show_alert({ message: __(`Moved ${sd.dropQty - remainingQty} units across ${allocationsMade} day(s)`), indicator: 'green' });
+        } else {
+            frappe.show_alert({ message: __('No capacity available'), indicator: 'red' });
+        }
+    } else {
+        const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
+            pd.machineId, pd.dateStr, sd.dropQty, pd.minutesPerUnit, pd.item, pd.colour, pd.size
+        );
+
+        if (allocationsMade > 0) {
+            saveAction('add', { keys: allocationKeys });
+            if (remainingQty > 0) {
+                frappe.show_alert({ message: __(`Allocated across ${allocationsMade} day(s). ${remainingQty} units could not be allocated (no capacity)`), indicator: 'orange' });
+            } else {
+                frappe.show_alert({ message: __(`Allocated ${sd.dropQty} units across ${allocationsMade} day(s)`), indicator: 'green' });
+            }
+        } else {
+            frappe.show_alert({ message: __('No capacity available'), indicator: 'red' });
+        }
+    }
+
+    closeShiftModal();
+    closeDropModal();
+}
+
+function executeShiftAndAllocate(shiftData, sourceResult) {
+    const { affectedAllocations, pendingDropData: pd, dropQty, type } = shiftData;
+
+    // 1. Record undo data and shift each affected allocation
+    const shiftedAllocations = [];
+    affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
+        shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift });
+        allocation.operation_date = newDate;
+        const newShift = getShiftForDate(newDate);
+        allocation.shift = newShift?.name || '';
+    });
+
+    // 2. Run auto-split on the now-cleared days
+    const orderForSplit = type === 'move' ? pd.order : undefined;
+    const processForSplit = type === 'move' ? pd.process : undefined;
+    const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
+        pd.machineId, pd.dateStr, dropQty, pd.minutesPerUnit, pd.item, pd.colour, pd.size, orderForSplit, processForSplit
+    );
+
+    // 3. Save compound undo action
+    const shiftCount = shiftedAllocations.length;
+    if (type === 'move' && sourceResult) {
+        saveAction('shift_and_move', {
+            addedKeys: allocationKeys,
+            shiftedAllocations,
+            sourceRemoved: sourceResult.sourceRemoved,
+            sourceKey: shiftData.sourceKey,
+            sourceSnapshot: sourceResult.sourceSnapshot || null,
+            movedQty: dropQty,
+            movedMinutes: dropQty * pd.minutesPerUnit
+        });
+    } else if (allocationsMade > 0 || shiftedAllocations.length > 0) {
+        saveAction('shift_and_add', {
+            addedKeys: allocationKeys,
+            shiftedAllocations
+        });
+    }
+
+    // 4. Show result
+    if (allocationsMade > 0) {
+        frappe.show_alert({
+            message: __(`Shifted ${shiftCount} allocation(s). Allocated ${dropQty - remainingQty} units across ${allocationsMade} day(s).`),
+            indicator: 'green'
+        });
+    } else {
+        frappe.show_alert({ message: __('Shift completed but no new allocations could be made'), indicator: 'orange' });
+    }
 }
 
 async function removeAllocation(alloc) {
@@ -2146,5 +2580,77 @@ select.form-control {
 
 .menu-item.text-danger:hover {
     background: #fef2f2;
+}
+
+/* Shift Modal */
+.shift-modal {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    min-width: 500px;
+    max-width: 700px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.shift-modal h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 12px 0;
+}
+
+.shift-explanation {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: #1e40af;
+}
+
+.shift-explanation p {
+    margin: 0 0 4px 0;
+}
+
+.shift-explanation p:last-child {
+    margin-bottom: 0;
+}
+
+.shift-table-wrapper {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 14px;
+}
+
+.shift-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.shift-table th {
+    background: #f9fafb;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+}
+
+.shift-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+}
+
+.shift-table tr:last-child td {
+    border-bottom: none;
 }
 </style>
