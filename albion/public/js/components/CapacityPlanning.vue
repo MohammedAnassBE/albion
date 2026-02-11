@@ -177,7 +177,7 @@
                                             :key="alloc.key"
                                             class="allocation-item"
                                             :class="{ 'conflict': hasConflict(alloc) }"
-                                            :style="{ borderLeftColor: getAllocationColor(alloc) }"
+                                            :style="{ borderLeftColor: getAllocationColor(alloc).border, backgroundColor: getAllocationColor(alloc).bg }"
                                             draggable="true"
                                             @dragstart="onAllocationDragStart($event, alloc)"
                                             @click="selectAllocation(alloc)"
@@ -609,13 +609,26 @@ function hasConflict(alloc) {
     return false;
 }
 
+const _colorPairs = [
+    { border: '#2563eb', bg: '#dbeafe' },
+    { border: '#dc2626', bg: '#fee2e2' },
+    { border: '#059669', bg: '#d1fae5' },
+    { border: '#d97706', bg: '#fef3c7' },
+    { border: '#7c3aed', bg: '#ede9fe' },
+    { border: '#0891b2', bg: '#cffafe' },
+    { border: '#db2777', bg: '#fce7f3' },
+    { border: '#4f46e5', bg: '#e0e7ff' },
+    { border: '#ca8a04', bg: '#fef9c3' },
+    { border: '#0d9488', bg: '#ccfbf1' },
+];
+const _colorMap = new Map();
+
 function getAllocationColor(alloc) {
-    const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'];
-    let hash = 0;
-    for (let i = 0; i < alloc.item.length; i++) {
-        hash = alloc.item.charCodeAt(i) + ((hash << 5) - hash);
+    const key = `${alloc.order || ''}-${alloc.item || ''}-${alloc.process || ''}`;
+    if (!_colorMap.has(key)) {
+        _colorMap.set(key, _colorMap.size % _colorPairs.length);
     }
-    return colors[Math.abs(hash) % colors.length];
+    return _colorPairs[_colorMap.get(key)];
 }
 
 function getAllocationTooltip(alloc) {
