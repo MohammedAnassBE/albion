@@ -64,9 +64,11 @@ frappe.albion.ui.CapacityPlanning = class {
         this.processes = processes || [];
         this.machines = machines || [];
         if (this.vue) {
-            this.vue.orders = this.orders;
-            this.vue.processes = this.processes;
-            this.vue.machines = this.machines;
+            this.vue.loadData({
+                orders: this.orders,
+                processes: this.processes,
+                machines: this.machines
+            });
         }
     }
 }
