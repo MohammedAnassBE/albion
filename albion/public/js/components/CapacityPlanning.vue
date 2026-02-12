@@ -208,6 +208,8 @@
                                      :title="getGroupTooltip(group)"
                                      draggable="true"
                                      @dragstart="onGroupDragStart($event, group)"
+                                     @dragover.prevent
+                                     @drop="onBarDrop($event, machine.machine_id)"
                                      @contextmenu.prevent="onBarContextMenu($event, group)"
                                      @click.stop="selectGroup(group)">
                                     <div class="bar-row-top">
@@ -264,9 +266,12 @@
         <!-- Shift Confirmation Modal -->
         <div v-if="showShiftModal && shiftModalData" class="modal-overlay" @click="closeShiftModal">
             <div class="shift-modal" @click.stop>
-                <h4>{{ shiftModalData.type === 'move_group' ? 'Shift Allocations to Move Group' : 'Shift Allocations Forward' }}</h4>
+                <h4>{{ shiftModalData.type === 'move_group' ? 'Cascade Shift Groups' : 'Shift Allocations Forward' }}</h4>
                 <div class="shift-explanation">
-                    <template v-if="shiftModalData.type === 'move_group'">
+                    <template v-if="shiftModalData.type === 'move_group' && shiftModalData.affectedGroups">
+                        <p>Moving group to <strong>{{ shiftModalData.targetMachineId }}</strong> will cascade <strong>{{ shiftModalData.affectedGroups.length }}</strong> subsequent group(s) forward.</p>
+                    </template>
+                    <template v-else-if="shiftModalData.type === 'move_group'">
                         <p>Moving group to <strong>{{ shiftModalData.targetMachineId }}</strong> conflicts with <strong>{{ shiftModalData.affectedAllocations.length }}</strong> existing allocation(s).</p>
                         <p>These allocations will be shifted forward to make room.</p>
                     </template>
@@ -276,7 +281,31 @@
                     </template>
                 </div>
                 <div class="shift-table-wrapper">
-                    <table class="shift-table">
+                    <table v-if="shiftModalData.affectedGroups && shiftModalData.affectedGroups.length > 0" class="shift-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Order</th>
+                                <th>Days</th>
+                                <th>Current Range</th>
+                                <th></th>
+                                <th>New Range</th>
+                                <th>Shift</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(grp, idx) in shiftModalData.affectedGroups" :key="idx">
+                                <td>{{ grp.item }}</td>
+                                <td>{{ grp.order }}</td>
+                                <td>{{ grp.dayCount }}</td>
+                                <td>{{ grp.oldStart }} to {{ grp.oldEnd }}</td>
+                                <td>&rarr;</td>
+                                <td>{{ grp.newStart && grp.newEnd ? `${grp.newStart} to ${grp.newEnd}` : 'Out of range' }}</td>
+                                <td>+{{ grp.pushDays }}d</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table v-else class="shift-table">
                         <thead>
                             <tr>
                                 <th>Order</th>
@@ -397,11 +426,74 @@
             </div>
         </div>
 
+        <!-- Shift Group by Days Modal -->
+        <div v-if="showShiftByDaysModal && selectedGroup" class="modal-overlay" @click="closeShiftByDaysModal">
+            <div class="shift-modal" @click.stop>
+                <h4>Shift Group by Days</h4>
+                <div class="form-group">
+                    <label>{{ selectedGroup.item }} &mdash; {{ selectedGroup.start_date }} to {{ selectedGroup.end_date }} ({{ selectedGroup.allocs.length }} days)</label>
+                </div>
+                <div class="form-group">
+                    <label>Number of days to shift</label>
+                    <input type="number" v-model.number="shiftByDaysCount" class="form-control" @input="computeShiftByDaysPreview" />
+                    <small class="text-muted">Positive = forward, Negative = backward</small>
+                </div>
+                <template v-if="shiftByDaysCount !== 0 && shiftByDaysPreview">
+                    <div v-if="shiftByDaysPreview.error" class="shift-explanation">
+                        <p class="text-danger"><strong>{{ shiftByDaysPreview.error }}</strong></p>
+                    </div>
+                    <template v-else>
+                        <div class="shift-explanation">
+                            <p>Group moves from <strong>{{ selectedGroup.start_date }}</strong> &rarr; <strong>{{ shiftByDaysPreview.newStart }}</strong></p>
+                            <p v-if="shiftByDaysPreview.affectedGroups && shiftByDaysPreview.affectedGroups.length > 0">
+                                <strong>{{ shiftByDaysPreview.affectedGroups.length }}</strong> subsequent group(s) will cascade forward.
+                            </p>
+                            <p v-else>No conflicts — group can shift directly.</p>
+                        </div>
+                        <div v-if="shiftByDaysPreview.affectedGroups && shiftByDaysPreview.affectedGroups.length > 0" class="shift-table-wrapper">
+                            <table class="shift-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Order</th>
+                                        <th>Days</th>
+                                        <th>Current Range</th>
+                                        <th></th>
+                                        <th>New Range</th>
+                                        <th>Shift</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(grp, idx) in shiftByDaysPreview.affectedGroups" :key="idx">
+                                        <td>{{ grp.item }}</td>
+                                        <td>{{ grp.order }}</td>
+                                        <td>{{ grp.dayCount }}</td>
+                                        <td>{{ grp.oldStart }} to {{ grp.oldEnd }}</td>
+                                        <td>&rarr;</td>
+                                        <td>{{ grp.newStart && grp.newEnd ? `${grp.newStart} to ${grp.newEnd}` : 'Out of range' }}</td>
+                                        <td>+{{ grp.pushDays }}d</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-actions">
+                            <button class="btn btn-primary" @click="confirmShiftByDays" :disabled="shiftByDaysPreview.outOfBounds">
+                                {{ shiftByDaysPreview.affected.length > 0 ? 'Shift & Move' : 'Shift Group' }}
+                            </button>
+                            <button class="btn btn-secondary" @click="closeShiftByDaysModal">Cancel</button>
+                        </div>
+                    </template>
+                </template>
+                <div v-else class="modal-actions">
+                    <button class="btn btn-secondary" @click="closeShiftByDaysModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Right-click Context Menu -->
         <div v-if="contextMenu.show" class="context-menu" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }">
             <template v-if="selectedGroup">
-                <div class="menu-item" @click="openEditGroupModal">Edit Group Quantity</div>
-                <div class="menu-item" v-if="selectedGroup.allocs.length > 1" @click="openSplitGroupModal">Split Group at Date</div>
+                <div class="menu-item" @click="openShiftGroupByDaysModal">Shift Group by Days</div>
                 <div class="menu-item text-danger" @click="deleteGroup">Delete Group</div>
             </template>
         </div>
@@ -496,6 +588,11 @@ const showEditGroupModal = ref(false);
 const editGroupQuantity = ref(0);
 const showSplitGroupModal = ref(false);
 const splitGroupDate = ref('');
+
+// Shift group by days modal state
+const showShiftByDaysModal = ref(false);
+const shiftByDaysCount = ref(0);
+const shiftByDaysPreview = ref(null);
 
 // Alteration modal state
 const showAlterationModal = ref(false);
@@ -1125,7 +1222,7 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
     return undoData;
 }
 
-function computeGroupMoveShiftPlan(machineId, targetDays, conflicting, excludeKeys) {
+function computeGroupMoveShiftPlan(machineId, targetDays, conflicting, excludeKeys, groupData) {
     const dates = dateRange.value;
     const targetDateSet = new Set(targetDays.map(t => t.newDate));
 
@@ -1140,25 +1237,41 @@ function computeGroupMoveShiftPlan(machineId, targetDays, conflicting, excludeKe
         }
     });
 
+    // Compute vacated dates: old group dates that are NOT in the new target set
+    // These become available for placing conflicting allocations (same-machine moves)
+    let vacatedDates = [];
+    if (groupData) {
+        const oldDates = groupData.alloc_keys
+            .map(key => allocations.value.find(a => a.key === key))
+            .filter(Boolean)
+            .map(a => a.operation_date)
+            .sort();
+        vacatedDates = oldDates.filter(d => !targetDateSet.has(d) && !occupiedDates.has(d) && !isPastDate(d));
+    }
+
     // Find the last target date to start searching from after it
     const lastTargetDate = targetDays[targetDays.length - 1].newDate;
     const lastTargetIdx = dates.indexOf(lastTargetDate);
 
+    // Build candidate dates: vacated dates first, then forward from after last target
+    const forwardDates = dates.slice(lastTargetIdx + 1).filter(d => !occupiedDates.has(d) && !isPastDate(d));
+    const candidateDates = [...vacatedDates, ...forwardDates.filter(d => !vacatedDates.includes(d))];
+
     const affected = [];
     // Sort conflicting by date
     const sorted = [...conflicting].sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+    const usedCandidates = new Set();
 
     sorted.forEach(alloc => {
         let placed = false;
-        // Search forward from after the last target date
-        for (let i = lastTargetIdx + 1; i < dates.length; i++) {
-            const d = dates[i];
-            if (!occupiedDates.has(d) && !isPastDate(d)) {
+        for (const d of candidateDates) {
+            if (!usedCandidates.has(d)) {
                 affected.push({
                     allocation: alloc,
                     currentDate: alloc.operation_date,
                     newDate: d
                 });
+                usedCandidates.add(d);
                 occupiedDates.add(d);
                 placed = true;
                 break;
@@ -1195,9 +1308,12 @@ function moveGroup(groupData, newMachineId, newStartDate) {
         newDate: addDaysToDate(alloc.operation_date, dayOffset)
     }));
 
+    const dates = dateRange.value;
+    const newEndDate = targetDays[targetDays.length - 1].newDate;
+
     // Validate date range and past dates
     for (const { newDate } of targetDays) {
-        if (!dateRange.value.includes(newDate)) {
+        if (!dates.includes(newDate)) {
             frappe.show_alert({ message: __('Move would place days outside calendar range'), indicator: 'red' });
             return;
         }
@@ -1223,22 +1339,128 @@ function moveGroup(groupData, newMachineId, newStartDate) {
         return;
     }
 
-    // Compute shift plan for conflicting allocations
-    const { affected } = computeGroupMoveShiftPlan(newMachineId, targetDays, conflicting, groupData.alloc_keys);
-    const outOfBounds = affected.some(a => a.newDate === null);
+    // Check if the drop lands in the middle of a conflicting group (same machine only)
+    // If moving to a different machine, intermediate-date check doesn't apply
+    if (newMachineId === groupData.machine_id) {
+        const machineGroups = groupedAllocations.value.filter(g =>
+            g.machine_id === newMachineId && g.group_id !== groupData.group_id
+        );
+        for (const otherGroup of machineGroups) {
+            // Check if the dragged group's new start is strictly inside another group
+            if (newStartDate > otherGroup.start_date && newStartDate <= otherGroup.end_date) {
+                frappe.show_alert({
+                    message: __('Cannot drop in the middle of an existing group. Drop at the start of the group to cascade shift.'),
+                    indicator: 'orange'
+                });
+                return;
+            }
+        }
+    }
+
+    // Cascading group push: shift entire conflicting groups forward (or backward)
+    const machineGroups = groupedAllocations.value
+        .filter(g => g.machine_id === newMachineId && g.group_id !== groupData.group_id)
+        .map(g => ({
+            ...g,
+            allocObjs: g.alloc_keys.map(k => allocations.value.find(a => a.key === k)).filter(Boolean)
+        }))
+        .sort((a, b) => a.start_date.localeCompare(b.start_date));
+
+    const affected = [];
+    let outOfBounds = false;
+
+    if (dayOffset > 0) {
+        let currentEnd = newEndDate;
+        for (const otherGroup of machineGroups) {
+            if (otherGroup.end_date < newStartDate && otherGroup.end_date < groupData.start_date) continue;
+            if (otherGroup.start_date > currentEnd) break;
+
+            const nextFree = addDaysToDate(currentEnd, 1);
+            const pushDays = dates.indexOf(nextFree) - dates.indexOf(otherGroup.start_date);
+            if (pushDays <= 0) continue;
+
+            const pushedEnd = addDaysToDate(otherGroup.end_date, pushDays);
+            if (!dates.includes(pushedEnd)) outOfBounds = true;
+
+            for (const alloc of otherGroup.allocObjs) {
+                const nd = addDaysToDate(alloc.operation_date, pushDays);
+                if (!dates.includes(nd) || isPastDate(nd)) {
+                    outOfBounds = true;
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+                } else {
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: nd });
+                }
+            }
+
+            currentEnd = outOfBounds ? currentEnd : pushedEnd;
+        }
+    } else {
+        let currentStart = newStartDate;
+        for (let i = machineGroups.length - 1; i >= 0; i--) {
+            const otherGroup = machineGroups[i];
+            if (otherGroup.start_date > newEndDate && otherGroup.start_date > groupData.end_date) continue;
+            if (otherGroup.end_date < currentStart) break;
+
+            const dayBefore = addDaysToDate(currentStart, -1);
+            const pushDays = dates.indexOf(dayBefore) - dates.indexOf(otherGroup.end_date);
+            if (pushDays >= 0) continue;
+
+            const pushedStart = addDaysToDate(otherGroup.start_date, pushDays);
+            if (!dates.includes(pushedStart) || isPastDate(pushedStart)) outOfBounds = true;
+
+            for (const alloc of otherGroup.allocObjs) {
+                const nd = addDaysToDate(alloc.operation_date, pushDays);
+                if (!dates.includes(nd) || isPastDate(nd)) {
+                    outOfBounds = true;
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+                } else {
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: nd });
+                }
+            }
+
+            currentStart = outOfBounds ? currentStart : pushedStart;
+        }
+        affected.reverse();
+    }
 
     if (outOfBounds) {
         frappe.show_alert({
-            message: __('Cannot move: some conflicting allocations would be pushed beyond the calendar date range. Extend end date first.'),
+            message: __('Cannot move: some groups would be pushed beyond the calendar date range. Extend end date first.'),
             indicator: 'red'
         });
         return;
+    }
+
+    // Build group-level summary for the modal
+    const affectedGroups = [];
+    const seenGroups = new Set();
+    for (const entry of affected) {
+        const grp = machineGroups.find(g => g.alloc_keys.includes(entry.allocation.key));
+        if (grp && !seenGroups.has(grp.group_id)) {
+            seenGroups.add(grp.group_id);
+            const grpEntries = affected.filter(e => grp.alloc_keys.includes(e.allocation.key));
+            const newDates = grpEntries.map(e => e.newDate).filter(Boolean).sort();
+            const pushDays = newDates.length > 0
+                ? Math.round((new Date(newDates[0]) - new Date(grp.start_date)) / (1000 * 60 * 60 * 24))
+                : 0;
+            affectedGroups.push({
+                item: grp.item,
+                order: grp.order,
+                dayCount: grp.allocs.length,
+                oldStart: grp.start_date,
+                oldEnd: grp.end_date,
+                newStart: newDates[0] || null,
+                newEnd: newDates[newDates.length - 1] || null,
+                pushDays: Math.abs(pushDays)
+            });
+        }
     }
 
     // Show shift modal for confirmation
     shiftModalData.value = {
         type: 'move_group',
         affectedAllocations: affected,
+        affectedGroups,
         groupData,
         targetDays,
         targetMachineId: newMachineId
@@ -1340,6 +1562,237 @@ function confirmSplitGroup() {
     saveAction('split_group', { markerKey });
     frappe.show_alert({ message: __('Group split successfully'), indicator: 'green' });
     closeSplitGroupModal();
+}
+
+function openShiftGroupByDaysModal() {
+    if (!selectedGroup.value) return;
+    shiftByDaysCount.value = 0;
+    shiftByDaysPreview.value = null;
+    showShiftByDaysModal.value = true;
+    closeContextMenu();
+}
+
+function closeShiftByDaysModal() {
+    showShiftByDaysModal.value = false;
+    shiftByDaysPreview.value = null;
+    shiftByDaysCount.value = 0;
+}
+
+function computeShiftByDaysPreview() {
+    const dayOffset = shiftByDaysCount.value;
+    if (!dayOffset || !selectedGroup.value) {
+        shiftByDaysPreview.value = null;
+        return;
+    }
+
+    const group = selectedGroup.value;
+    const machineId = group.machine_id;
+    const dates = dateRange.value;
+
+    // Compute the primary group's new target dates
+    const groupAllocs = group.alloc_keys
+        .map(key => allocations.value.find(a => a.key === key))
+        .filter(Boolean);
+
+    if (groupAllocs.length === 0) {
+        shiftByDaysPreview.value = { error: 'Group allocations not found' };
+        return;
+    }
+
+    const targetDays = groupAllocs.map(alloc => ({
+        alloc,
+        newDate: addDaysToDate(alloc.operation_date, dayOffset)
+    }));
+
+    const newStart = addDaysToDate(group.start_date, dayOffset);
+    const newEnd = addDaysToDate(group.end_date, dayOffset);
+
+    // Validate primary group's target dates
+    for (const { newDate } of targetDays) {
+        if (!dates.includes(newDate)) {
+            shiftByDaysPreview.value = { error: 'Shift would place days outside calendar range. Extend the end date first.' };
+            return;
+        }
+        if (isPastDate(newDate)) {
+            shiftByDaysPreview.value = { error: 'Cannot shift to past dates' };
+            return;
+        }
+    }
+
+    // Get all groups on this machine (from the computed groupedAllocations)
+    const machineGroups = groupedAllocations.value
+        .filter(g => g.machine_id === machineId && g.group_id !== group.group_id)
+        .map(g => ({
+            ...g,
+            allocObjs: g.alloc_keys.map(k => allocations.value.find(a => a.key === k)).filter(Boolean)
+        }))
+        .sort((a, b) => a.start_date.localeCompare(b.start_date));
+
+    // Cascading push: simulate all group positions after the shift
+    // Start with the primary group's new end date, then push any overlapping groups
+    const affected = [];
+    let outOfBounds = false;
+
+    // Build a schedule of "occupied ranges" — start with the shifted primary group
+    // Then iterate through other groups in date order, pushing each one if it overlaps
+    const groupShifts = new Map(); // group_id -> dayOffset for that group
+
+    // For cascading: track the "occupied end" as we push groups forward/backward
+    // We process groups in the direction of the shift
+    if (dayOffset > 0) {
+        // Shifting forward: process groups after the primary group in date order
+        // Each group that overlaps with the previous one's new end gets pushed forward
+        let currentEnd = newEnd; // the shifted primary group's new end
+
+        for (const otherGroup of machineGroups) {
+            // Skip groups entirely before the new range (no overlap possible)
+            if (otherGroup.end_date < newStart && otherGroup.end_date < group.start_date) continue;
+            // Skip groups entirely after (sorted, so once past currentEnd with no overlap, remaining won't overlap either — but keep checking as cascade grows)
+            if (otherGroup.start_date > currentEnd) break;
+
+            // This group overlaps with the shifted range — compute push needed
+            // Push it so it starts the day after currentEnd
+            const pushDays = dates.indexOf(addDaysToDate(currentEnd, 1)) - dates.indexOf(otherGroup.start_date);
+            if (pushDays <= 0) continue; // no actual overlap
+
+            groupShifts.set(otherGroup.group_id, pushDays);
+
+            // Check if the pushed group stays in range
+            const pushedEnd = addDaysToDate(otherGroup.end_date, pushDays);
+            if (!dates.includes(pushedEnd)) {
+                outOfBounds = true;
+            }
+
+            // Add each allocation in this group to affected list
+            for (const alloc of otherGroup.allocObjs) {
+                const nd = addDaysToDate(alloc.operation_date, pushDays);
+                if (!dates.includes(nd)) {
+                    outOfBounds = true;
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+                } else if (isPastDate(nd)) {
+                    outOfBounds = true;
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+                } else {
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: nd });
+                }
+            }
+
+            // Extend currentEnd to include this pushed group
+            currentEnd = outOfBounds ? currentEnd : pushedEnd;
+        }
+    } else {
+        // Shifting backward: process groups before the primary group in reverse date order
+        let currentStart = newStart;
+
+        for (let i = machineGroups.length - 1; i >= 0; i--) {
+            const otherGroup = machineGroups[i];
+            // Skip groups entirely after the new range
+            if (otherGroup.start_date > newEnd && otherGroup.start_date > group.end_date) continue;
+            // Skip groups entirely before (no overlap)
+            if (otherGroup.end_date < currentStart) break;
+
+            // This group overlaps — push it backward so it ends the day before currentStart
+            const dayBeforeStart = addDaysToDate(currentStart, -1);
+            const pushDays = dates.indexOf(dayBeforeStart) - dates.indexOf(otherGroup.end_date);
+            if (pushDays >= 0) continue; // no actual overlap
+
+            groupShifts.set(otherGroup.group_id, pushDays);
+
+            const pushedStart = addDaysToDate(otherGroup.start_date, pushDays);
+            if (!dates.includes(pushedStart) || isPastDate(pushedStart)) {
+                outOfBounds = true;
+            }
+
+            for (const alloc of otherGroup.allocObjs) {
+                const nd = addDaysToDate(alloc.operation_date, pushDays);
+                if (!dates.includes(nd) || isPastDate(nd)) {
+                    outOfBounds = true;
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+                } else {
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: nd });
+                }
+            }
+
+            currentStart = outOfBounds ? currentStart : pushedStart;
+        }
+
+        // Reverse so they display in date order
+        affected.reverse();
+    }
+
+    // Build group-level summary for the confirmation table
+    const affectedGroups = [];
+    const seenGroups = new Set();
+    for (const entry of affected) {
+        const grp = machineGroups.find(g => g.alloc_keys.includes(entry.allocation.key));
+        if (grp && !seenGroups.has(grp.group_id)) {
+            seenGroups.add(grp.group_id);
+            const grpEntries = affected.filter(e => grp.alloc_keys.includes(e.allocation.key));
+            const newDates = grpEntries.map(e => e.newDate).filter(Boolean).sort();
+            const pushDays = newDates.length > 0
+                ? Math.round((new Date(newDates[0]) - new Date(grp.start_date)) / (1000 * 60 * 60 * 24))
+                : 0;
+            affectedGroups.push({
+                item: grp.item,
+                order: grp.order,
+                dayCount: grp.allocs.length,
+                oldStart: grp.start_date,
+                oldEnd: grp.end_date,
+                newStart: newDates[0] || null,
+                newEnd: newDates[newDates.length - 1] || null,
+                pushDays: Math.abs(pushDays)
+            });
+        }
+    }
+
+    shiftByDaysPreview.value = { affected, affectedGroups, newStart, targetDays, outOfBounds };
+}
+
+function confirmShiftByDays() {
+    if (!selectedGroup.value || !shiftByDaysPreview.value || shiftByDaysPreview.value.error || shiftByDaysPreview.value.outOfBounds) return;
+
+    const group = selectedGroup.value;
+    const preview = shiftByDaysPreview.value;
+    const machineId = group.machine_id;
+
+    // Shift cascading allocations first (before moving the primary group)
+    const shiftedAllocations = [];
+    if (preview.affected.length > 0) {
+        preview.affected.forEach(({ allocation, currentDate, newDate }) => {
+            shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift });
+            allocation.operation_date = newDate;
+            const newShift = getShiftForDate(newDate);
+            allocation.shift = newShift?.name || '';
+        });
+    }
+
+    // Build groupData for executeMoveGroup
+    const groupData = {
+        alloc_keys: group.alloc_keys,
+        machine_id: machineId,
+        start_date: group.start_date,
+        end_date: group.end_date
+    };
+
+    // Execute the primary group move
+    const moveUndoData = executeMoveGroup(groupData, preview.targetDays, machineId);
+
+    if (shiftedAllocations.length > 0) {
+        saveAction('shift_and_move_group', {
+            moveAllocations: moveUndoData,
+            shiftedAllocations
+        });
+        const groupCount = new Set(preview.affected.map(a => {
+            const g = groupedAllocations.value.find(grp => grp.alloc_keys.includes(a.allocation.key));
+            return g?.group_id;
+        })).size;
+        frappe.show_alert({ message: __(`Shifted ${groupCount} group(s) and moved group by ${shiftByDaysCount.value} day(s)`), indicator: 'green' });
+    } else {
+        saveAction('move_group', { allocations: moveUndoData });
+        frappe.show_alert({ message: __(`Group shifted by ${shiftByDaysCount.value} day(s)`), indicator: 'green' });
+    }
+
+    closeShiftByDaysModal();
 }
 
 function computeBackfillPlan(machineId, gapStartDate, deletedKeys) {
@@ -1872,6 +2325,19 @@ function getNextDate(currentDateStr) {
     return null;
 }
 
+function onBarDrop(event, machineId) {
+    // Resolve the drop position to a date column using the bar layer's coordinate space
+    const barLayer = event.target.closest('.gantt-bar-layer');
+    if (!barLayer) return;
+    const layerRect = barLayer.getBoundingClientRect();
+    const xInLayer = event.clientX - layerRect.left;
+    const dateIdx = Math.floor(xInLayer / COL_WIDTH);
+    const dates = dateRange.value;
+    if (dateIdx < 0 || dateIdx >= dates.length) return;
+    const dateStr = dates[dateIdx];
+    onDrop(event, machineId, dateStr);
+}
+
 function onDrop(event, machineId, dateStr) {
     // Check for group drop first
     const groupData = event.dataTransfer.getData('application/gantt-group');
@@ -1921,15 +2387,6 @@ function onDrop(event, machineId, dateStr) {
         validationErrors.value = errors;
         frappe.show_alert({
             message: __(errors[0]),
-            indicator: 'red'
-        });
-        return;
-    }
-
-    // One-item-per-machine-day validation
-    if (!validateMachineDaySlot(machineId, dateStr)) {
-        frappe.show_alert({
-            message: __('This machine already has an allocation on this date. One item per machine per day.'),
             indicator: 'red'
         });
         return;
