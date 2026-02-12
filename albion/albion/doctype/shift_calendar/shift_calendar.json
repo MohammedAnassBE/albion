@@ -5,11 +5,22 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "is_default",
   "start_date",
   "end_date",
-  "shift"
+  "total_duration_minutes",
+  "shifts_section",
+  "shifts",
+  "alterations_section",
+  "alterations"
  ],
  "fields": [
+  {
+   "default": "0",
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Is Default"
+  },
   {
    "fieldname": "start_date",
    "fieldtype": "Date",
@@ -23,17 +34,39 @@
    "reqd": 1
   },
   {
-   "fieldname": "shift",
-   "fieldtype": "Link",
-   "label": "Shift",
-   "options": "Shift",
+   "fieldname": "total_duration_minutes",
+   "fieldtype": "Int",
+   "label": "Total Duration (Minutes)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shifts_section",
+   "fieldtype": "Section Break",
+   "label": "Shifts"
+  },
+  {
+   "fieldname": "shifts",
+   "fieldtype": "Table",
+   "label": "Shifts",
+   "options": "Shift Calendar Item",
    "reqd": 1
+  },
+  {
+   "fieldname": "alterations_section",
+   "fieldtype": "Section Break",
+   "label": "Shift Alterations"
+  },
+  {
+   "fieldname": "alterations",
+   "fieldtype": "Table",
+   "label": "Alterations",
+   "options": "Shift Alteration"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-09 17:30:00.000000",
+ "modified": "2026-02-12 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Shift Calendar",

@@ -57,44 +57,127 @@ def get_order_data(order_name):
 
 @frappe.whitelist()
 def get_shift_calendars(start_date, end_date):
-    """Get shift calendars for date range and default shift"""
-    calendars = frappe.get_all(
+    """Get shift calendars for date range and default calendar"""
+    calendar_names = frappe.get_all(
         "Shift Calendar",
         filters={
             "start_date": ["<=", end_date],
             "end_date": [">=", start_date]
         },
-        fields=["name", "start_date", "end_date", "shift"]
+        fields=["name"],
+        order_by="start_date"
     )
 
-    # Get full shift details
-    for cal in calendars:
-        shift = frappe.get_doc("Shift", cal.shift)
-        cal.shift = {
-            "name": shift.name,
-            "shift_name": shift.shift_name,
-            "start_time": str(shift.start_time) if shift.start_time else None,
-            "end_time": str(shift.end_time) if shift.end_time else None,
-            "duration_minutes": shift.duration_minutes or 480
-        }
+    calendars = []
+    for cal in calendar_names:
+        calendars.append(_get_calendar_data(cal.name))
 
-    # Get default shift from settings
-    default_shift = None
-    settings = frappe.get_doc("Albion Settings")
-    if settings.default_shift:
-        shift = frappe.get_doc("Shift", settings.default_shift)
-        default_shift = {
-            "name": shift.name,
-            "shift_name": shift.shift_name,
-            "start_time": str(shift.start_time) if shift.start_time else None,
-            "end_time": str(shift.end_time) if shift.end_time else None,
-            "duration_minutes": shift.duration_minutes or 480
-        }
+    # Get default calendar (always fetched regardless of date range)
+    default_calendar = None
+    default_name = frappe.db.get_value("Shift Calendar", {"is_default": 1}, "name")
+    if default_name:
+        # Check if already in list
+        existing = next((c for c in calendars if c["name"] == default_name), None)
+        if existing:
+            default_calendar = existing
+        else:
+            default_calendar = _get_calendar_data(default_name)
 
     return {
         "calendars": calendars,
-        "default_shift": default_shift
+        "default_calendar": default_calendar
     }
+
+
+def _get_calendar_data(calendar_name):
+    """Get full calendar data including shifts and alterations"""
+    doc = frappe.get_doc("Shift Calendar", calendar_name)
+
+    shifts = []
+    for row in doc.shifts or []:
+        shifts.append({
+            "shift": row.shift,
+            "shift_name": row.shift_name,
+            "duration_minutes": row.duration_minutes or 0
+        })
+
+    alterations = []
+    for row in doc.alterations or []:
+        alterations.append({
+            "date": str(row.date),
+            "alteration_type": row.alteration_type,
+            "minutes": row.minutes,
+            "machine": row.machine,
+            "reason": row.reason
+        })
+
+    return {
+        "name": doc.name,
+        "start_date": str(doc.start_date),
+        "end_date": str(doc.end_date),
+        "is_default": doc.is_default,
+        "total_duration_minutes": doc.total_duration_minutes or 0,
+        "shifts": shifts,
+        "alterations": alterations
+    }
+
+
+@frappe.whitelist()
+def add_shift_alteration(date, alteration_type, minutes, machine=None, reason=None):
+    """Add a shift alteration to the calendar covering the given date"""
+    minutes = int(minutes)
+
+    # Find calendar covering this date
+    calendar_name = frappe.db.get_value(
+        "Shift Calendar",
+        {
+            "start_date": ["<=", date],
+            "end_date": [">=", date]
+        },
+        "name"
+    )
+
+    if not calendar_name:
+        # No calendar covers this date — create a single-day calendar from default
+        default_name = frappe.db.get_value("Shift Calendar", {"is_default": 1}, "name")
+        if not default_name:
+            frappe.throw(_("No Shift Calendar covers this date and no default calendar exists"))
+
+        default_doc = frappe.get_doc("Shift Calendar", default_name)
+        new_cal = frappe.new_doc("Shift Calendar")
+        new_cal.start_date = date
+        new_cal.end_date = date
+        new_cal.is_default = 0
+
+        for shift_row in default_doc.shifts:
+            new_cal.append("shifts", {
+                "shift": shift_row.shift,
+                "shift_name": shift_row.shift_name,
+                "duration_minutes": shift_row.duration_minutes
+            })
+
+        new_cal.append("alterations", {
+            "date": date,
+            "alteration_type": alteration_type,
+            "minutes": minutes,
+            "machine": machine,
+            "reason": reason
+        })
+
+        new_cal.insert(ignore_permissions=True)
+        return {"calendar": new_cal.name}
+
+    # Calendar exists — append alteration
+    doc = frappe.get_doc("Shift Calendar", calendar_name)
+    doc.append("alterations", {
+        "date": date,
+        "alteration_type": alteration_type,
+        "minutes": minutes,
+        "machine": machine,
+        "reason": reason
+    })
+    doc.save(ignore_permissions=True)
+    return {"calendar": doc.name}
 
 
 @frappe.whitelist()

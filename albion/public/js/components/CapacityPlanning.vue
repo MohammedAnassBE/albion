@@ -126,7 +126,7 @@
                 </div>
             </div>
 
-            <!-- Right Panel - Calendar -->
+            <!-- Right Panel - Gantt Calendar -->
             <div class="cp-right-panel">
                 <div class="calendar-header">
                     <h4>Capacity Calendar</h4>
@@ -138,109 +138,95 @@
                     </div>
                 </div>
                 <div class="calendar-wrapper">
-                    <table class="calendar-table">
-                        <thead>
-                            <tr>
-                                <th class="machine-header">Machine</th>
-                                <th v-for="date in dateRange" :key="date" class="date-header" :class="getDateHeaderClass(date)">
-                                    <div class="date-cell">
-                                        <span class="day-date">{{ formatDayName(date) }}, {{ formatDate(date) }}</span>
-                                        <span class="shift-info">{{ getShiftForDate(date)?.shift_name || 'No Shift' }} &middot; {{ getShiftMinutes(date) }}m</span>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="machine in machines" :key="machine.machine_id">
-                                <td class="machine-cell">
-                                    <div class="machine-info">
-                                        <div class="machine-title">
-                                            <span class="machine-id">{{ machine.machine_id }}</span>
-                                            <span class="machine-utilization" :class="getUtilizationClass(machine.machine_id)">
-                                                {{ getMachineUtilization(machine.machine_id) }}%
-                                            </span>
-                                        </div>
-                                        <span class="machine-name">{{ machine.machine_name }}</span>
-                                    </div>
-                                </td>
-                                <td
-                                    v-for="date in dateRange"
-                                    :key="date"
-                                    class="calendar-cell"
-                                    :class="getCellClass(machine.machine_id, date)"
-                                    @dragover.prevent
-                                    @drop="onDrop($event, machine.machine_id, date)"
-                                >
-                                    <div class="cell-content">
-                                        <div
-                                            v-for="alloc in getAllocations(machine.machine_id, date)"
-                                            :key="alloc.key"
-                                            class="allocation-item"
-                                            :class="{ 'conflict': hasConflict(alloc) }"
-                                            :style="{ borderLeftColor: getAllocationColor(alloc).border, backgroundColor: getAllocationColor(alloc).bg }"
-                                            draggable="true"
-                                            @dragstart="onAllocationDragStart($event, alloc)"
-                                            @click="selectAllocation(alloc)"
-                                            :title="getAllocationTooltip(alloc)"
-                                        >
-                                            <div class="alloc-header">
-                                                <span class="alloc-item">{{ alloc.item }}</span>
-                                                <span class="alloc-qty">{{ alloc.quantity }}</span>
-                                            </div>
-                                            <div class="alloc-process" v-if="alloc.process">{{ alloc.process }}</div>
-                                            <div class="alloc-footer">
-                                                <span class="alloc-mins">{{ alloc.allocated_minutes }}m</span>
-                                                <button class="btn-remove" @click.stop="removeAllocation(alloc)">&times;</button>
-                                            </div>
-                                        </div>
-                                        <div class="cell-summary" v-if="getUsedMinutes(machine.machine_id, date) > 0">
-                                            <span class="used-minutes">{{ getUsedMinutes(machine.machine_id, date) }}m</span>
-                                            <span class="remaining-minutes">/ {{ getShiftMinutes(date) }}m</span>
-                                        </div>
-                                        <div class="capacity-bar" v-if="getUsedMinutes(machine.machine_id, date) > 0">
-                                            <div class="capacity-fill" :style="{ width: getCapacityPercentage(machine.machine_id, date) + '%' }" :class="getCapacityBarClass(machine.machine_id, date)"></div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                    <div class="gantt-grid" :style="ganttGridStyle">
+                        <!-- Header row -->
+                        <div class="gantt-corner-cell">Machine</div>
+                        <div v-for="(date, dIdx) in dateRange" :key="'hdr-'+date"
+                             class="gantt-date-header" :class="getDateHeaderClass(date)"
+                             :style="{ gridRow: 1, gridColumn: dIdx + 2 }"
+                             @click="openAlterationDialog(date)">
+                            <div class="date-cell">
+                                <span class="day-date">{{ formatDayName(date) }}, {{ formatDate(date) }}</span>
+                                <span class="shift-info">
+                                    {{ getShiftNamesForDate(date) }} &middot; {{ getEffectiveMinutes(date) }}m
+                                    <span v-if="getDayAlterationDelta(date)" class="day-alteration-badge" :class="getDayAlterationDelta(date).cls">
+                                        {{ getDayAlterationDelta(date).label }}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
 
-        <!-- Split Quantity Modal -->
-        <div v-if="showSplitModal" class="modal-overlay" @click="closeSplitModal">
-            <div class="modal-content" @click.stop>
-                <h4>Split Quantity</h4>
-                <div class="form-group">
-                    <label>Original Quantity: {{ selectedAllocation?.quantity }}</label>
-                </div>
-                <div class="form-group">
-                    <label>Split Quantity</label>
-                    <input type="number" v-model.number="splitQuantity" class="form-control" min="1" :max="(selectedAllocation?.quantity || 1) - 1" />
-                </div>
-                <div class="modal-actions">
-                    <button class="btn btn-primary" @click="confirmSplit">Split</button>
-                    <button class="btn btn-secondary" @click="closeSplitModal">Cancel</button>
-                </div>
-            </div>
-        </div>
+                        <!-- Machine rows -->
+                        <template v-for="(machine, mIdx) in machines" :key="machine.machine_id">
+                            <!-- Machine label cell -->
+                            <div class="gantt-machine-cell" :style="{ gridRow: mIdx + 2 }">
+                                <div class="machine-info">
+                                    <div class="machine-title">
+                                        <span class="machine-id">{{ machine.machine_id }}</span>
+                                        <span class="machine-utilization" :class="getUtilizationClass(machine.machine_id)">
+                                            {{ getMachineUtilization(machine.machine_id) }}%
+                                        </span>
+                                    </div>
+                                    <span class="machine-name">{{ machine.machine_name }}</span>
+                                </div>
+                            </div>
 
-        <!-- Edit Quantity Modal -->
-        <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
-            <div class="modal-content" @click.stop>
-                <h4>Edit Quantity</h4>
-                <div class="form-group">
-                    <label>Current Quantity: {{ selectedAllocation?.quantity }}</label>
-                </div>
-                <div class="form-group">
-                    <label>New Quantity</label>
-                    <input type="number" v-model.number="editQuantity" class="form-control" min="1" />
-                </div>
-                <div class="modal-actions">
-                    <button class="btn btn-primary" @click="confirmEdit">Update</button>
-                    <button class="btn btn-secondary" @click="closeEditModal">Cancel</button>
+                            <!-- Date cells (drop targets) -->
+                            <div v-for="(date, dIdx) in dateRange"
+                                 :key="machine.machine_id+'-'+date"
+                                 class="gantt-date-cell"
+                                 :class="getCellClass(machine.machine_id, date)"
+                                 :style="{ gridRow: mIdx + 2, gridColumn: dIdx + 2 }"
+                                 @dragover.prevent
+                                 @drop="onDrop($event, machine.machine_id, date)">
+                                <span v-if="getCellAlterationBadge(date, machine.machine_id)"
+                                      class="alteration-badge"
+                                      :class="getCellAlterationBadge(date, machine.machine_id).cls">
+                                    {{ getCellAlterationBadge(date, machine.machine_id).label }}
+                                </span>
+                                <div class="cell-top-row">
+                                    <button class="cell-add-btn" @click.stop="openAlterationDialog(date, machine.machine_id)" title="Add overtime/break">+</button>
+                                </div>
+                                <div class="cell-utilization" v-if="getUsedMinutes(machine.machine_id, date) > 0"
+                                     :title="`${getUsedMinutes(machine.machine_id, date)}m / ${getEffectiveMinutes(date, machine.machine_id)}m`">
+                                    <div class="util-bar" :class="getCapacityBarClass(machine.machine_id, date)">
+                                        <div class="util-fill"
+                                             :style="{ width: Math.min(getCapacityPercentage(machine.machine_id, date), 100) + '%' }"
+                                             :class="getCapacityBarClass(machine.machine_id, date)"></div>
+                                        <span class="util-label">{{ getUsedMinutes(machine.machine_id, date) }}m/{{ getEffectiveMinutes(date, machine.machine_id) }}m</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Gantt bar layer (overlays date cells in same row) -->
+                            <div class="gantt-bar-layer"
+                                 :style="{ gridRow: mIdx + 2, gridColumn: `2 / ${dateRange.length + 2}`, minHeight: getBarLayerHeight(machine.machine_id) + 'px' }">
+                                <div v-for="group in getGroupsForMachine(machine.machine_id)"
+                                     :key="group.group_id"
+                                     class="gantt-bar"
+                                     :style="getBarStyle(group)"
+                                     :title="getGroupTooltip(group)"
+                                     draggable="true"
+                                     @dragstart="onGroupDragStart($event, group)"
+                                     @contextmenu.prevent="onBarContextMenu($event, group)"
+                                     @click.stop="selectGroup(group)">
+                                    <div class="bar-row-top">
+                                        <span class="bar-item">{{ group.item }}</span>
+                                        <span class="bar-qty">{{ group.total_quantity }}</span>
+                                    </div>
+                                    <div class="bar-row-mid">
+                                        <span class="bar-process">{{ group.process }}</span>
+                                        <span class="bar-minutes">{{ group.total_minutes }}m</span>
+                                    </div>
+                                    <div class="bar-row-bot">
+                                        <span v-if="group.order" class="bar-tag order-tag"><b>O:</b> {{ group.order }}</span>
+                                        <span v-if="group.colour" class="bar-tag colour-tag"><b>C:</b> {{ group.colour }}</span>
+                                        <span v-if="group.size" class="bar-tag size-tag"><b>S:</b> {{ group.size }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </div>
         </div>
@@ -278,10 +264,16 @@
         <!-- Shift Confirmation Modal -->
         <div v-if="showShiftModal && shiftModalData" class="modal-overlay" @click="closeShiftModal">
             <div class="shift-modal" @click.stop>
-                <h4>Shift Allocations Forward</h4>
+                <h4>{{ shiftModalData.type === 'move_group' ? 'Shift Allocations to Move Group' : 'Shift Allocations Forward' }}</h4>
                 <div class="shift-explanation">
-                    <p>The new workload needs <strong>{{ shiftModalData.newWorkloadPlan.length }}</strong> day(s) on <strong>{{ shiftModalData.pendingDropData.machineId }}</strong>.</p>
-                    <p><strong>{{ shiftModalData.affectedAllocations.length }}</strong> existing allocation(s) will be shifted forward to make room.</p>
+                    <template v-if="shiftModalData.type === 'move_group'">
+                        <p>Moving group to <strong>{{ shiftModalData.targetMachineId }}</strong> conflicts with <strong>{{ shiftModalData.affectedAllocations.length }}</strong> existing allocation(s).</p>
+                        <p>These allocations will be shifted forward to make room.</p>
+                    </template>
+                    <template v-else>
+                        <p>The new workload needs <strong>{{ shiftModalData.newWorkloadPlan.length }}</strong> day(s) on <strong>{{ shiftModalData.pendingDropData.machineId }}</strong>.</p>
+                        <p><strong>{{ shiftModalData.affectedAllocations.length }}</strong> existing allocation(s) will be shifted forward to make room.</p>
+                    </template>
                 </div>
                 <div class="shift-table-wrapper">
                     <table class="shift-table">
@@ -310,19 +302,144 @@
                     </table>
                 </div>
                 <div class="modal-actions">
-                    <button class="btn btn-primary" @click="confirmShift">Shift &amp; Allocate</button>
-                    <button class="btn btn-default" @click="allocateWithoutShift">Allocate Without Shifting</button>
+                    <button class="btn btn-primary" @click="confirmShift">
+                        {{ shiftModalData.type === 'move_group' ? 'Shift & Move' : 'Shift & Allocate' }}
+                    </button>
+                    <button v-if="shiftModalData.type !== 'move_group'" class="btn btn-default" @click="allocateWithoutShift">Allocate Without Shifting</button>
                     <button class="btn btn-secondary" @click="closeShiftModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Backfill Confirmation Modal -->
+        <div v-if="showBackfillModal && backfillModalData" class="modal-overlay">
+            <div class="shift-modal" @click.stop>
+                <h4>Fill Gap After Deletion</h4>
+                <div class="backfill-explanation">
+                    <p><strong>{{ backfillModalData.affectedAllocations.length }}</strong> subsequent allocation(s) on <strong>{{ backfillModalData.machineId }}</strong> can be shifted backward to fill the gap.</p>
+                </div>
+                <div class="shift-table-wrapper">
+                    <table class="shift-table">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Item</th>
+                                <th>Process</th>
+                                <th>Qty</th>
+                                <th>Current Date</th>
+                                <th></th>
+                                <th>New Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(entry, idx) in backfillModalData.affectedAllocations" :key="idx">
+                                <td>{{ entry.allocation.order }}</td>
+                                <td>{{ entry.allocation.item }}</td>
+                                <td>{{ entry.allocation.process }}</td>
+                                <td>{{ entry.allocation.quantity }}</td>
+                                <td>{{ entry.currentDate }}</td>
+                                <td>&larr;</td>
+                                <td>{{ entry.newDate }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" @click="confirmBackfill">Shift Backward</button>
+                    <button class="btn btn-default" @click="declineBackfill">Just Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Group Quantity Modal -->
+        <div v-if="showEditGroupModal && selectedGroup" class="modal-overlay" @click="closeEditGroupModal">
+            <div class="modal-content" @click.stop>
+                <h4>Edit Group Quantity</h4>
+                <div class="form-group">
+                    <label>Item: {{ selectedGroup.item }}</label>
+                </div>
+                <div class="form-group">
+                    <label>Dates: {{ selectedGroup.start_date }} to {{ selectedGroup.end_date }} ({{ selectedGroup.allocs.length }} days)</label>
+                </div>
+                <div class="form-group">
+                    <label>Current Total: {{ selectedGroup.total_quantity }}</label>
+                </div>
+                <div class="form-group">
+                    <label>New Total Quantity</label>
+                    <input type="number" v-model.number="editGroupQuantity" class="form-control" min="1" />
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" @click="confirmEditGroup">Update</button>
+                    <button class="btn btn-secondary" @click="closeEditGroupModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Split Group at Date Modal -->
+        <div v-if="showSplitGroupModal && selectedGroup" class="modal-overlay" @click="closeSplitGroupModal">
+            <div class="modal-content" @click.stop>
+                <h4>Split Group at Date</h4>
+                <div class="form-group">
+                    <label>Item: {{ selectedGroup.item }} ({{ selectedGroup.allocs.length }} days)</label>
+                </div>
+                <div class="form-group">
+                    <label>Split before date</label>
+                    <select v-model="splitGroupDate" class="form-control">
+                        <option v-for="alloc in selectedGroup.allocs.slice(1)" :key="alloc.operation_date" :value="alloc.operation_date">
+                            {{ alloc.operation_date }}
+                        </option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" @click="confirmSplitGroup">Split</button>
+                    <button class="btn btn-secondary" @click="closeSplitGroupModal">Cancel</button>
                 </div>
             </div>
         </div>
 
         <!-- Right-click Context Menu -->
         <div v-if="contextMenu.show" class="context-menu" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }">
-            <div class="menu-item" @click="openSplitModal">Split Quantity</div>
-            <div class="menu-item" @click="openEditModal">Edit Quantity</div>
-            <div class="menu-item" @click="mergeAllocations">Merge with Same</div>
-            <div class="menu-item text-danger" @click="deleteSelectedAllocation">Delete</div>
+            <template v-if="selectedGroup">
+                <div class="menu-item" @click="openEditGroupModal">Edit Group Quantity</div>
+                <div class="menu-item" v-if="selectedGroup.allocs.length > 1" @click="openSplitGroupModal">Split Group at Date</div>
+                <div class="menu-item text-danger" @click="deleteGroup">Delete Group</div>
+            </template>
+        </div>
+
+        <!-- Shift Alteration Modal -->
+        <div v-if="showAlterationModal" class="modal-overlay" @click="closeAlterationModal">
+            <div class="modal-content" @click.stop>
+                <h4>Add Shift Alteration</h4>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="text" class="form-control" :value="alterationForm.date" disabled />
+                </div>
+                <div class="form-group">
+                    <label>Machine</label>
+                    <input type="text" class="form-control" :value="alterationForm.machine || 'All Machines'" disabled />
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select v-model="alterationForm.alteration_type" class="form-control">
+                        <option value="Add">Add Overtime</option>
+                        <option value="Reduce">Add Break / Reduce</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Minutes</label>
+                    <input type="number" v-model.number="alterationForm.minutes" class="form-control" min="1" />
+                </div>
+                <div class="form-group">
+                    <label>Reason (optional)</label>
+                    <input type="text" v-model="alterationForm.reason" class="form-control" placeholder="e.g., Overtime, Break" />
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" @click="confirmAlteration" :disabled="alterationSaving">
+                        {{ alterationSaving ? 'Saving...' : 'Add Alteration' }}
+                    </button>
+                    <button class="btn btn-secondary" @click="closeAlterationModal">Cancel</button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -344,7 +461,7 @@ const startDate = ref('');
 const endDate = ref('');
 const orderData = ref(null);
 const shiftCalendars = ref([]);
-const defaultShift = ref(null);
+const defaultCalendar = ref(null);
 const allocations = ref([]);
 const actionHistory = ref([]);
 const validationErrors = ref([]);
@@ -365,8 +482,31 @@ const pendingDrop = ref(null);
 const showShiftModal = ref(false);
 const shiftModalData = ref(null);
 
+// Backfill modal state
+const showBackfillModal = ref(false);
+const backfillModalData = ref(null);
+
 // Context menu
 const contextMenu = ref({ show: false, x: 0, y: 0 });
+
+// Group state
+const selectedGroup = ref(null);
+const splitMarkers = ref(new Set());
+const showEditGroupModal = ref(false);
+const editGroupQuantity = ref(0);
+const showSplitGroupModal = ref(false);
+const splitGroupDate = ref('');
+
+// Alteration modal state
+const showAlterationModal = ref(false);
+const alterationSaving = ref(false);
+const alterationForm = ref({
+    date: '',
+    machine: null,
+    alteration_type: 'Add',
+    minutes: 60,
+    reason: ''
+});
 
 // Initialize dates
 const today = new Date();
@@ -376,6 +516,10 @@ endDate.value = nextMonth.toISOString().split('T')[0];
 
 // Constants
 const MIN_BATCH_SIZE = 1;
+const COL_WIDTH = 152;
+const BAR_HEIGHT = 68;
+const BAR_GAP = 4;
+const BAR_TOP_OFFSET = 22;
 
 // Computed
 const dateRange = computed(() => {
@@ -388,9 +532,12 @@ const dateRange = computed(() => {
     return dates;
 });
 
+const ganttGridStyle = computed(() => ({
+    gridTemplateColumns: `180px repeat(${dateRange.value.length}, ${COL_WIDTH}px)`,
+}));
+
 const availableProcesses = computed(() => {
     if (!orderData.value || !processes.value) return [];
-    // Only show processes that are defined in at least one item in the order
     const processSet = new Set();
     orderData.value.items?.forEach(item => {
         item.item_doc?.processes?.forEach(p => processSet.add(p.process_name));
@@ -468,6 +615,94 @@ const fullyAllocatedCount = computed(() => workloadItems.value.filter(item => ge
 const partialAllocatedCount = computed(() => workloadItems.value.filter(item => getAllocationStatus(item) === 'partial').length);
 const pendingCount = computed(() => workloadItems.value.filter(item => getAllocationStatus(item) === 'pending').length);
 
+// Grouping computed - merges consecutive-day allocations into Gantt groups
+const groupedAllocations = computed(() => {
+    const groups = [];
+    const groupMap = {};
+
+    allocations.value.forEach(alloc => {
+        const key = `${alloc.machine_id}|${alloc.order}|${alloc.item}|${alloc.process}|${alloc.colour || ''}|${alloc.size || ''}`;
+        if (!groupMap[key]) groupMap[key] = [];
+        groupMap[key].push(alloc);
+    });
+
+    Object.entries(groupMap).forEach(([, allocs]) => {
+        allocs.sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+
+        let currentGroup = null;
+
+        allocs.forEach(alloc => {
+            const shouldBreak = currentGroup && (
+                !isNextDay(currentGroup.end_date, alloc.operation_date) ||
+                isGroupSplit(alloc.machine_id, currentGroup.end_date, alloc.operation_date)
+            );
+
+            if (!currentGroup || shouldBreak) {
+                if (currentGroup) groups.push(currentGroup);
+                currentGroup = {
+                    group_id: `grp-${alloc.key}`,
+                    machine_id: alloc.machine_id,
+                    start_date: alloc.operation_date,
+                    end_date: alloc.operation_date,
+                    allocs: [alloc],
+                    alloc_keys: [alloc.key],
+                    item: alloc.item,
+                    process: alloc.process,
+                    order: alloc.order,
+                    colour: alloc.colour,
+                    size: alloc.size,
+                    total_quantity: alloc.quantity,
+                    total_minutes: alloc.allocated_minutes,
+                };
+            } else {
+                currentGroup.end_date = alloc.operation_date;
+                currentGroup.allocs.push(alloc);
+                currentGroup.alloc_keys.push(alloc.key);
+                currentGroup.total_quantity += alloc.quantity;
+                currentGroup.total_minutes += alloc.allocated_minutes;
+            }
+        });
+
+        if (currentGroup) groups.push(currentGroup);
+    });
+
+    return groups;
+});
+
+// Assign lane indices per machine for stacking non-overlapping groups
+const groupedAllocationsWithLanes = computed(() => {
+    const byMachine = {};
+    groupedAllocations.value.forEach(g => {
+        if (!byMachine[g.machine_id]) byMachine[g.machine_id] = [];
+        byMachine[g.machine_id].push({ ...g });
+    });
+
+    const result = [];
+    Object.entries(byMachine).forEach(([, groups]) => {
+        groups.sort((a, b) => a.start_date.localeCompare(b.start_date));
+        const lanes = [];
+
+        groups.forEach(g => {
+            let assigned = false;
+            for (let i = 0; i < lanes.length; i++) {
+                if (lanes[i] < g.start_date) {
+                    g.lane = i;
+                    lanes[i] = g.end_date;
+                    assigned = true;
+                    break;
+                }
+            }
+            if (!assigned) {
+                g.lane = lanes.length;
+                lanes.push(g.end_date);
+            }
+            result.push(g);
+        });
+    });
+
+    return result;
+});
+
 // Methods
 function loadData(data) {
     if (data.orders) orders.value = data.orders;
@@ -505,21 +740,85 @@ function formatDate(dateStr) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function getShiftForDate(dateStr) {
-    const date = new Date(dateStr);
+function getCalendarForDate(dateStr) {
     for (const cal of shiftCalendars.value) {
-        const start = new Date(cal.start_date);
-        const end = new Date(cal.end_date);
-        if (date >= start && date <= end) {
-            return cal.shift;
+        if (dateStr >= cal.start_date && dateStr <= cal.end_date) {
+            return cal;
         }
     }
-    return defaultShift.value;
+    return defaultCalendar.value;
+}
+
+function getShiftForDate(dateStr) {
+    const cal = getCalendarForDate(dateStr);
+    if (cal && cal.shifts && cal.shifts.length > 0) {
+        return cal.shifts[0];
+    }
+    return null;
+}
+
+function getShiftNamesForDate(dateStr) {
+    const cal = getCalendarForDate(dateStr);
+    if (!cal || !cal.shifts || cal.shifts.length === 0) return 'No Shift';
+    return cal.shifts.map(s => s.shift_name).join(', ');
 }
 
 function getShiftMinutes(dateStr) {
-    const shift = getShiftForDate(dateStr);
-    return shift ? shift.duration_minutes : 480;
+    const cal = getCalendarForDate(dateStr);
+    return cal ? (cal.total_duration_minutes || 480) : 480;
+}
+
+function getEffectiveMinutes(dateStr, machineId = null) {
+    let base = getShiftMinutes(dateStr);
+    const cal = getCalendarForDate(dateStr);
+    if (!cal || !cal.alterations) return base;
+
+    for (const alt of cal.alterations) {
+        if (alt.date !== dateStr) continue;
+        // Day-level alterations (no machine)
+        if (!alt.machine) {
+            base += alt.alteration_type === 'Add' ? alt.minutes : -alt.minutes;
+        }
+    }
+
+    if (machineId) {
+        for (const alt of cal.alterations) {
+            if (alt.date !== dateStr) continue;
+            if (alt.machine === machineId) {
+                base += alt.alteration_type === 'Add' ? alt.minutes : -alt.minutes;
+            }
+        }
+    }
+
+    return Math.max(0, base);
+}
+
+function hasDayLevelAlterations(dateStr) {
+    const cal = getCalendarForDate(dateStr);
+    if (!cal || !cal.alterations) return false;
+    return cal.alterations.some(a => a.date === dateStr && !a.machine);
+}
+
+function getCellAlterationBadge(dateStr, machineId) {
+    const base = getShiftMinutes(dateStr);
+    const effective = getEffectiveMinutes(dateStr, machineId);
+    const delta = effective - base;
+    if (delta === 0) return null;
+    return {
+        label: delta > 0 ? `+${delta}m` : `${delta}m`,
+        cls: delta > 0 ? 'badge-add' : 'badge-reduce'
+    };
+}
+
+function getDayAlterationDelta(dateStr) {
+    const base = getShiftMinutes(dateStr);
+    const effective = getEffectiveMinutes(dateStr);
+    const delta = effective - base;
+    if (delta === 0) return null;
+    return {
+        label: delta > 0 ? `+${delta}m` : `${delta}m`,
+        cls: delta > 0 ? 'badge-add' : 'badge-reduce'
+    };
 }
 
 function isWeekend(dateStr) {
@@ -551,26 +850,34 @@ function getUsedMinutes(machineId, dateStr) {
 
 function getCapacityPercentage(machineId, dateStr) {
     const used = getUsedMinutes(machineId, dateStr);
-    const total = getShiftMinutes(dateStr);
+    const total = getEffectiveMinutes(dateStr, machineId);
     return total > 0 ? (used / total) * 100 : 0;
 }
 
 function getCapacityBarClass(machineId, dateStr) {
     const pct = getCapacityPercentage(machineId, dateStr);
-    if (pct >= 95) return 'bar-full';
-    if (pct >= 70) return 'bar-warning';
-    return 'bar-ok';
+    if (pct >= 95) return 'bar-ok';
+    if (pct >= 40) return 'bar-warning';
+    return 'bar-low';
 }
 
 function getCellClass(machineId, dateStr) {
     const used = getUsedMinutes(machineId, dateStr);
-    const total = getShiftMinutes(dateStr);
+    const total = getEffectiveMinutes(dateStr, machineId);
     const hasConflicts = getAllocations(machineId, dateStr).some(a => hasConflict(a));
 
-    if (hasConflicts) return 'cell-conflict';
-    if (used >= total) return 'cell-full';
-    if (used > 0) return 'cell-allocated';
-    return 'cell-available';
+    const classes = [];
+    if (hasConflicts) classes.push('cell-conflict');
+    else if (used >= total) classes.push('cell-full');
+    else if (used > 0) classes.push('cell-allocated');
+    else classes.push('cell-available');
+
+    const badge = getCellAlterationBadge(dateStr, machineId);
+    if (badge) {
+        classes.push(badge.cls === 'badge-add' ? 'cell-altered-add' : 'cell-altered-reduce');
+    }
+
+    return classes.join(' ');
 }
 
 function getMachineUtilization(machineId) {
@@ -578,7 +885,7 @@ function getMachineUtilization(machineId) {
     let totalCapacity = 0;
     dateRange.value.forEach(date => {
         totalUsed += getUsedMinutes(machineId, date);
-        totalCapacity += getShiftMinutes(date);
+        totalCapacity += getEffectiveMinutes(date, machineId);
     });
     return totalCapacity > 0 ? Math.round((totalUsed / totalCapacity) * 100) : 0;
 }
@@ -591,8 +898,6 @@ function getUtilizationClass(machineId) {
 }
 
 function hasConflict(alloc) {
-    // Allow same item/process on different machines (parallel processing)
-    // Only flag as conflict if total allocated quantity exceeds order quantity
     const item = workloadItems.value.find(i =>
         i.item === alloc.item &&
         i.colour === alloc.colour &&
@@ -610,16 +915,16 @@ function hasConflict(alloc) {
 }
 
 const _colorPairs = [
-    { border: '#2563eb', bg: '#dbeafe' },
-    { border: '#dc2626', bg: '#fee2e2' },
-    { border: '#059669', bg: '#d1fae5' },
-    { border: '#d97706', bg: '#fef3c7' },
-    { border: '#7c3aed', bg: '#ede9fe' },
-    { border: '#0891b2', bg: '#cffafe' },
-    { border: '#db2777', bg: '#fce7f3' },
-    { border: '#4f46e5', bg: '#e0e7ff' },
-    { border: '#ca8a04', bg: '#fef9c3' },
-    { border: '#0d9488', bg: '#ccfbf1' },
+    { border: '#2563eb', bg: '#bfdbfe' },
+    { border: '#dc2626', bg: '#fecaca' },
+    { border: '#059669', bg: '#a7f3d0' },
+    { border: '#d97706', bg: '#fde68a' },
+    { border: '#7c3aed', bg: '#ddd6fe' },
+    { border: '#0891b2', bg: '#a5f3fc' },
+    { border: '#db2777', bg: '#fbcfe8' },
+    { border: '#4f46e5', bg: '#c7d2fe' },
+    { border: '#ca8a04', bg: '#fef08a' },
+    { border: '#0d9488', bg: '#99f6e4' },
 ];
 const _colorMap = new Map();
 
@@ -631,25 +936,7 @@ function getAllocationColor(alloc) {
     return _colorPairs[_colorMap.get(key)];
 }
 
-function getAllocationTooltip(alloc) {
-    let tooltip = `Process: ${alloc.process || 'N/A'}\n`;
-    tooltip += `Item: ${alloc.item}\n`;
-    tooltip += `Quantity: ${alloc.quantity}\n`;
-    tooltip += `Minutes: ${alloc.allocated_minutes}m\n`;
-    if (alloc.colour) {
-        tooltip += `Colour: ${alloc.colour}\n`;
-    }
-    if (alloc.size) {
-        tooltip += `Size: ${alloc.size}\n`;
-    }
-    if (alloc.order) {
-        tooltip += `Order: ${alloc.order}`;
-    }
-    return tooltip;
-}
-
 function getAllocatedQuantity(item) {
-    // Check all allocations across all orders for this item/process/colour/size
     return allocations.value
         .filter(a =>
             a.item === item.item &&
@@ -667,7 +954,6 @@ function getAllocationStatus(item) {
     return 'pending';
 }
 
-// Check if item is already allocated
 function isItemAllocated(item) {
     return allocations.value.some(a =>
         a.item === item.item &&
@@ -690,7 +976,6 @@ function getLockedViewType(itemCode) {
     if (sample.colour && !sample.size) return 'colour_wise';
     if (!sample.colour && sample.size) return 'size_wise';
     if (!sample.colour && !sample.size) return 'item_wise';
-    // Both set means size_wise with colour context — shouldn't happen in current model
     return null;
 }
 
@@ -704,6 +989,488 @@ const VIEW_TYPE_LABELS = { item_wise: 'Item Wise', colour_wise: 'Colour Wise', s
 function getLockedViewTypeLabel(item) {
     const locked = getLockedViewType(item.item);
     return locked ? VIEW_TYPE_LABELS[locked] : '';
+}
+
+// === Gantt Grouping Helpers ===
+
+function isNextDay(dateA, dateB) {
+    const [y, m, d] = dateA.split('-').map(Number);
+    const next = new Date(y, m - 1, d + 1);
+    const expected = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`;
+    return expected === dateB;
+}
+
+function isGroupSplit(machineId, date1, date2) {
+    return splitMarkers.value.has(`${machineId}|${date1}|${date2}`);
+}
+
+function addDaysToDate(dateStr, days) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const date = new Date(y, m - 1, d + days);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function getGroupsForMachine(machineId) {
+    return groupedAllocationsWithLanes.value.filter(g => g.machine_id === machineId);
+}
+
+function getLaneCount(machineId) {
+    const groups = groupedAllocationsWithLanes.value.filter(g => g.machine_id === machineId);
+    if (groups.length === 0) return 0;
+    return Math.max(...groups.map(g => g.lane)) + 1;
+}
+
+function getBarLayerHeight(machineId) {
+    const lanes = getLaneCount(machineId);
+    if (lanes === 0) return 0;
+    return lanes * (BAR_HEIGHT + BAR_GAP) + BAR_TOP_OFFSET * 2;
+}
+
+function getBarStyle(group) {
+    const dates = dateRange.value;
+    const startIdx = dates.indexOf(group.start_date);
+    const endIdx = dates.indexOf(group.end_date);
+
+    if (startIdx < 0 || endIdx < 0) return { display: 'none' };
+
+    const left = startIdx * COL_WIDTH + BAR_GAP;
+    const width = (endIdx - startIdx + 1) * COL_WIDTH - BAR_GAP * 2;
+    const top = (group.lane || 0) * (BAR_HEIGHT + BAR_GAP) + BAR_TOP_OFFSET;
+
+    const colors = getAllocationColor(group);
+
+    return {
+        position: 'absolute',
+        left: left + 'px',
+        top: top + 'px',
+        width: width + 'px',
+        height: BAR_HEIGHT + 'px',
+        backgroundColor: colors.bg,
+        borderLeft: `4px solid ${colors.border}`,
+        borderRadius: '4px',
+        pointerEvents: 'auto',
+    };
+}
+
+function getGroupTooltip(group) {
+    let tooltip = `Item: ${group.item}\n`;
+    tooltip += `Process: ${group.process}\n`;
+    tooltip += `Order: ${group.order}\n`;
+    tooltip += `Dates: ${group.start_date} to ${group.end_date}\n`;
+    tooltip += `Days: ${group.allocs.length}\n`;
+    tooltip += `Total Qty: ${group.total_quantity}\n`;
+    tooltip += `Total Minutes: ${group.total_minutes}m\n`;
+    if (group.colour) tooltip += `Colour: ${group.colour}\n`;
+    if (group.size) tooltip += `Size: ${group.size}\n`;
+    return tooltip;
+}
+
+// === One-Item-Per-Machine-Day Validation ===
+
+function validateMachineDaySlot(machineId, date, excludeKeys = []) {
+    return !allocations.value.some(a =>
+        a.machine_id === machineId &&
+        a.operation_date === date &&
+        !excludeKeys.includes(a.key)
+    );
+}
+
+// === Group Operations ===
+
+function selectGroup(group) {
+    selectedGroup.value = group;
+}
+
+function onGroupDragStart(event, group) {
+    event.dataTransfer.setData('application/gantt-group', JSON.stringify({
+        group_id: group.group_id,
+        machine_id: group.machine_id,
+        start_date: group.start_date,
+        end_date: group.end_date,
+        alloc_keys: group.alloc_keys,
+        item: group.item,
+        process: group.process,
+        order: group.order,
+        colour: group.colour,
+        size: group.size,
+        total_quantity: group.total_quantity,
+        total_minutes: group.total_minutes,
+    }));
+    event.dataTransfer.effectAllowed = 'move';
+}
+
+function onBarContextMenu(event, group) {
+    selectedGroup.value = group;
+    contextMenu.value = {
+        show: true,
+        x: event.clientX,
+        y: event.clientY
+    };
+}
+
+function executeMoveGroup(groupData, targetDays, newMachineId) {
+    const undoData = targetDays.map(({ alloc }) => ({
+        key: alloc.key,
+        oldMachineId: alloc.machine_id,
+        oldDate: alloc.operation_date,
+        oldShift: alloc.shift
+    }));
+
+    targetDays.forEach(({ alloc, newDate }) => {
+        alloc.machine_id = newMachineId;
+        alloc.operation_date = newDate;
+        alloc.shift = getShiftForDate(newDate)?.name || '';
+    });
+
+    return undoData;
+}
+
+function computeGroupMoveShiftPlan(machineId, targetDays, conflicting, excludeKeys) {
+    const dates = dateRange.value;
+    const targetDateSet = new Set(targetDays.map(t => t.newDate));
+
+    // Build a set of occupied dates on the target machine after shifting
+    const occupiedDates = new Set();
+    // The group's target dates will be occupied by the group
+    targetDateSet.forEach(d => occupiedDates.add(d));
+    // Other existing allocations on this machine (not conflicting, not being moved)
+    allocations.value.forEach(a => {
+        if (a.machine_id === machineId && !excludeKeys.includes(a.key) && !conflicting.some(c => c.key === a.key)) {
+            occupiedDates.add(a.operation_date);
+        }
+    });
+
+    // Find the last target date to start searching from after it
+    const lastTargetDate = targetDays[targetDays.length - 1].newDate;
+    const lastTargetIdx = dates.indexOf(lastTargetDate);
+
+    const affected = [];
+    // Sort conflicting by date
+    const sorted = [...conflicting].sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+
+    sorted.forEach(alloc => {
+        let placed = false;
+        // Search forward from after the last target date
+        for (let i = lastTargetIdx + 1; i < dates.length; i++) {
+            const d = dates[i];
+            if (!occupiedDates.has(d) && !isPastDate(d)) {
+                affected.push({
+                    allocation: alloc,
+                    currentDate: alloc.operation_date,
+                    newDate: d
+                });
+                occupiedDates.add(d);
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) {
+            affected.push({
+                allocation: alloc,
+                currentDate: alloc.operation_date,
+                newDate: null
+            });
+        }
+    });
+
+    return { affected };
+}
+
+function moveGroup(groupData, newMachineId, newStartDate) {
+    const oldStart = new Date(groupData.start_date);
+    const newStart = new Date(newStartDate);
+    const dayOffset = Math.round((newStart - oldStart) / (1000 * 60 * 60 * 24));
+
+    if (dayOffset === 0 && groupData.machine_id === newMachineId) return;
+
+    const groupAllocs = groupData.alloc_keys.map(key => allocations.value.find(a => a.key === key)).filter(Boolean);
+
+    if (groupAllocs.length === 0) {
+        frappe.show_alert({ message: __('Group allocations not found'), indicator: 'red' });
+        return;
+    }
+
+    const targetDays = groupAllocs.map(alloc => ({
+        alloc,
+        newDate: addDaysToDate(alloc.operation_date, dayOffset)
+    }));
+
+    // Validate date range and past dates
+    for (const { newDate } of targetDays) {
+        if (!dateRange.value.includes(newDate)) {
+            frappe.show_alert({ message: __('Move would place days outside calendar range'), indicator: 'red' });
+            return;
+        }
+        if (isPastDate(newDate)) {
+            frappe.show_alert({ message: __('Cannot move to past date'), indicator: 'red' });
+            return;
+        }
+    }
+
+    // Collect conflicting allocations on target machine
+    const targetDateSet = new Set(targetDays.map(t => t.newDate));
+    const conflicting = allocations.value.filter(a =>
+        a.machine_id === newMachineId &&
+        targetDateSet.has(a.operation_date) &&
+        !groupData.alloc_keys.includes(a.key)
+    );
+
+    if (conflicting.length === 0) {
+        // No conflicts - move directly
+        const undoData = executeMoveGroup(groupData, targetDays, newMachineId);
+        saveAction('move_group', { allocations: undoData });
+        frappe.show_alert({ message: __('Group moved successfully'), indicator: 'green' });
+        return;
+    }
+
+    // Compute shift plan for conflicting allocations
+    const { affected } = computeGroupMoveShiftPlan(newMachineId, targetDays, conflicting, groupData.alloc_keys);
+    const outOfBounds = affected.some(a => a.newDate === null);
+
+    if (outOfBounds) {
+        frappe.show_alert({
+            message: __('Cannot move: some conflicting allocations would be pushed beyond the calendar date range. Extend end date first.'),
+            indicator: 'red'
+        });
+        return;
+    }
+
+    // Show shift modal for confirmation
+    shiftModalData.value = {
+        type: 'move_group',
+        affectedAllocations: affected,
+        groupData,
+        targetDays,
+        targetMachineId: newMachineId
+    };
+    showShiftModal.value = true;
+}
+
+function openEditGroupModal() {
+    if (!selectedGroup.value) return;
+    editGroupQuantity.value = selectedGroup.value.total_quantity;
+    showEditGroupModal.value = true;
+    closeContextMenu();
+}
+
+function closeEditGroupModal() {
+    showEditGroupModal.value = false;
+}
+
+function confirmEditGroup() {
+    if (!selectedGroup.value) return;
+
+    const newTotal = editGroupQuantity.value;
+    const group = selectedGroup.value;
+    const oldTotal = group.total_quantity;
+
+    if (newTotal < 1) {
+        frappe.show_alert({ message: __('Quantity must be at least 1'), indicator: 'red' });
+        return;
+    }
+
+    const item = workloadItems.value.find(i =>
+        i.item === group.item &&
+        i.colour === group.colour &&
+        i.size === group.size
+    );
+    if (item) {
+        const currentAllocated = getAllocatedQuantity(item);
+        const adjustment = newTotal - oldTotal;
+        if (currentAllocated + adjustment > item.quantity) {
+            frappe.show_alert({ message: __('Cannot exceed order quantity'), indicator: 'red' });
+            return;
+        }
+    }
+
+    const allocs = group.alloc_keys.map(key => allocations.value.find(a => a.key === key)).filter(Boolean);
+    const ratio = newTotal / oldTotal;
+
+    const undoData = allocs.map(a => ({ key: a.key, oldQty: a.quantity, oldMinutes: a.allocated_minutes }));
+
+    let distributed = 0;
+    allocs.forEach((alloc, idx) => {
+        const minutesPerUnit = alloc.allocated_minutes / alloc.quantity;
+        if (idx === allocs.length - 1) {
+            alloc.quantity = newTotal - distributed;
+        } else {
+            alloc.quantity = Math.max(1, Math.round(alloc.quantity * ratio));
+            distributed += alloc.quantity;
+        }
+        alloc.allocated_minutes = alloc.quantity * minutesPerUnit;
+    });
+
+    saveAction('edit_group', { allocations: undoData });
+    frappe.show_alert({ message: __('Group quantity updated'), indicator: 'green' });
+    closeEditGroupModal();
+}
+
+function openSplitGroupModal() {
+    if (!selectedGroup.value || selectedGroup.value.allocs.length < 2) {
+        frappe.show_alert({ message: __('Cannot split a single-day group'), indicator: 'orange' });
+        closeContextMenu();
+        return;
+    }
+    splitGroupDate.value = selectedGroup.value.allocs[1].operation_date;
+    showSplitGroupModal.value = true;
+    closeContextMenu();
+}
+
+function closeSplitGroupModal() {
+    showSplitGroupModal.value = false;
+}
+
+function confirmSplitGroup() {
+    if (!selectedGroup.value || !splitGroupDate.value) return;
+
+    const group = selectedGroup.value;
+    const splitDate = splitGroupDate.value;
+
+    const splitIdx = group.allocs.findIndex(a => a.operation_date === splitDate);
+    if (splitIdx <= 0) {
+        frappe.show_alert({ message: __('Invalid split date'), indicator: 'red' });
+        return;
+    }
+
+    const prevDate = group.allocs[splitIdx - 1].operation_date;
+    const markerKey = `${group.machine_id}|${prevDate}|${splitDate}`;
+
+    splitMarkers.value.add(markerKey);
+
+    saveAction('split_group', { markerKey });
+    frappe.show_alert({ message: __('Group split successfully'), indicator: 'green' });
+    closeSplitGroupModal();
+}
+
+function computeBackfillPlan(machineId, gapStartDate, deletedKeys) {
+    const dates = dateRange.value;
+    const gapStartIdx = dates.indexOf(gapStartDate);
+    if (gapStartIdx < 0) return { affected: [] };
+
+    // Get subsequent allocations on the same machine after the gap start
+    const subsequent = allocations.value
+        .filter(a => a.machine_id === machineId && a.operation_date >= gapStartDate && !deletedKeys.includes(a.key))
+        .sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+
+    if (subsequent.length === 0) return { affected: [] };
+
+    // Build set of occupied dates (excluding subsequent allocs that might move)
+    const subsequentKeys = new Set(subsequent.map(a => a.key));
+    const occupiedDates = new Set();
+    allocations.value.forEach(a => {
+        if (a.machine_id === machineId && !subsequentKeys.has(a.key) && !deletedKeys.includes(a.key)) {
+            occupiedDates.add(a.operation_date);
+        }
+    });
+
+    const affected = [];
+    subsequent.forEach(alloc => {
+        // Search backward from gapStartDate for earliest available slot
+        let placed = false;
+        for (let i = gapStartIdx; i < dates.length; i++) {
+            const d = dates[i];
+            if (!occupiedDates.has(d) && !isPastDate(d)) {
+                if (d !== alloc.operation_date) {
+                    affected.push({
+                        allocation: alloc,
+                        currentDate: alloc.operation_date,
+                        newDate: d
+                    });
+                }
+                occupiedDates.add(d);
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) {
+            occupiedDates.add(alloc.operation_date);
+        }
+    });
+
+    return { affected };
+}
+
+async function deleteGroup() {
+    if (!selectedGroup.value) return;
+    closeContextMenu();
+
+    const group = selectedGroup.value;
+    const allocs = group.alloc_keys.map(key => allocations.value.find(a => a.key === key)).filter(Boolean);
+
+    const savedAllocs = allocs.filter(a => a.name);
+    for (const alloc of savedAllocs) {
+        try {
+            await frappe.call({
+                method: 'albion.albion.page.capacity_planning.capacity_planning.delete_allocation',
+                args: { allocation_name: alloc.name }
+            });
+        } catch (e) {
+            console.error('Error deleting allocation:', e);
+            frappe.show_alert({ message: __('Error deleting some allocations'), indicator: 'red' });
+            return;
+        }
+    }
+
+    const undoData = allocs.map(a => ({ ...a }));
+    const machineId = group.machine_id;
+    const gapStartDate = group.start_date;
+    const deletedKeys = group.alloc_keys;
+
+    allocs.forEach(alloc => {
+        const idx = allocations.value.findIndex(a => a.key === alloc.key);
+        if (idx > -1) allocations.value.splice(idx, 1);
+    });
+
+    // Check for subsequent allocations that could backfill
+    const { affected } = computeBackfillPlan(machineId, gapStartDate, deletedKeys);
+
+    if (affected.length > 0) {
+        backfillModalData.value = {
+            machineId,
+            deletedAllocations: undoData,
+            affectedAllocations: affected
+        };
+        showBackfillModal.value = true;
+    } else {
+        saveAction('delete_group', { allocations: undoData });
+        frappe.show_alert({ message: __(`Deleted group: ${group.allocs.length} day(s)`), indicator: 'green' });
+    }
+
+    selectedGroup.value = null;
+}
+
+function confirmBackfill() {
+    if (!backfillModalData.value) return;
+    const bd = backfillModalData.value;
+
+    const shiftedAllocations = [];
+    bd.affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
+        shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift });
+        allocation.operation_date = newDate;
+        const newShift = getShiftForDate(newDate);
+        allocation.shift = newShift?.name || '';
+    });
+
+    saveAction('delete_group_and_backfill', {
+        allocations: bd.deletedAllocations,
+        shiftedAllocations
+    });
+    frappe.show_alert({ message: __(`Deleted group and shifted ${shiftedAllocations.length} allocation(s) backward`), indicator: 'green' });
+    closeBackfillModal();
+}
+
+function declineBackfill() {
+    if (!backfillModalData.value) return;
+    const bd = backfillModalData.value;
+
+    saveAction('delete_group', { allocations: bd.deletedAllocations });
+    frappe.show_alert({ message: __('Group deleted'), indicator: 'green' });
+    closeBackfillModal();
+}
+
+function closeBackfillModal() {
+    showBackfillModal.value = false;
+    backfillModalData.value = null;
 }
 
 // Shift helpers
@@ -722,15 +1489,19 @@ function simulateAutoSplit(machineId, startDateStr, totalQty, minutesPerUnit) {
     let isFirstDay = true;
 
     while (remaining >= MIN_BATCH_SIZE && currentDate) {
-        const totalMin = getShiftMinutes(currentDate);
+        // Skip occupied days (first day already validated by caller)
+        if (!isFirstDay && !validateMachineDaySlot(machineId, currentDate)) {
+            currentDate = getNextDate(currentDate);
+            continue;
+        }
+
+        const totalMin = getEffectiveMinutes(currentDate, machineId);
         let availMin;
         if (isFirstDay) {
-            // Use actual available capacity on drop day
             const usedMin = getUsedMinutes(machineId, currentDate);
             availMin = totalMin - usedMin;
             isFirstDay = false;
         } else {
-            // Assume full shift capacity on subsequent days
             availMin = totalMin;
         }
 
@@ -751,36 +1522,106 @@ function simulateAutoSplit(machineId, startDateStr, totalQty, minutesPerUnit) {
     return plan;
 }
 
+function simulateAutoSplitForced(machineId, startDateStr, totalQty, minutesPerUnit) {
+    // Like simulateAutoSplit but places contiguously — does NOT skip occupied days
+    const plan = [];
+    let remaining = totalQty;
+    let currentDate = startDateStr;
+
+    while (remaining >= MIN_BATCH_SIZE && currentDate) {
+        const totalMin = getEffectiveMinutes(currentDate, machineId);
+        if (totalMin > 0) {
+            const fitQty = Math.floor(totalMin / minutesPerUnit);
+            const allocQty = Math.min(remaining, fitQty);
+            if (allocQty >= MIN_BATCH_SIZE) {
+                plan.push({
+                    dateStr: currentDate,
+                    allocQty,
+                    allocMinutes: allocQty * minutesPerUnit
+                });
+                remaining -= allocQty;
+            }
+        }
+        currentDate = getNextDate(currentDate);
+    }
+    return plan;
+}
+
+function computeShiftPlanForOverlap(machineId, forcedPlan) {
+    const dates = dateRange.value;
+    const forcedDates = new Set(forcedPlan.map(p => p.dateStr));
+
+    // Find existing allocations on the forced plan dates
+    const overlapping = allocations.value
+        .filter(a => a.machine_id === machineId && forcedDates.has(a.operation_date))
+        .sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+
+    if (overlapping.length === 0) return { affected: [], hasOverlap: false };
+
+    // Find the last date of the forced plan
+    const lastPlanDate = forcedPlan[forcedPlan.length - 1].dateStr;
+    const lastPlanIdx = dates.indexOf(lastPlanDate);
+
+    // Build occupied set: forced plan dates + other allocations on this machine
+    const occupiedDates = new Set();
+    forcedDates.forEach(d => occupiedDates.add(d));
+    allocations.value.forEach(a => {
+        if (a.machine_id === machineId && !overlapping.some(o => o.key === a.key)) {
+            occupiedDates.add(a.operation_date);
+        }
+    });
+
+    const affected = [];
+    overlapping.forEach(alloc => {
+        let placed = false;
+        for (let i = lastPlanIdx + 1; i < dates.length; i++) {
+            const d = dates[i];
+            if (!occupiedDates.has(d) && !isPastDate(d)) {
+                affected.push({
+                    allocation: alloc,
+                    currentDate: alloc.operation_date,
+                    newDate: d
+                });
+                occupiedDates.add(d);
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) {
+            affected.push({
+                allocation: alloc,
+                currentDate: alloc.operation_date,
+                newDate: null
+            });
+        }
+    });
+
+    return { affected, hasOverlap: true };
+}
+
 function computeShiftPlan(machineId, dropDateStr, workloadPlan, excludeKey = null) {
-    // Build remaining capacity map for all dates after drop date
     const remaining = {};
     const dates = dateRange.value;
     const dropIdx = dates.indexOf(dropDateStr);
     if (dropIdx < 0) return { affected: [] };
 
-    // Initialize remaining capacity for all dates after drop
     for (let i = dropIdx + 1; i < dates.length; i++) {
         const d = dates[i];
-        remaining[d] = getShiftMinutes(d);
-        // Subtract current usage on this machine (excluding allocations that will be displaced)
-        // We only subtract non-displaceable usage (other machines won't matter)
+        remaining[d] = getEffectiveMinutes(d, machineId);
     }
 
-    // Subtract new workload minutes from remaining capacity
     workloadPlan.forEach(p => {
         if (p.dateStr !== dropDateStr && remaining[p.dateStr] !== undefined) {
             remaining[p.dateStr] -= p.allocMinutes;
         }
     });
 
-    // Collect all allocations on this machine after drop date, sorted by date asc
     const displaced = allocations.value
         .filter(a => a.machine_id === machineId && a.operation_date > dropDateStr && a.key !== excludeKey)
         .sort((a, b) => a.operation_date.localeCompare(b.operation_date));
 
     if (displaced.length === 0) return { affected: [] };
 
-    // Greedy packing: for each displaced allocation, find earliest date >= its current date with enough capacity
     const affected = [];
     displaced.forEach(a => {
         const allocIdx = dates.indexOf(a.operation_date);
@@ -804,7 +1645,6 @@ function computeShiftPlan(machineId, dropDateStr, workloadPlan, excludeKey = nul
             }
         }
         if (!placed) {
-            // Out of bounds — no date with enough capacity
             affected.push({
                 allocation: a,
                 currentDate: a.operation_date,
@@ -825,9 +1665,15 @@ function executeAutoSplit(machineId, startDate, qty, minutesPerUnit, item, colou
     const allocationKeys = [];
 
     while (remainingQty >= MIN_BATCH_SIZE && currentDate) {
+        // One-item-per-machine-day: skip occupied days
+        if (!validateMachineDaySlot(machineId, currentDate)) {
+            currentDate = getNextDate(currentDate);
+            continue;
+        }
+
         const shift = getShiftForDate(currentDate);
         const usedMin = getUsedMinutes(machineId, currentDate);
-        const totalMin = getShiftMinutes(currentDate);
+        const totalMin = getEffectiveMinutes(currentDate, machineId);
         const availMin = totalMin - usedMin;
 
         if (availMin <= 0) {
@@ -878,42 +1724,39 @@ function undoLastAction() {
 
     switch (action.type) {
         case 'add':
-            // Remove the added allocations
             action.data.keys.forEach(key => {
                 const idx = allocations.value.findIndex(a => a.key === key);
                 if (idx > -1) allocations.value.splice(idx, 1);
             });
             break;
         case 'move':
-            // Restore original position
-            const alloc = allocations.value.find(a => a.key === action.data.key);
-            if (alloc) {
-                alloc.machine_id = action.data.oldMachineId;
-                alloc.operation_date = action.data.oldDate;
+            {
+                const alloc = allocations.value.find(a => a.key === action.data.key);
+                if (alloc) {
+                    alloc.machine_id = action.data.oldMachineId;
+                    alloc.operation_date = action.data.oldDate;
+                }
             }
             break;
         case 'delete':
-            // Restore deleted allocation
             allocations.value.push(action.data.allocation);
             break;
         case 'partial_move':
-            // Restore source quantity
-            const pmSrc = allocations.value.find(a => a.key === action.data.sourceKey);
-            if (pmSrc) {
-                pmSrc.quantity += action.data.movedQty;
-                pmSrc.allocated_minutes += action.data.movedMinutes;
+            {
+                const pmSrc = allocations.value.find(a => a.key === action.data.sourceKey);
+                if (pmSrc) {
+                    pmSrc.quantity += action.data.movedQty;
+                    pmSrc.allocated_minutes += action.data.movedMinutes;
+                }
+                const pmIdx = allocations.value.findIndex(a => a.key === action.data.newKey);
+                if (pmIdx > -1) allocations.value.splice(pmIdx, 1);
             }
-            // Remove the new allocation
-            const pmIdx = allocations.value.findIndex(a => a.key === action.data.newKey);
-            if (pmIdx > -1) allocations.value.splice(pmIdx, 1);
             break;
         case 'shift_and_add':
-            // Remove newly added allocations
             action.data.addedKeys.forEach(key => {
                 const idx = allocations.value.findIndex(a => a.key === key);
                 if (idx > -1) allocations.value.splice(idx, 1);
             });
-            // Restore shifted allocations to original dates
             action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
                 const a = allocations.value.find(al => al.key === key);
                 if (a) {
@@ -923,12 +1766,10 @@ function undoLastAction() {
             });
             break;
         case 'shift_and_move':
-            // Remove newly added allocations
             action.data.addedKeys.forEach(key => {
                 const idx = allocations.value.findIndex(a => a.key === key);
                 if (idx > -1) allocations.value.splice(idx, 1);
             });
-            // Restore shifted allocations to original dates
             action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
                 const a = allocations.value.find(al => al.key === key);
                 if (a) {
@@ -936,7 +1777,6 @@ function undoLastAction() {
                     a.shift = oldShift || '';
                 }
             });
-            // Restore source allocation
             if (action.data.sourceRemoved) {
                 if (action.data.sourceSnapshot) {
                     allocations.value.push(action.data.sourceSnapshot);
@@ -949,6 +1789,66 @@ function undoLastAction() {
                 }
             }
             break;
+        case 'move_group':
+            action.data.allocations.forEach(({ key, oldMachineId, oldDate, oldShift }) => {
+                const a = allocations.value.find(al => al.key === key);
+                if (a) {
+                    a.machine_id = oldMachineId;
+                    a.operation_date = oldDate;
+                    a.shift = oldShift || '';
+                }
+            });
+            break;
+        case 'shift_and_move_group':
+            // Reverse shifted allocations first
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
+                const a = allocations.value.find(al => al.key === key);
+                if (a) {
+                    a.operation_date = oldDate;
+                    a.shift = oldShift || '';
+                }
+            });
+            // Then reverse group move
+            action.data.moveAllocations.forEach(({ key, oldMachineId, oldDate, oldShift }) => {
+                const a = allocations.value.find(al => al.key === key);
+                if (a) {
+                    a.machine_id = oldMachineId;
+                    a.operation_date = oldDate;
+                    a.shift = oldShift || '';
+                }
+            });
+            break;
+        case 'delete_group':
+            action.data.allocations.forEach(a => {
+                allocations.value.push(a);
+            });
+            break;
+        case 'delete_group_and_backfill':
+            // Reverse shifted allocations first
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
+                const a = allocations.value.find(al => al.key === key);
+                if (a) {
+                    a.operation_date = oldDate;
+                    a.shift = oldShift || '';
+                }
+            });
+            // Then restore deleted allocations
+            action.data.allocations.forEach(a => {
+                allocations.value.push(a);
+            });
+            break;
+        case 'edit_group':
+            action.data.allocations.forEach(({ key, oldQty, oldMinutes }) => {
+                const a = allocations.value.find(al => al.key === key);
+                if (a) {
+                    a.quantity = oldQty;
+                    a.allocated_minutes = oldMinutes;
+                }
+            });
+            break;
+        case 'split_group':
+            splitMarkers.value.delete(action.data.markerKey);
+            break;
     }
 
     frappe.show_alert({ message: __('Action undone'), indicator: 'blue' });
@@ -959,7 +1859,6 @@ function onDragStart(event, item) {
     event.dataTransfer.setData('application/json', JSON.stringify(item));
 }
 
-// Drag existing allocation
 function onAllocationDragStart(event, alloc) {
     event.dataTransfer.setData('application/allocation', JSON.stringify(alloc));
 }
@@ -974,7 +1873,15 @@ function getNextDate(currentDateStr) {
 }
 
 function onDrop(event, machineId, dateStr) {
-    // Check if this is an allocation move first
+    // Check for group drop first
+    const groupData = event.dataTransfer.getData('application/gantt-group');
+    if (groupData) {
+        const group = JSON.parse(groupData);
+        moveGroup(group, machineId, dateStr);
+        return;
+    }
+
+    // Check if this is an allocation move
     const allocationData = event.dataTransfer.getData('application/allocation');
     if (allocationData) {
         const alloc = JSON.parse(allocationData);
@@ -989,28 +1896,23 @@ function onDrop(event, machineId, dateStr) {
     validationErrors.value = [];
     const errors = [];
 
-    // 13. Order Status Check
     if (orderData.value?.docstatus !== 1) {
         errors.push('Order must be submitted before allocation');
     }
 
-    // 14. Date Range Check
     if (!dateRange.value.includes(dateStr)) {
         errors.push('Date is outside calendar range');
     }
 
-    // 15. Past Date Restriction
     if (isPastDate(dateStr)) {
         errors.push('Cannot allocate to past dates');
     }
 
-    // 5. Zero Capacity Check
     const shift = getShiftForDate(dateStr);
     if (!shift) {
         errors.push('No shift defined for this date');
     }
 
-    // 11. Process-Item Match validation
     if (!isValidForProcess(item)) {
         errors.push('Process not defined for this item');
     }
@@ -1019,6 +1921,15 @@ function onDrop(event, machineId, dateStr) {
         validationErrors.value = errors;
         frappe.show_alert({
             message: __(errors[0]),
+            indicator: 'red'
+        });
+        return;
+    }
+
+    // One-item-per-machine-day validation
+    if (!validateMachineDaySlot(machineId, dateStr)) {
+        frappe.show_alert({
+            message: __('This machine already has an allocation on this date. One item per machine per day.'),
             indicator: 'red'
         });
         return;
@@ -1083,7 +1994,7 @@ function onDrop(event, machineId, dateStr) {
     }
 
     const usedMinutes = getUsedMinutes(machineId, dateStr);
-    const totalMinutes = getShiftMinutes(dateStr);
+    const totalMinutes = getEffectiveMinutes(dateStr, machineId);
     const availableMinutes = totalMinutes - usedMinutes;
     const availableCapacityQty = minutesPerUnit > 0 ? Math.floor(availableMinutes / minutesPerUnit) : 0;
 
@@ -1119,10 +2030,15 @@ function moveAllocation(alloc, newMachineId, newDateStr) {
         return;
     }
 
-    // Exclude this allocation's own minutes if moving within the same cell
+    // One-item-per-machine-day validation
+    if (!validateMachineDaySlot(newMachineId, newDateStr, [actualAlloc.key])) {
+        frappe.show_alert({ message: __('This machine already has an allocation on this date'), indicator: 'red' });
+        return;
+    }
+
     const isSameCell = actualAlloc.machine_id === newMachineId && actualAlloc.operation_date === newDateStr;
     const usedMinutes = getUsedMinutes(newMachineId, newDateStr) - (isSameCell ? actualAlloc.allocated_minutes : 0);
-    const totalMinutes = getShiftMinutes(newDateStr);
+    const totalMinutes = getEffectiveMinutes(newDateStr, newMachineId);
     const availableMinutes = totalMinutes - usedMinutes;
     const minutesPerUnit = actualAlloc.quantity > 0 ? actualAlloc.allocated_minutes / actualAlloc.quantity : 0;
     const availableCapacityQty = minutesPerUnit > 0 ? Math.floor(availableMinutes / minutesPerUnit) : 0;
@@ -1151,12 +2067,10 @@ function handleMoveSource(sourceAlloc, qty, minutesPerUnit) {
     const movedMinutes = qty * minutesPerUnit;
 
     if (qty === sourceAlloc.quantity) {
-        // Remove source entirely
         const idx = allocations.value.findIndex(a => a.key === sourceAlloc.key);
         if (idx > -1) allocations.value.splice(idx, 1);
         return { sourceRemoved: true, oldQty, oldMinutes, sourceSnapshot: { ...sourceAlloc } };
     } else {
-        // Reduce source
         sourceAlloc.quantity -= qty;
         sourceAlloc.allocated_minutes -= movedMinutes;
         return { sourceRemoved: false, oldQty, oldMinutes, movedQty: qty, movedMinutes };
@@ -1175,19 +2089,44 @@ function confirmDrop() {
     }
 
     if (pd.type === 'workload') {
-        // Check if overflow will happen and shifting may be needed
+        // Smart overlap detection: simulate contiguous placement and check for overlaps
+        const forcedPlan = simulateAutoSplitForced(pd.machineId, pd.dateStr, qty, pd.minutesPerUnit);
+        if (forcedPlan.length > 0) {
+            const { affected: overlapAffected, hasOverlap } = computeShiftPlanForOverlap(pd.machineId, forcedPlan);
+
+            if (hasOverlap && overlapAffected.length > 0) {
+                const outOfBounds = overlapAffected.some(a => a.newDate === null);
+                if (outOfBounds) {
+                    frappe.show_alert({
+                        message: __('Cannot shift: some allocations would be pushed beyond the calendar date range. Extend end date first.'),
+                        indicator: 'red'
+                    });
+                    return;
+                }
+
+                shiftModalData.value = {
+                    type: 'workload',
+                    affectedAllocations: overlapAffected,
+                    newWorkloadPlan: forcedPlan,
+                    pendingDropData: { ...pd },
+                    dropQty: qty
+                };
+                showShiftModal.value = true;
+                return;
+            }
+        }
+
+        // Existing overflow check for single-day capacity
         const dropDayUsed = getUsedMinutes(pd.machineId, pd.dateStr);
-        const dropDayTotal = getShiftMinutes(pd.dateStr);
+        const dropDayTotal = getEffectiveMinutes(pd.dateStr, pd.machineId);
         const dropDayAvail = dropDayTotal - dropDayUsed;
         const dropDayFitQty = pd.minutesPerUnit > 0 ? Math.floor(dropDayAvail / pd.minutesPerUnit) : 0;
 
         if (qty > dropDayFitQty) {
-            // Overflow will happen — check if shifting is needed
             const workloadPlan = simulateAutoSplit(pd.machineId, pd.dateStr, qty, pd.minutesPerUnit);
             const { affected } = computeShiftPlan(pd.machineId, pd.dateStr, workloadPlan);
 
             if (affected.length > 0) {
-                // Check boundary: any shifted allocation would go beyond date range?
                 const outOfBounds = affected.some(a => a.newDate === null);
                 if (outOfBounds) {
                     frappe.show_alert({
@@ -1197,7 +2136,6 @@ function confirmDrop() {
                     return;
                 }
 
-                // Show shift confirmation modal
                 shiftModalData.value = {
                     type: 'workload',
                     affectedAllocations: affected,
@@ -1210,7 +2148,6 @@ function confirmDrop() {
             }
         }
 
-        // No shift needed — run normal auto-split
         const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
             pd.machineId, pd.dateStr, qty, pd.minutesPerUnit, pd.item, pd.colour, pd.size
         );
@@ -1235,13 +2172,11 @@ function confirmDrop() {
         }
 
         if (qty > pd.availableCapacityQty) {
-            // Overflow needed — check if shifting is required
             const workloadPlan = simulateAutoSplit(pd.machineId, pd.dateStr, qty, pd.minutesPerUnit);
             const excludeKey = sourceAlloc.machine_id === pd.machineId ? sourceAlloc.key : null;
             const { affected } = computeShiftPlan(pd.machineId, pd.dateStr, workloadPlan, excludeKey);
 
             if (affected.length > 0) {
-                // Check boundary
                 const outOfBounds = affected.some(a => a.newDate === null);
                 if (outOfBounds) {
                     frappe.show_alert({
@@ -1251,7 +2186,6 @@ function confirmDrop() {
                     return;
                 }
 
-                // Show shift confirmation modal
                 shiftModalData.value = {
                     type: 'move',
                     affectedAllocations: affected,
@@ -1265,7 +2199,6 @@ function confirmDrop() {
                 return;
             }
 
-            // No shift needed but overflow — handle source then auto-split
             const sourceResult = handleMoveSource(sourceAlloc, qty, pd.minutesPerUnit);
             const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
                 pd.machineId, pd.dateStr, qty, pd.minutesPerUnit, pd.item, pd.colour, pd.size, pd.order, pd.process
@@ -1284,7 +2217,6 @@ function confirmDrop() {
                 frappe.show_alert({ message: __(`Moved ${qty - remainingQty} units across ${allocationsMade} day(s)`), indicator: 'green' });
             }
         } else {
-            // Simple move — enough capacity on target day
             const shift = getShiftForDate(pd.dateStr);
 
             if (qty === sourceAlloc.quantity) {
@@ -1346,6 +2278,28 @@ function closeShiftModal() {
 function confirmShift() {
     if (!shiftModalData.value) return;
     const sd = shiftModalData.value;
+
+    if (sd.type === 'move_group') {
+        // Shift conflicting allocations to new dates
+        const shiftedAllocations = [];
+        sd.affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
+            shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift });
+            allocation.operation_date = newDate;
+            const newShift = getShiftForDate(newDate);
+            allocation.shift = newShift?.name || '';
+        });
+
+        // Execute the group move
+        const moveUndoData = executeMoveGroup(sd.groupData, sd.targetDays, sd.targetMachineId);
+
+        saveAction('shift_and_move_group', {
+            moveAllocations: moveUndoData,
+            shiftedAllocations
+        });
+        frappe.show_alert({ message: __(`Shifted ${shiftedAllocations.length} allocation(s) and moved group successfully`), indicator: 'green' });
+        closeShiftModal();
+        return;
+    }
 
     if (sd.type === 'move') {
         const sourceAlloc = allocations.value.find(a => a.key === sd.sourceKey);
@@ -1422,7 +2376,6 @@ function allocateWithoutShift() {
 function executeShiftAndAllocate(shiftData, sourceResult) {
     const { affectedAllocations, pendingDropData: pd, dropQty, type } = shiftData;
 
-    // 1. Record undo data and shift each affected allocation
     const shiftedAllocations = [];
     affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
         shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift });
@@ -1431,14 +2384,12 @@ function executeShiftAndAllocate(shiftData, sourceResult) {
         allocation.shift = newShift?.name || '';
     });
 
-    // 2. Run auto-split on the now-cleared days
     const orderForSplit = type === 'move' ? pd.order : undefined;
     const processForSplit = type === 'move' ? pd.process : undefined;
     const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
         pd.machineId, pd.dateStr, dropQty, pd.minutesPerUnit, pd.item, pd.colour, pd.size, orderForSplit, processForSplit
     );
 
-    // 3. Save compound undo action
     const shiftCount = shiftedAllocations.length;
     if (type === 'move' && sourceResult) {
         saveAction('shift_and_move', {
@@ -1457,7 +2408,6 @@ function executeShiftAndAllocate(shiftData, sourceResult) {
         });
     }
 
-    // 4. Show result
     if (allocationsMade > 0) {
         frappe.show_alert({
             message: __(`Shifted ${shiftCount} allocation(s). Allocated ${dropQty - remainingQty} units across ${allocationsMade} day(s).`),
@@ -1471,7 +2421,6 @@ function executeShiftAndAllocate(shiftData, sourceResult) {
 async function removeAllocation(alloc) {
     const idx = allocations.value.findIndex(a => a.key === alloc.key);
     if (idx > -1) {
-        // Delete from database if it has a name (existing record)
         if (alloc.name) {
             try {
                 const response = await frappe.call({
@@ -1490,7 +2439,6 @@ async function removeAllocation(alloc) {
                 frappe.show_alert({ message: __('Error deleting allocation'), indicator: 'red' });
             }
         } else {
-            // New allocation not yet saved to DB
             saveAction('delete', { allocation: { ...alloc } });
             allocations.value.splice(idx, 1);
             frappe.show_alert({ message: __('Allocation removed'), indicator: 'blue' });
@@ -1498,169 +2446,9 @@ async function removeAllocation(alloc) {
     }
 }
 
-// Selection and Context Menu
-function selectAllocation(alloc, event) {
-    selectedAllocation.value = alloc;
-    if (event) {
-        contextMenu.value = {
-            show: true,
-            x: event.clientX,
-            y: event.clientY
-        };
-    }
-}
-
+// Context Menu
 function closeContextMenu() {
     contextMenu.value.show = false;
-}
-
-// Split Quantity (7)
-function openSplitModal() {
-    if (!selectedAllocation.value) return;
-    splitQuantity.value = Math.floor(selectedAllocation.value.quantity / 2);
-    showSplitModal.value = true;
-    closeContextMenu();
-}
-
-function closeSplitModal() {
-    showSplitModal.value = false;
-    selectedAllocation.value = null;
-}
-
-function confirmSplit() {
-    if (!selectedAllocation.value) return;
-
-    const originalQty = selectedAllocation.value.quantity;
-    const splitQty = splitQuantity.value;
-
-    if (splitQty < MIN_BATCH_SIZE || splitQty >= originalQty) {
-        frappe.show_alert({ message: __('Invalid split quantity'), indicator: 'red' });
-        return;
-    }
-
-    const remainingQty = originalQty - splitQty;
-    const minutesPerUnit = selectedAllocation.value.allocated_minutes / originalQty;
-
-    // Update original allocation
-    selectedAllocation.value.quantity = remainingQty;
-    selectedAllocation.value.allocated_minutes = remainingQty * minutesPerUnit;
-
-    // Create new allocation with split quantity
-    allocations.value.push({
-        key: `${selectedAllocation.value.machine_id}-${selectedAllocation.value.operation_date}-${Date.now()}-split`,
-        machine_id: selectedAllocation.value.machine_id,
-        operation_date: selectedAllocation.value.operation_date,
-        shift: selectedAllocation.value.shift,
-        order: selectedAllocation.value.order,
-        item: selectedAllocation.value.item,
-        process: selectedAllocation.value.process,
-        colour: selectedAllocation.value.colour,
-        size: selectedAllocation.value.size,
-        quantity: splitQty,
-        allocated_minutes: splitQty * minutesPerUnit
-    });
-
-    frappe.show_alert({ message: __('Quantity split successfully'), indicator: 'green' });
-    closeSplitModal();
-}
-
-// Edit Quantity (9)
-function openEditModal() {
-    if (!selectedAllocation.value) return;
-    editQuantity.value = selectedAllocation.value.quantity;
-    showEditModal.value = true;
-    closeContextMenu();
-}
-
-function closeEditModal() {
-    showEditModal.value = false;
-    selectedAllocation.value = null;
-}
-
-function confirmEdit() {
-    if (!selectedAllocation.value) return;
-
-    const newQty = editQuantity.value;
-    const originalQty = selectedAllocation.value.quantity;
-
-    if (newQty < MIN_BATCH_SIZE) {
-        frappe.show_alert({ message: __(`Minimum quantity is ${MIN_BATCH_SIZE}`), indicator: 'red' });
-        return;
-    }
-
-    // Check capacity for new quantity
-    const minutesPerUnit = selectedAllocation.value.allocated_minutes / originalQty;
-    const newMinutes = newQty * minutesPerUnit;
-    const machineId = selectedAllocation.value.machine_id;
-    const dateStr = selectedAllocation.value.operation_date;
-    const currentUsed = getUsedMinutes(machineId, dateStr) - selectedAllocation.value.allocated_minutes;
-    const totalMinutes = getShiftMinutes(dateStr);
-
-    if (currentUsed + newMinutes > totalMinutes) {
-        frappe.show_alert({ message: __('New quantity exceeds capacity'), indicator: 'red' });
-        return;
-    }
-
-    // Check if total would exceed order quantity
-    const item = workloadItems.value.find(i =>
-        i.item === selectedAllocation.value.item &&
-        i.colour === selectedAllocation.value.colour &&
-        i.size === selectedAllocation.value.size
-    );
-
-    if (item) {
-        const currentAllocated = getAllocatedQuantity(item);
-        const adjustment = newQty - originalQty;
-        if (currentAllocated + adjustment > item.quantity) {
-            frappe.show_alert({ message: __('Cannot exceed order quantity'), indicator: 'red' });
-            return;
-        }
-    }
-
-    selectedAllocation.value.quantity = newQty;
-    selectedAllocation.value.allocated_minutes = newMinutes;
-
-    frappe.show_alert({ message: __('Quantity updated'), indicator: 'green' });
-    closeEditModal();
-}
-
-// Merge Allocations (8)
-function mergeAllocations() {
-    if (!selectedAllocation.value) return;
-
-    const alloc = selectedAllocation.value;
-    const mergeTargets = allocations.value.filter(a =>
-        a.key !== alloc.key &&
-        a.machine_id === alloc.machine_id &&
-        a.item === alloc.item &&
-        a.process === alloc.process &&
-        a.colour === alloc.colour &&
-        a.size === alloc.size
-    );
-
-    if (mergeTargets.length === 0) {
-        frappe.show_alert({ message: __('No allocations to merge'), indicator: 'orange' });
-        closeContextMenu();
-        return;
-    }
-
-    // Merge all into the selected allocation
-    mergeTargets.forEach(target => {
-        alloc.quantity += target.quantity;
-        alloc.allocated_minutes += target.allocated_minutes;
-        const idx = allocations.value.findIndex(a => a.key === target.key);
-        if (idx > -1) allocations.value.splice(idx, 1);
-    });
-
-    frappe.show_alert({ message: __('Allocations merged'), indicator: 'green' });
-    closeContextMenu();
-}
-
-function deleteSelectedAllocation() {
-    if (selectedAllocation.value) {
-        removeAllocation(selectedAllocation.value);
-    }
-    closeContextMenu();
 }
 
 // API Calls
@@ -1676,8 +2464,6 @@ async function onOrderChange() {
         });
         if (response.message) {
             orderData.value = response.message;
-            // Don't clear allocations - keep showing all machine bookings
-            // so user can see capacity across all orders
         }
     } catch (e) {
         console.error('Error loading order:', e);
@@ -1685,7 +2471,6 @@ async function onOrderChange() {
 }
 
 async function onProcessChange() {
-    // Only reload workload items, allocations already visible
     actionHistory.value = [];
 }
 
@@ -1705,7 +2490,7 @@ async function loadShiftCalendars() {
         });
         if (response.message) {
             shiftCalendars.value = response.message.calendars;
-            defaultShift.value = response.message.default_shift;
+            defaultCalendar.value = response.message.default_calendar;
         }
     } catch (e) {
         console.error('Error loading shifts:', e);
@@ -1713,7 +2498,6 @@ async function loadShiftCalendars() {
 }
 
 async function loadAllAllocations() {
-    // Load ALL allocations for the date range regardless of order/process
     try {
         console.log('Loading all allocations for:', startDate.value, 'to', endDate.value);
         const response = await frappe.call({
@@ -1735,6 +2519,7 @@ async function loadAllAllocations() {
             console.log('No allocations found for date range');
         }
         actionHistory.value = [];
+        splitMarkers.value = new Set();
     } catch (e) {
         console.error('Error loading allocations:', e);
         frappe.show_alert({ message: __('Error loading allocations'), indicator: 'red' });
@@ -1742,16 +2527,13 @@ async function loadAllAllocations() {
 }
 
 async function loadExistingAllocations() {
-    // Legacy function - now just calls loadAllAllocations
     await loadAllAllocations();
 }
 
 async function saveAllocations() {
-    // Run all validations before save
     validationErrors.value = [];
     const errors = [];
 
-    // 18. Over-allocation Check
     workloadItems.value.forEach(item => {
         const allocated = getAllocatedQuantity(item);
         if (allocated > item.quantity) {
@@ -1759,7 +2541,6 @@ async function saveAllocations() {
         }
     });
 
-    // 26. Conflict Check
     const conflicts = allocations.value.filter(a => hasConflict(a));
     if (conflicts.length > 0) {
         errors.push(`${conflicts.length} allocation(s) have conflicts`);
@@ -1784,7 +2565,6 @@ async function saveAllocations() {
         if (response.message) {
             frappe.show_alert({ message: __('Allocations saved successfully'), indicator: 'green' });
             actionHistory.value = [];
-            // Reload allocations to get the database names for the newly saved records
             await loadAllAllocations();
             emit('saveAllocations', allocations.value);
         }
@@ -1794,17 +2574,70 @@ async function saveAllocations() {
     }
 }
 
-onMounted(() => {
-    loadShiftCalendars();
+// Alteration dialog
+function openAlterationDialog(dateStr, machineId = null) {
+    alterationForm.value = {
+        date: dateStr,
+        machine: machineId,
+        alteration_type: 'Add',
+        minutes: 60,
+        reason: ''
+    };
+    showAlterationModal.value = true;
+}
+
+function closeAlterationModal() {
+    showAlterationModal.value = false;
+    alterationSaving.value = false;
+}
+
+async function confirmAlteration() {
+    const form = alterationForm.value;
+    if (!form.minutes || form.minutes < 1) {
+        frappe.show_alert({ message: __('Minutes must be at least 1'), indicator: 'red' });
+        return;
+    }
+
+    alterationSaving.value = true;
+    try {
+        await frappe.call({
+            method: 'albion.albion.page.capacity_planning.capacity_planning.add_shift_alteration',
+            args: {
+                date: form.date,
+                alteration_type: form.alteration_type,
+                minutes: form.minutes,
+                machine: form.machine || null,
+                reason: form.reason || null
+            }
+        });
+        frappe.show_alert({ message: __('Shift alteration added'), indicator: 'green' });
+        closeAlterationModal();
+        await loadShiftCalendars();
+    } catch (e) {
+        console.error('Error adding alteration:', e);
+        frappe.show_alert({ message: __('Error adding alteration'), indicator: 'red' });
+        alterationSaving.value = false;
+    }
+}
+
+onMounted(async () => {
+    await loadShiftCalendars();
     loadAllAllocations();
     document.addEventListener('click', closeContextMenu);
+
+    if (!defaultCalendar.value) {
+        frappe.msgprint({
+            title: __('No Default Shift Calendar'),
+            message: __('Please create a Shift Calendar and mark it as default for capacity planning to work correctly.'),
+            indicator: 'orange'
+        });
+    }
 });
 
 onUnmounted(() => {
     document.removeEventListener('click', closeContextMenu);
 });
 
-// Watch for date changes and reload allocations
 watch([startDate, endDate], () => {
     loadShiftCalendars();
     loadAllAllocations();
@@ -1818,60 +2651,73 @@ defineExpose({
 </script>
 
 <style scoped>
+/* ===== Design System Tokens ===== */
+/* Spacing: 4px scale (4, 8, 12, 16, 20, 24, 32) */
+/* Radius: 4 (sm), 6 (md), 10 (lg), 14 (xl) */
+/* Shadows: sm, md, lg */
+/* Font: 10, 11, 12, 13, 14, 16 */
+/* Colors: slate-50..900 base, blue/green/amber/red semantic */
+
+/* ===== Layout Shell ===== */
 .capacity-planning {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: #f9fafb;
+    background: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
 }
 
 .cp-header {
     background: white;
-    padding: 12px 16px;
-    border-bottom: 1px solid #e5e7eb;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    padding: 12px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
 .cp-filters {
     display: flex;
     justify-content: space-between;
-    align-items: end;
+    align-items: flex-end;
+    gap: 16px;
 }
 
 .filter-group {
     display: flex;
-    gap: 12px;
-    align-items: end;
+    gap: 16px;
+    align-items: flex-end;
     flex-wrap: wrap;
 }
 
 .action-group {
     display: flex;
     gap: 8px;
-    align-items: end;
+    align-items: flex-end;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .form-group label {
-    font-size: 12px;
-    font-weight: 500;
-    color: #374151;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
 .form-control {
     min-width: unset;
     width: 100%;
     padding: 7px 12px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
     font-size: 13px;
     background: white;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    color: #1e293b;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 select.form-control {
@@ -1883,103 +2729,100 @@ select.form-control {
 
 .form-control:focus {
     outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
 .form-control:disabled {
-    background: #f3f4f6;
-    color: #9ca3af;
+    background: #f1f5f9;
+    color: #94a3b8;
     cursor: not-allowed;
 }
 
-.text-info {
-    color: #2563eb;
-}
+.text-info { color: #2563eb; }
+.text-danger { color: #ef4444; }
 
-.border-danger {
-    border-color: #ef4444 !important;
-}
-
-.text-danger {
-    color: #ef4444;
-}
-
+/* ===== Validation ===== */
 .validation-alerts {
-    padding: 10px 15px;
+    padding: 8px 20px;
     background: #fef2f2;
+    border-bottom: 1px solid #fecaca;
 }
 
 .alert {
     padding: 8px 12px;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
     border-radius: 6px;
+    font-size: 13px;
 }
 
 .alert-danger {
     background: #fee2e2;
-    color: #dc2626;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
 }
 
+/* ===== Body Layout ===== */
 .cp-body {
     display: flex;
     flex: 1;
     overflow: hidden;
 }
 
+/* ===== Left Panel - Workload ===== */
 .cp-left-panel {
     width: 280px;
     background: white;
-    border-right: 1px solid #e5e7eb;
+    border-right: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
 }
 
 .panel-header {
-    padding: 14px 12px;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .panel-header h4 {
     font-size: 14px;
-    font-weight: 600;
-    color: #111827;
+    font-weight: 700;
+    color: #0f172a;
     margin: 0 0 2px 0;
 }
 
 .panel-subtitle {
     font-size: 12px;
-    color: #9ca3af;
+    color: #94a3b8;
 }
 
 .workload-summary {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    padding: 10px 12px;
-    background: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .summary-item {
     display: flex;
-    gap: 5px;
+    gap: 4px;
     font-size: 11px;
 }
 
 .summary-item .label {
-    color: #9ca3af;
+    color: #94a3b8;
 }
 
 .summary-item .value {
-    font-weight: 600;
-    color: #111827;
+    font-weight: 700;
+    color: #0f172a;
 }
 
 .workload-list {
     flex: 1;
     overflow-y: auto;
-    padding: 10px;
+    padding: 12px;
 }
 
 .empty-state {
@@ -1987,14 +2830,14 @@ select.form-control {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 20px;
-    color: #9ca3af;
+    padding: 48px 20px;
+    color: #94a3b8;
 }
 
 .empty-icon {
     font-size: 32px;
     margin-bottom: 12px;
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 .empty-text {
@@ -2005,28 +2848,28 @@ select.form-control {
 .workload-item {
     padding: 10px 12px;
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #e2e8f0;
     background: white;
     margin-bottom: 8px;
     border-left: 3px solid transparent;
     cursor: grab;
-    transition: all 0.2s;
+    transition: box-shadow 0.15s, border-color 0.15s;
 }
 
 .workload-item:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-color: #cbd5e1;
 }
 
 .workload-item.fully-allocated {
     border-left-color: #10b981;
-    background: #f9fafb;
-    opacity: 0.7;
+    background: #f8fafc;
+    opacity: 0.65;
     cursor: not-allowed;
 }
 
 .workload-item.partial-allocated {
     border-left-color: #f59e0b;
-    background: white;
 }
 
 .workload-item.pending {
@@ -2042,7 +2885,7 @@ select.form-control {
 
 .workload-item.locked {
     border-left-color: #8b5cf6;
-    opacity: 0.6;
+    opacity: 0.55;
     background: #faf5ff;
     cursor: not-allowed;
 }
@@ -2055,11 +2898,11 @@ select.form-control {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 
 .drag-handle {
-    color: #d1d5db;
+    color: #cbd5e1;
     cursor: grab;
     font-size: 12px;
     margin-right: 6px;
@@ -2068,35 +2911,36 @@ select.form-control {
 
 .item-name {
     font-weight: 600;
-    color: #111827;
+    font-size: 13px;
+    color: #0f172a;
     flex: 1;
 }
 
 .item-qty {
-    background: #f3f4f6;
-    color: #374151;
+    background: #f1f5f9;
+    color: #334155;
     padding: 2px 8px;
     border-radius: 10px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .item-detail {
     font-size: 12px;
-    color: #6b7280;
+    color: #64748b;
 }
 
 .item-minutes {
     font-size: 11px;
-    color: #9ca3af;
-    margin-top: 5px;
+    color: #94a3b8;
+    margin-top: 4px;
 }
 
 .item-progress {
     height: 3px;
-    background: #f3f4f6;
+    background: #f1f5f9;
     border-radius: 2px;
-    margin-top: 6px;
+    margin-top: 8px;
     overflow: hidden;
 }
 
@@ -2106,49 +2950,34 @@ select.form-control {
     transition: width 0.3s;
 }
 
-.item-progress-fill.full {
-    background: #10b981;
-}
-
-.item-progress-fill.partial {
-    background: #f59e0b;
-}
-
-.item-progress-fill.pending {
-    background: #3b82f6;
-}
+.item-progress-fill.full { background: #10b981; }
+.item-progress-fill.partial { background: #f59e0b; }
+.item-progress-fill.pending { background: #3b82f6; }
 
 .allocation-status {
     font-size: 11px;
-    margin-top: 5px;
+    margin-top: 4px;
     font-weight: 600;
 }
 
-.allocation-status.full {
-    color: #10b981;
-}
-
-.allocation-status.partial {
-    color: #f59e0b;
-}
-
-.allocation-status.pending {
-    color: #3b82f6;
-}
+.allocation-status.full { color: #059669; }
+.allocation-status.partial { color: #d97706; }
+.allocation-status.pending { color: #2563eb; }
 
 .invalid-reason {
     font-size: 11px;
-    color: #ef4444;
-    margin-top: 5px;
+    color: #dc2626;
+    margin-top: 4px;
 }
 
 .locked-reason {
     font-size: 11px;
-    color: #8b5cf6;
+    color: #7c3aed;
     font-weight: 600;
-    margin-top: 5px;
+    margin-top: 4px;
 }
 
+/* ===== Right Panel - Calendar ===== */
 .cp-right-panel {
     flex: 1;
     display: flex;
@@ -2158,8 +2987,8 @@ select.form-control {
 
 .calendar-header {
     background: white;
-    padding: 10px 16px;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 10px 20px;
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -2167,22 +2996,22 @@ select.form-control {
 
 .calendar-header h4 {
     font-size: 14px;
-    font-weight: 600;
-    color: #111827;
+    font-weight: 700;
+    color: #0f172a;
     margin: 0;
 }
 
 .calendar-legend {
     display: flex;
-    gap: 15px;
+    gap: 16px;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     font-size: 12px;
-    color: #6b7280;
+    color: #64748b;
 }
 
 .dot {
@@ -2191,51 +3020,59 @@ select.form-control {
     border-radius: 50%;
 }
 
-.dot.available { background: white; border: 1px solid #e5e7eb; }
-.dot.allocated { background: #f8fafc; border: 1px solid #cbd5e1; }
-.dot.full { background: #fef2f2; border: 1px solid #fca5a5; }
-.dot.conflict { background: #fef2f2; border: 2px solid #ef4444; }
+.dot.available { background: white; border: 1.5px solid #cbd5e1; }
+.dot.allocated { background: #e2e8f0; border: 1.5px solid #94a3b8; }
+.dot.full { background: #fecaca; border: 1.5px solid #f87171; }
+.dot.conflict { background: #fecaca; border: 2px solid #ef4444; }
 
 .calendar-wrapper {
     flex: 1;
     overflow: auto;
-    background: white;
+    background: #f8fafc;
 }
 
-.calendar-table {
-    width: 100%;
-    border-collapse: collapse;
+/* ===== Gantt Grid ===== */
+.gantt-grid {
+    display: grid;
+    width: max-content;
 }
 
-.calendar-table th,
-.calendar-table td {
-    border: 1px solid #e5e7eb;
-    min-width: 130px;
-}
-
-.machine-header {
-    background: #f9fafb;
-    padding: 10px;
-    font-weight: 600;
-    font-size: 13px;
-    color: #111827;
+.gantt-corner-cell {
+    grid-row: 1;
+    grid-column: 1;
+    background: #f1f5f9;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 12px;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid #e2e8f0;
     position: sticky;
     left: 0;
-    z-index: 10;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
 }
 
-.date-header {
-    background: #f9fafb;
+.gantt-date-header {
+    background: #f1f5f9;
     padding: 10px 8px;
     text-align: center;
+    border: 1px solid #e2e8f0;
+    border-left: none;
+    position: sticky;
+    top: 0;
+    z-index: 15;
 }
 
-.date-header.weekend {
-    background: #fef3c7;
+.gantt-date-header.weekend {
+    background: #fef9c3;
 }
 
-.date-header.past-date {
-    background: #fee2e2;
+.gantt-date-header.past-date {
+    background: #fef2f2;
 }
 
 .date-cell {
@@ -2245,75 +3082,109 @@ select.form-control {
 }
 
 .day-date {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 12px;
-    color: #111827;
+    color: #1e293b;
 }
 
 .shift-info {
-    font-size: 11px;
-    color: #6b7280;
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 500;
 }
 
-.machine-cell {
-    background: #f9fafb;
-    padding: 12px;
-    border-right: 1px solid #e5e7eb;
+.day-alteration-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.gantt-date-header {
+    cursor: pointer;
+}
+
+.gantt-date-header:hover {
+    background: #e2e8f0 !important;
+}
+
+.gantt-machine-cell {
+    grid-column: 1;
+    background: #f8fafc;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-top: none;
     position: sticky;
     left: 0;
-    z-index: 10;
+    z-index: 20;
+    display: flex;
+    align-items: flex-start;
 }
 
 .machine-info {
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
 .machine-title {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
 }
 
 .machine-id {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 13px;
-    color: #111827;
+    color: #0f172a;
 }
 
 .machine-name {
     font-size: 11px;
-    color: #6b7280;
-    margin-top: 2px;
+    color: #64748b;
 }
 
 .machine-utilization {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 1px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
     border-radius: 4px;
 }
 
 .util-low {
-    background: #ecfdf5;
-    color: #059669;
+    background: #dcfce7;
+    color: #166534;
 }
 
 .util-medium {
     background: #fef3c7;
-    color: #d97706;
+    color: #92400e;
 }
 
 .util-high {
     background: #fee2e2;
-    color: #dc2626;
+    color: #991b1b;
 }
 
-.calendar-cell {
-    padding: 6px 8px;
-    vertical-align: top;
-    min-height: 80px;
-    transition: background 0.2s;
+/* ===== Date Cells (Drop Targets) ===== */
+.gantt-date-cell {
+    position: relative;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    border-left: none;
+    padding: 4px 6px;
+    min-height: 98px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    transition: background 0.15s, box-shadow 0.15s;
+}
+
+.gantt-date-cell:hover {
+    box-shadow: inset 0 0 0 2px #93c5fd;
 }
 
 .cell-available {
@@ -2325,292 +3196,391 @@ select.form-control {
 }
 
 .cell-full {
-    background: #fef2f2;
+    background: #fff1f2;
 }
 
 .cell-conflict {
-    background: #fef2f2;
-    border: 2px solid #ef4444;
+    background: #fff1f2;
+    box-shadow: inset 0 0 0 2px #f87171;
 }
 
-.calendar-cell:hover {
-    box-shadow: inset 0 0 0 2px #3b82f6;
-}
-
-.cell-content {
+.cell-top-row {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.allocation-item {
-    display: flex;
-    flex-direction: column;
-    padding: 6px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    background: white;
-    border-left: 3px solid;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-    cursor: grab;
-    border-top: 1px solid #f3f4f6;
-    border-right: 1px solid #f3f4f6;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.allocation-item:hover {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.allocation-item:active {
-    cursor: grabbing;
-}
-
-.allocation-item.conflict {
-    border: 2px solid #ef4444;
-    border-left: 3px solid #ef4444;
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-    70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-.alloc-header {
-    display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
+    min-height: 18px;
 }
 
-.alloc-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 2px;
-}
-
-.alloc-item {
-    font-weight: 600;
-    color: #111827;
-}
-
-.alloc-qty {
-    background: #f3f4f6;
+.alteration-badge {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    z-index: 11;
+    font-size: 10px;
+    font-weight: 700;
     padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #374151;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
-.alloc-process {
-    font-size: 11px;
-    color: #6b7280;
+.badge-add {
+    background: #dcfce7;
+    color: #166534;
 }
 
-.alloc-mins {
-    font-size: 11px;
-    color: #6b7280;
+.badge-reduce {
+    background: #fef3c7;
+    color: #92400e;
 }
 
-.btn-remove {
+.cell-altered-add {
+    background: #f0fdf4 !important;
+}
+
+.cell-altered-reduce {
+    background: #fffbeb !important;
+}
+
+.cell-add-btn {
+    display: none;
     width: 18px;
     height: 18px;
-    font-size: 12px;
+    border: 1px solid #cbd5e1;
     border-radius: 4px;
-    background: transparent;
-    border: none;
+    background: white;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
     line-height: 1;
-    display: flex;
+    padding: 0;
+    margin-left: auto;
+}
+
+.gantt-date-cell:hover .cell-add-btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #9ca3af;
-    opacity: 0;
-    transition: opacity 0.15s;
 }
 
-.allocation-item:hover .btn-remove {
-    opacity: 1;
+.cell-add-btn:hover {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
 }
 
-.btn-remove:hover {
-    background: #fee2e2;
-    color: #ef4444;
+.cell-utilization {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    right: 4px;
+    z-index: 10;
 }
 
-.cell-summary {
-    margin-top: auto;
-    padding-top: 5px;
-    border-top: 1px dashed #e5e7eb;
-    font-size: 11px;
-    text-align: right;
-}
-
-.used-minutes {
-    font-weight: 600;
-    color: #111827;
-}
-
-.remaining-minutes {
-    color: #9ca3af;
-}
-
-.capacity-bar {
-    height: 6px;
-    background: #f3f4f6;
+.util-bar {
+    position: relative;
+    height: 16px;
+    background: #e2e8f0;
     border-radius: 3px;
     overflow: hidden;
-    margin-top: 2px;
 }
 
-.capacity-fill {
+.util-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
     border-radius: 3px;
     transition: width 0.3s;
 }
 
-.capacity-fill.bar-ok {
-    background: #10b981;
+.util-label {
+    position: relative;
+    z-index: 1;
+    display: block;
+    text-align: end;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    color: #1e293b;
 }
 
-.capacity-fill.bar-warning {
-    background: #f59e0b;
+.util-fill.bar-ok { background: #86efac; }
+.util-fill.bar-warning { background: #fde68a; }
+.util-fill.bar-low { background: #fca5a5; }
+.util-bar.bar-ok { background: #dcfce7; }
+.util-bar.bar-warning { background: #fef9c3; }
+.util-bar.bar-low { background: #fee2e2; }
+
+/* ===== Gantt Bars ===== */
+.gantt-bar-layer {
+    position: relative;
+    pointer-events: none;
+    z-index: 5;
 }
 
-.capacity-fill.bar-full {
-    background: #ef4444;
+.gantt-bar {
+    position: absolute;
+    pointer-events: auto;
+    cursor: grab;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 7px 12px 6px;
+    overflow: hidden;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    transition: box-shadow 0.15s, transform 0.15s;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-left: none;
 }
 
-/* Modals */
+.gantt-bar:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
+    z-index: 10;
+}
+
+.gantt-bar:active {
+    cursor: grabbing;
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+/* --- Bar Row: Top (Item + Qty) --- */
+.bar-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.bar-item {
+    font-weight: 700;
+    font-size: 13px;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.bar-qty {
+    background: rgba(0,0,0,0.08);
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-weight: 800;
+    font-size: 12px;
+    color: #0f172a;
+    flex-shrink: 0;
+}
+
+/* --- Bar Row: Mid (Process + Minutes) --- */
+.bar-row-mid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.bar-process {
+    font-weight: 500;
+    color: #334155;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+.bar-minutes {
+    color: #475569;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* --- Bar Row: Bottom (Tags) --- */
+.bar-row-bot {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.bar-tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.3;
+    font-weight: 600;
+}
+
+.bar-tag b {
+    font-weight: 800;
+    margin-right: 1px;
+}
+
+.order-tag {
+    color: #1e40af;
+    background: rgba(59, 130, 246, 0.14);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.colour-tag {
+    color: #c2410c;
+    background: rgba(249, 115, 22, 0.12);
+    border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+.size-tag {
+    color: #3f3f46;
+    background: rgba(113, 113, 122, 0.12);
+    border: 1px solid rgba(113, 113, 122, 0.18);
+}
+
+/* ===== Modals ===== */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(15, 23, 42, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    backdrop-filter: blur(2px);
 }
 
 .modal-content {
     background: white;
     padding: 24px;
-    border-radius: 12px;
-    min-width: 300px;
-    max-width: 400px;
+    border-radius: 14px;
+    min-width: 320px;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
 }
 
 .modal-content h4 {
     font-size: 16px;
-    font-weight: 600;
-    color: #111827;
-    margin: 0 0 15px 0;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 16px 0;
 }
 
 .modal-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     justify-content: flex-end;
-    margin-top: 15px;
+    margin-top: 20px;
 }
 
+/* ===== Buttons ===== */
 .btn {
-    padding: 7px 16px;
+    padding: 8px 16px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
+    transition: background 0.15s, box-shadow 0.15s;
 }
 
 .btn-primary {
     background: #2563eb;
     color: white;
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3);
 }
 
 .btn-primary:hover {
     background: #1d4ed8;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
 }
 
 .btn-default {
     background: white;
-    border: 1px solid #e5e7eb;
-    color: #374151;
+    border: 1px solid #e2e8f0;
+    color: #334155;
 }
 
 .btn-default:hover {
-    background: #f9fafb;
+    background: #f8fafc;
+    border-color: #cbd5e1;
 }
 
 .btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
+    background: #f1f5f9;
+    color: #334155;
 }
 
 .btn-secondary:hover {
-    background: #e5e7eb;
+    background: #e2e8f0;
 }
 
 .btn:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
-/* Context Menu */
+/* ===== Context Menu ===== */
 .context-menu {
     position: fixed;
     background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
     z-index: 1000;
-    min-width: 150px;
+    min-width: 190px;
     padding: 4px;
 }
 
 .menu-item {
-    padding: 8px 14px;
+    padding: 9px 14px;
     cursor: pointer;
     font-size: 13px;
-    border-radius: 4px;
+    font-weight: 500;
+    border-radius: 6px;
     margin: 2px 0;
-    color: #374151;
+    color: #334155;
+    transition: background 0.1s;
 }
 
 .menu-item:hover {
-    background: #f3f4f6;
+    background: #f1f5f9;
 }
 
 .menu-item.text-danger {
-    color: #ef4444;
+    color: #dc2626;
 }
 
 .menu-item.text-danger:hover {
     background: #fef2f2;
 }
 
-/* Shift Modal */
+/* ===== Shift Modal ===== */
 .shift-modal {
     background: white;
     padding: 24px;
-    border-radius: 12px;
+    border-radius: 14px;
     min-width: 500px;
     max-width: 700px;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
 }
 
 .shift-modal h4 {
     font-size: 16px;
-    font-weight: 600;
-    color: #111827;
+    font-weight: 700;
+    color: #0f172a;
     margin: 0 0 12px 0;
 }
 
@@ -2618,8 +3588,8 @@ select.form-control {
     background: #eff6ff;
     border: 1px solid #bfdbfe;
     border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 14px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
     font-size: 13px;
     color: #1e40af;
 }
@@ -2635,9 +3605,9 @@ select.form-control {
 .shift-table-wrapper {
     max-height: 300px;
     overflow-y: auto;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
 
 .shift-table {
@@ -2647,23 +3617,45 @@ select.form-control {
 }
 
 .shift-table th {
-    background: #f9fafb;
-    padding: 8px 10px;
+    background: #f1f5f9;
+    padding: 8px 12px;
     text-align: left;
-    font-weight: 600;
-    color: #374151;
-    border-bottom: 1px solid #e5e7eb;
+    font-weight: 700;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
     position: sticky;
     top: 0;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .shift-table td {
-    padding: 6px 10px;
-    border-bottom: 1px solid #f3f4f6;
-    color: #374151;
+    padding: 8px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
 }
 
 .shift-table tr:last-child td {
     border-bottom: none;
+}
+
+/* ===== Backfill Modal ===== */
+.backfill-explanation {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #92400e;
+}
+
+.backfill-explanation p {
+    margin: 0 0 4px 0;
+}
+
+.backfill-explanation p:last-child {
+    margin-bottom: 0;
 }
 </style>

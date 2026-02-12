@@ -8,7 +8,6 @@
   "defaults_section",
   "default_colour_attribute",
   "default_size_attribute",
-  "default_shift",
   "column_break_defaults",
   "default_size_range",
   "company_info_section",
@@ -31,12 +30,6 @@
    "fieldtype": "Link",
    "label": "Default Size Attribute",
    "options": "Attribute"
-  },
-  {
-   "fieldname": "default_shift",
-   "fieldtype": "Link",
-   "label": "Default Shift",
-   "options": "Shift"
   },
   {
    "fieldname": "column_break_defaults",
@@ -63,7 +56,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-02-09 17:30:00.000000",
+ "modified": "2026-02-12 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Albion Settings",
