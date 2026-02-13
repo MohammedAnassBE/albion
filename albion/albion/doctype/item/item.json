@@ -8,6 +8,7 @@
  "field_order": [
   "item_code",
   "item_name",
+  "machine_gg",
   "colour_attribute",
   "size_attribute",
   "size_range",
@@ -22,6 +23,7 @@
   {
    "fieldname": "item_code",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Item Code",
    "reqd": 1,
    "unique": 1
@@ -29,7 +31,16 @@
   {
    "fieldname": "item_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Item Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "machine_gg",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Machine GG",
+   "options": "Machine GG",
    "reqd": 1
   },
   {
@@ -87,7 +98,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-09 17:30:00.000000",
+ "modified": "2026-02-13 14:17:24.451256",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Item",

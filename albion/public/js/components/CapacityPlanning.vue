@@ -3,40 +3,11 @@
         <div class="cp-header">
             <div class="cp-filters">
                 <div class="filter-group">
-                    <div class="form-group">
-                        <label>Order</label>
-                        <select v-model="selectedOrder" @change="onOrderChange" class="form-control">
-                            <option value="">Select Order</option>
-                            <option v-for="order in orders" :key="order.name" :value="order.name">
-                                {{ order.name }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Process</label>
-                        <select v-model="selectedProcess" @change="onProcessChange" class="form-control" :disabled="!orderData">
-                            <option value="">Select Process</option>
-                            <option v-for="proc in availableProcesses" :key="proc.name" :value="proc.name">
-                                {{ proc.process_name }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>View type</label>
-                        <select v-model="viewType" class="form-control">
-                            <option value="item_wise">Item Wise</option>
-                            <option value="colour_wise">Colour Wise</option>
-                            <option value="size_wise">Size Wise</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Start date</label>
-                        <input type="date" v-model="startDate" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>End date</label>
-                        <input type="date" v-model="endDate" class="form-control" />
-                    </div>
+                    <div class="frappe-field" ref="orderFieldRef"></div>
+                    <div class="frappe-field" ref="processFieldRef"></div>
+                    <div class="frappe-field" ref="viewTypeFieldRef"></div>
+                    <div class="frappe-field" ref="startDateFieldRef"></div>
+                    <div class="frappe-field" ref="endDateFieldRef"></div>
                 </div>
                 <div class="action-group">
                     <button class="btn btn-default" @click="undoLastAction" :disabled="actionHistory.length === 0">Undo</button>
@@ -537,7 +508,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 
 const emit = defineEmits(['saveAllocations']);
 
@@ -552,6 +523,20 @@ const viewType = ref('item_wise');
 const startDate = ref('');
 const endDate = ref('');
 const orderData = ref(null);
+
+// Template refs for Frappe fields
+const orderFieldRef = ref(null);
+const processFieldRef = ref(null);
+const viewTypeFieldRef = ref(null);
+const startDateFieldRef = ref(null);
+const endDateFieldRef = ref(null);
+
+// Frappe control instances
+let orderControl = null;
+let processControl = null;
+let viewTypeControl = null;
+let startDateControl = null;
+let endDateControl = null;
 const shiftCalendars = ref([]);
 const defaultCalendar = ref(null);
 const allocations = ref([]);
@@ -1446,7 +1431,7 @@ function moveGroup(groupData, newMachineId, newStartDate) {
         }
     }
 
-    // Cascading group push: shift entire conflicting groups forward (or backward)
+    // Cascading group push: shift entire conflicting groups forward
     const machineGroups = groupedAllocations.value
         .filter(g => g.machine_id === newMachineId && g.group_id !== groupData.group_id)
         .map(g => ({
@@ -1458,10 +1443,11 @@ function moveGroup(groupData, newMachineId, newStartDate) {
     const affected = [];
     let outOfBounds = false;
 
-    if (dayOffset > 0) {
+    // Always cascade forward — push conflicting groups toward the future
+    {
         let currentEnd = newEndDate;
         for (const otherGroup of machineGroups) {
-            if (otherGroup.end_date < newStartDate && otherGroup.end_date < groupData.start_date) continue;
+            if (otherGroup.end_date < newStartDate) continue;
             if (otherGroup.start_date > currentEnd) break;
 
             const nextFree = addDaysToDate(currentEnd, 1);
@@ -1483,33 +1469,6 @@ function moveGroup(groupData, newMachineId, newStartDate) {
 
             currentEnd = outOfBounds ? currentEnd : pushedEnd;
         }
-    } else {
-        let currentStart = newStartDate;
-        for (let i = machineGroups.length - 1; i >= 0; i--) {
-            const otherGroup = machineGroups[i];
-            if (otherGroup.start_date > newEndDate && otherGroup.start_date > groupData.end_date) continue;
-            if (otherGroup.end_date < currentStart) break;
-
-            const dayBefore = addDaysToDate(currentStart, -1);
-            const pushDays = dates.indexOf(dayBefore) - dates.indexOf(otherGroup.end_date);
-            if (pushDays >= 0) continue;
-
-            const pushedStart = addDaysToDate(otherGroup.start_date, pushDays);
-            if (!dates.includes(pushedStart) || isPastDate(pushedStart)) outOfBounds = true;
-
-            for (const alloc of otherGroup.allocObjs) {
-                const nd = addDaysToDate(alloc.operation_date, pushDays);
-                if (!dates.includes(nd) || isPastDate(nd)) {
-                    outOfBounds = true;
-                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
-                } else {
-                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: nd });
-                }
-            }
-
-            currentStart = outOfBounds ? currentStart : pushedStart;
-        }
-        affected.reverse();
     }
 
     if (outOfBounds) {
@@ -1728,31 +1687,24 @@ function computeShiftByDaysPreview() {
 
     // For cascading: track the "occupied end" as we push groups forward/backward
     // We process groups in the direction of the shift
-    if (dayOffset > 0) {
-        // Shifting forward: process groups after the primary group in date order
-        // Each group that overlaps with the previous one's new end gets pushed forward
-        let currentEnd = newEnd; // the shifted primary group's new end
+    // Always cascade forward — push conflicting groups toward the future
+    {
+        let currentEnd = newEnd;
 
         for (const otherGroup of machineGroups) {
-            // Skip groups entirely before the new range (no overlap possible)
-            if (otherGroup.end_date < newStart && otherGroup.end_date < group.start_date) continue;
-            // Skip groups entirely after (sorted, so once past currentEnd with no overlap, remaining won't overlap either — but keep checking as cascade grows)
+            if (otherGroup.end_date < newStart) continue;
             if (otherGroup.start_date > currentEnd) break;
 
-            // This group overlaps with the shifted range — compute push needed
-            // Push it so it starts the day after currentEnd
             const pushDays = dates.indexOf(addDaysToDate(currentEnd, 1)) - dates.indexOf(otherGroup.start_date);
-            if (pushDays <= 0) continue; // no actual overlap
+            if (pushDays <= 0) continue;
 
             groupShifts.set(otherGroup.group_id, pushDays);
 
-            // Check if the pushed group stays in range
             const pushedEnd = addDaysToDate(otherGroup.end_date, pushDays);
             if (!dates.includes(pushedEnd)) {
                 outOfBounds = true;
             }
 
-            // Add each allocation in this group to affected list
             for (const alloc of otherGroup.allocObjs) {
                 const nd = addDaysToDate(alloc.operation_date, pushDays);
                 if (!dates.includes(nd)) {
@@ -1766,47 +1718,29 @@ function computeShiftByDaysPreview() {
                 }
             }
 
-            // Extend currentEnd to include this pushed group
             currentEnd = outOfBounds ? currentEnd : pushedEnd;
         }
-    } else {
-        // Shifting backward: process groups before the primary group in reverse date order
-        let currentStart = newStart;
+    }
 
-        for (let i = machineGroups.length - 1; i >= 0; i--) {
-            const otherGroup = machineGroups[i];
-            // Skip groups entirely after the new range
-            if (otherGroup.start_date > newEnd && otherGroup.start_date > group.end_date) continue;
-            // Skip groups entirely before (no overlap)
-            if (otherGroup.end_date < currentStart) break;
+    // Shift all subsequent groups on the same machine by dayOffset
+    for (const otherGroup of machineGroups) {
+        if (groupShifts.has(otherGroup.group_id)) continue; // already handled by cascade
+        if (otherGroup.start_date <= group.end_date) continue; // not subsequent
 
-            // This group overlaps — push it backward so it ends the day before currentStart
-            const dayBeforeStart = addDaysToDate(currentStart, -1);
-            const pushDays = dates.indexOf(dayBeforeStart) - dates.indexOf(otherGroup.end_date);
-            if (pushDays >= 0) continue; // no actual overlap
+        groupShifts.set(otherGroup.group_id, dayOffset);
 
-            groupShifts.set(otherGroup.group_id, pushDays);
+        const pushedEnd = addDaysToDate(otherGroup.end_date, dayOffset);
+        if (!dates.includes(pushedEnd)) outOfBounds = true;
 
-            const pushedStart = addDaysToDate(otherGroup.start_date, pushDays);
-            if (!dates.includes(pushedStart) || isPastDate(pushedStart)) {
+        for (const alloc of otherGroup.allocObjs) {
+            const nd = addDaysToDate(alloc.operation_date, dayOffset);
+            if (!dates.includes(nd) || isPastDate(nd)) {
                 outOfBounds = true;
+                affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+            } else {
+                affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: nd });
             }
-
-            for (const alloc of otherGroup.allocObjs) {
-                const nd = addDaysToDate(alloc.operation_date, pushDays);
-                if (!dates.includes(nd) || isPastDate(nd)) {
-                    outOfBounds = true;
-                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
-                } else {
-                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: nd });
-                }
-            }
-
-            currentStart = outOfBounds ? currentStart : pushedStart;
         }
-
-        // Reverse so they display in date order
-        affected.reverse();
     }
 
     // Build group-level summary for the confirmation table
@@ -3751,7 +3685,6 @@ async function loadShiftCalendars() {
 
 async function loadAllAllocations() {
     try {
-        console.log('Loading all allocations for:', startDate.value, 'to', endDate.value);
         const response = await frappe.call({
             method: 'albion.albion.page.capacity_planning.capacity_planning.get_all_allocations',
             args: {
@@ -3759,16 +3692,13 @@ async function loadAllAllocations() {
                 end_date: endDate.value
             }
         });
-        console.log('All allocations response:', response.message);
         if (response.message && response.message.length > 0) {
             allocations.value = response.message.map((a, idx) => ({
                 key: `existing-${idx}`,
                 ...a
             }));
-            console.log('Loaded allocations:', allocations.value);
         } else {
             allocations.value = [];
-            console.log('No allocations found for date range');
         }
         actionHistory.value = [];
         splitMarkers.value = new Set();
@@ -3877,7 +3807,108 @@ async function confirmAlteration() {
     }
 }
 
+function initFrappeControls() {
+    // Order — Link field with search
+    orderControl = frappe.ui.form.make_control({
+        df: {
+            fieldtype: 'Link',
+            fieldname: 'order',
+            label: 'Order',
+            options: 'Order',
+            placeholder: 'Select Order',
+            change() {
+                selectedOrder.value = orderControl.get_value() || '';
+                onOrderChange();
+            }
+        },
+        parent: orderFieldRef.value,
+        render_input: true
+    });
+    orderControl.refresh();
+
+    // Process — Select field
+    processControl = frappe.ui.form.make_control({
+        df: {
+            fieldtype: 'Select',
+            fieldname: 'process',
+            label: 'Process',
+            options: [{ value: '', label: 'Select Process' }],
+            change() {
+                selectedProcess.value = processControl.get_value() || '';
+                onProcessChange();
+            }
+        },
+        parent: processFieldRef.value,
+        render_input: true
+    });
+    processControl.refresh();
+
+    // View Type — Select field
+    viewTypeControl = frappe.ui.form.make_control({
+        df: {
+            fieldtype: 'Select',
+            fieldname: 'view_type',
+            label: 'View Type',
+            options: [
+                { value: 'item_wise', label: 'Item Wise' },
+                { value: 'colour_wise', label: 'Colour Wise' },
+                { value: 'size_wise', label: 'Size Wise' }
+            ],
+            default: 'item_wise',
+            change() {
+                viewType.value = viewTypeControl.get_value() || 'item_wise';
+            }
+        },
+        parent: viewTypeFieldRef.value,
+        render_input: true
+    });
+    viewTypeControl.set_value('item_wise');
+    viewTypeControl.refresh();
+
+    // Start Date
+    startDateControl = frappe.ui.form.make_control({
+        df: {
+            fieldtype: 'Date',
+            fieldname: 'start_date',
+            label: 'Start Date',
+            change() {
+                startDate.value = startDateControl.get_value() || '';
+            }
+        },
+        parent: startDateFieldRef.value,
+        render_input: true
+    });
+    startDateControl.refresh();
+
+    // End Date
+    endDateControl = frappe.ui.form.make_control({
+        df: {
+            fieldtype: 'Date',
+            fieldname: 'end_date',
+            label: 'End Date',
+            change() {
+                endDate.value = endDateControl.get_value() || '';
+            }
+        },
+        parent: endDateFieldRef.value,
+        render_input: true
+    });
+    endDateControl.refresh();
+}
+
+function updateProcessOptions() {
+    if (!processControl) return;
+    const opts = [{ value: '', label: 'Select Process' }];
+    for (const proc of availableProcesses.value) {
+        opts.push({ value: proc.name, label: proc.process_name });
+    }
+    processControl.df.options = opts;
+    processControl.refresh();
+}
+
 onMounted(async () => {
+    await nextTick();
+    initFrappeControls();
     await loadShiftCalendars();
     loadAllAllocations();
     document.addEventListener('click', closeContextMenu);
@@ -3898,6 +3929,10 @@ onUnmounted(() => {
 watch([startDate, endDate], () => {
     loadShiftCalendars();
     loadAllAllocations();
+});
+
+watch(availableProcesses, () => {
+    updateProcessOptions();
 });
 
 defineExpose({
@@ -3951,6 +3986,22 @@ defineExpose({
     align-items: flex-end;
 }
 
+.frappe-field {
+    min-width: 160px;
+}
+
+.frappe-field :deep(.frappe-control) {
+    margin-bottom: 0;
+}
+
+.frappe-field :deep(.frappe-control .form-group) {
+    margin-bottom: 0;
+}
+
+.frappe-field :deep(.clearfix) {
+    display: none;
+}
+
 .form-group {
     display: flex;
     flex-direction: column;
@@ -3963,37 +4014,6 @@ defineExpose({
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.4px;
-}
-
-.form-control {
-    min-width: unset;
-    width: 100%;
-    padding: 7px 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 13px;
-    background: white;
-    color: #1e293b;
-    transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-select.form-control {
-    -webkit-appearance: menulist;
-    -moz-appearance: menulist;
-    appearance: menulist;
-    padding-block: 0;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
-}
-
-.form-control:disabled {
-    background: #f1f5f9;
-    color: #94a3b8;
-    cursor: not-allowed;
 }
 
 .text-info { color: #2563eb; }

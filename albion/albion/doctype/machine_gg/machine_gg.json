@@ -1,47 +1,29 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:machine_id",
- "creation": "2026-02-09 17:30:00",
+ "autoname": "field:machine_gg_name",
+ "creation": "2026-02-13 12:00:00.000000",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "machine_id",
-  "machine_name",
-  "machine_gg"
+  "machine_gg_name"
  ],
  "fields": [
   {
-   "fieldname": "machine_id",
+   "fieldname": "machine_gg_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Machine ID",
+   "label": "Machine GG Name",
    "reqd": 1,
    "unique": 1
-  },
-  {
-   "fieldname": "machine_name",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Machine Name",
-   "reqd": 1
-  },
-  {
-   "fieldname": "machine_gg",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Machine GG",
-   "options": "Machine GG",
-   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-13 14:16:45.492761",
+ "modified": "2026-02-13 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Albion",
- "name": "Machine",
+ "name": "Machine GG",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [

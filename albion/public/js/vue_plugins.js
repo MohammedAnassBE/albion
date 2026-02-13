@@ -36,10 +36,14 @@ frappe.albion.ui.OrderMatrix = class {
         return [];
     }
 
-    updateWrapper(wrapper) {
-        this.$wrapper = $(wrapper);
-        if (this.vue && this.vue.$el) {
-            $(this.vue.$el).appendTo(this.$wrapper);
+    destroy() {
+        if (this.app) {
+            this.app.unmount();
+            this.app = null;
+            this.vue = null;
+        }
+        if (this.$wrapper) {
+            this.$wrapper.html('');
         }
     }
 }

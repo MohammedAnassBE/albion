@@ -1,10 +1,12 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:ORD-{YYYY}-{#####}",
  "creation": "2026-02-09 17:02:51.789401",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "customer",
   "order_date",
   "delivery_date",
   "items",
@@ -14,6 +16,14 @@
   "amended_from"
  ],
  "fields": [
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1
+  },
   {
    "fieldname": "order_date",
    "fieldtype": "Date",
