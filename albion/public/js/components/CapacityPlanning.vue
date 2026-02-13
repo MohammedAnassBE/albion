@@ -2050,10 +2050,48 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
             allModified.push(...result.modified);
             totalUnplaced += result.unplaced;
         } else {
+            // Capture group's current end date before reflow
+            const cellAllocs = getAllocations(mId, dateStr);
+            const refAlloc = cellAllocs[0];
+            let oldEndDate = null;
+            if (refAlloc) {
+                const groupAllocs = allocations.value.filter(a =>
+                    a.machine_id === mId &&
+                    a.item === refAlloc.item && a.colour === refAlloc.colour &&
+                    a.size === refAlloc.size && a.order === refAlloc.order &&
+                    a.process === refAlloc.process
+                );
+                oldEndDate = groupAllocs.reduce((latest, a) => {
+                    return !latest || a.operation_date > latest ? a.operation_date : latest;
+                }, null);
+            }
+
             const result = reflowForOvertime(mId, dateStr);
             allAdded.push(...result.addedKeys);
             allRemoved.push(...result.removedKeys);
             allModified.push(...result.modified);
+
+            // Check if days were freed and shift subsequent groups left
+            if (refAlloc && oldEndDate) {
+                const groupAllocsAfter = allocations.value.filter(a =>
+                    a.machine_id === mId &&
+                    a.item === refAlloc.item && a.colour === refAlloc.colour &&
+                    a.size === refAlloc.size && a.order === refAlloc.order &&
+                    a.process === refAlloc.process
+                );
+                const newEndDate = groupAllocsAfter.reduce((latest, a) => {
+                    return !latest || a.operation_date > latest ? a.operation_date : latest;
+                }, null);
+
+                if (newEndDate && oldEndDate > newEndDate) {
+                    const dates = dateRange.value;
+                    const freedDays = dates.indexOf(oldEndDate) - dates.indexOf(newEndDate);
+                    if (freedDays > 0) {
+                        const shiftResult = shiftSubsequentAllocsLeft(mId, newEndDate, freedDays);
+                        allModified.push(...shiftResult.modified);
+                    }
+                }
+            }
         }
     }
 
@@ -2462,6 +2500,47 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
     return { addedKeys, removedKeys, modified };
 }
 
+function shiftSubsequentAllocsLeft(machineId, afterDate, dayOffset) {
+    const modified = [];
+    const dates = dateRange.value;
+    const afterIdx = dates.indexOf(afterDate);
+    if (afterIdx < 0 || dayOffset <= 0) return { modified };
+
+    // Find all allocations on this machine with operation_date after afterDate
+    const subsequent = allocations.value.filter(a =>
+        a.machine_id === machineId && dates.indexOf(a.operation_date) > afterIdx
+    );
+
+    // Sort by date index ascending so we shift in order
+    subsequent.sort((a, b) => dates.indexOf(a.operation_date) - dates.indexOf(b.operation_date));
+
+    for (const alloc of subsequent) {
+        const currentIdx = dates.indexOf(alloc.operation_date);
+        const targetIdx = currentIdx - dayOffset;
+
+        // Guard: don't shift into or before afterDate, don't go negative
+        if (targetIdx < 0 || targetIdx <= afterIdx) continue;
+
+        const oldDate = alloc.operation_date;
+        const oldShift = alloc.shift;
+        const newDate = dates[targetIdx];
+        const newShift = getShiftForDate(newDate);
+
+        modified.push({
+            key: alloc.key,
+            oldQty: alloc.quantity,
+            oldMinutes: alloc.allocated_minutes,
+            oldDate,
+            oldShift
+        });
+
+        alloc.operation_date = newDate;
+        alloc.shift = newShift?.name || '';
+    }
+
+    return { modified };
+}
+
 function simulateAutoSplit(machineId, startDateStr, totalQty, minutesPerUnit) {
     const plan = [];
     let remaining = totalQty;
@@ -2866,12 +2945,14 @@ function undoLastAction() {
             action.data.removedKeys.forEach(snapshot => {
                 allocations.value.push(snapshot);
             });
-            // Restore modified allocations to their old qty/minutes
-            action.data.modified.forEach(({ key, oldQty, oldMinutes }) => {
+            // Restore modified allocations to their old qty/minutes/date/shift
+            action.data.modified.forEach(({ key, oldQty, oldMinutes, oldDate, oldShift }) => {
                 const a = allocations.value.find(al => al.key === key);
                 if (a) {
-                    a.quantity = oldQty;
-                    a.allocated_minutes = oldMinutes;
+                    if (oldQty !== undefined) a.quantity = oldQty;
+                    if (oldMinutes !== undefined) a.allocated_minutes = oldMinutes;
+                    if (oldDate !== undefined) a.operation_date = oldDate;
+                    if (oldShift !== undefined) a.shift = oldShift;
                 }
             });
             break;
