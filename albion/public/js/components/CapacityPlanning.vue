@@ -1846,14 +1846,18 @@ function confirmShiftByDays() {
 
     // Shift cascading allocations first (before moving the primary group)
     const shiftedAllocations = [];
+    const shiftedAllocRefs = [];
     if (preview.affected.length > 0) {
         preview.affected.forEach(({ allocation, currentDate, newDate }) => {
-            shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift });
+            shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
             allocation.operation_date = newDate;
             const newShift = getShiftForDate(newDate);
             allocation.shift = newShift?.name || '';
+            shiftedAllocRefs.push(allocation);
         });
     }
+
+    const refitResult = refitShiftedAllocations(shiftedAllocRefs);
 
     // Build groupData for executeMoveGroup
     const groupData = {
@@ -1871,7 +1875,9 @@ function confirmShiftByDays() {
             moveAllocations: moveResult.allocations,
             overflowKeys: moveResult.overflowKeys,
             removedSnapshots: moveResult.removedSnapshots,
-            shiftedAllocations
+            shiftedAllocations,
+            refitAddedKeys: refitResult.addedKeys,
+            refitRemovedSnapshots: refitResult.removedSnapshots
         });
         const groupCount = new Set(preview.affected.map(a => {
             const g = groupedAllocations.value.find(grp => grp.alloc_keys.includes(a.allocation.key));
@@ -1988,16 +1994,22 @@ function confirmBackfill() {
     const bd = backfillModalData.value;
 
     const shiftedAllocations = [];
+    const shiftedAllocRefs = [];
     bd.affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
-        shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift });
+        shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
         allocation.operation_date = newDate;
         const newShift = getShiftForDate(newDate);
         allocation.shift = newShift?.name || '';
+        shiftedAllocRefs.push(allocation);
     });
+
+    const refitResult = refitShiftedAllocations(shiftedAllocRefs);
 
     saveAction('delete_group_and_backfill', {
         allocations: bd.deletedAllocations,
-        shiftedAllocations
+        shiftedAllocations,
+        refitAddedKeys: refitResult.addedKeys,
+        refitRemovedSnapshots: refitResult.removedSnapshots
     });
     frappe.show_alert({ message: __(`Deleted group and shifted ${shiftedAllocations.length} allocation(s) backward`), indicator: 'green' });
     closeBackfillModal();
@@ -2089,6 +2101,8 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
                     if (freedDays > 0) {
                         const shiftResult = shiftSubsequentAllocsLeft(mId, newEndDate, freedDays);
                         allModified.push(...shiftResult.modified);
+                        if (shiftResult.addedKeys) allAdded.push(...shiftResult.addedKeys);
+                        if (shiftResult.removedSnapshots) allRemoved.push(...shiftResult.removedSnapshots);
                     }
                 }
             }
@@ -2538,7 +2552,72 @@ function shiftSubsequentAllocsLeft(machineId, afterDate, dayOffset) {
         alloc.shift = newShift?.name || '';
     }
 
-    return { modified };
+    // Refit shifted allocations to new date capacities
+    const refitResult = refitShiftedAllocations(subsequent);
+
+    return { modified, addedKeys: refitResult.addedKeys, removedSnapshots: refitResult.removedSnapshots };
+}
+
+function refitShiftedAllocations(movedAllocs) {
+    const addedKeys = [];
+    const removedSnapshots = [];
+
+    // Group by identity (machine/item/colour/size/order/process)
+    const groups = new Map();
+    for (const alloc of movedAllocs) {
+        const gk = `${alloc.machine_id}|${alloc.item}|${alloc.colour}|${alloc.size}|${alloc.order}|${alloc.process}`;
+        if (!groups.has(gk)) groups.set(gk, []);
+        groups.get(gk).push(alloc);
+    }
+
+    for (const [, groupAllocs] of groups) {
+        groupAllocs.sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+
+        const totalQty = groupAllocs.reduce((s, a) => s + a.quantity, 0);
+        const totalMin = groupAllocs.reduce((s, a) => s + a.allocated_minutes, 0);
+        const mpu = totalQty > 0 ? totalMin / totalQty : 0;
+        if (mpu <= 0) continue;
+
+        let remaining = totalQty;
+        const toRemove = [];
+        let lastKeptDate = null;
+
+        for (const alloc of groupAllocs) {
+            if (remaining < MIN_BATCH_SIZE) { toRemove.push(alloc); continue; }
+            const cap = getEffectiveMinutes(alloc.operation_date, alloc.machine_id);
+            const fittingQty = Math.floor(cap / mpu);
+            const allocQty = Math.min(remaining, Math.max(fittingQty, 0));
+
+            if (allocQty >= MIN_BATCH_SIZE) {
+                alloc.quantity = allocQty;
+                alloc.allocated_minutes = allocQty * mpu;
+                remaining -= allocQty;
+                lastKeptDate = alloc.operation_date;
+            } else {
+                toRemove.push(alloc);
+            }
+        }
+
+        for (const alloc of toRemove) {
+            removedSnapshots.push({ ...alloc });
+            const idx = allocations.value.findIndex(a => a.key === alloc.key);
+            if (idx > -1) allocations.value.splice(idx, 1);
+        }
+
+        if (remaining >= MIN_BATCH_SIZE) {
+            const startDate = lastKeptDate ? getNextDate(lastKeptDate) : groupAllocs[0].operation_date;
+            if (startDate) {
+                const ref = groupAllocs[0];
+                const result = executeAutoSplit(
+                    ref.machine_id, startDate, remaining, mpu,
+                    ref.item, ref.colour, ref.size, ref.order, ref.process
+                );
+                addedKeys.push(...result.allocationKeys);
+            }
+        }
+    }
+
+    return { addedKeys, removedSnapshots };
 }
 
 function simulateAutoSplit(machineId, startDateStr, totalQty, minutesPerUnit) {
@@ -2816,11 +2895,22 @@ function undoLastAction() {
                 const idx = allocations.value.findIndex(a => a.key === key);
                 if (idx > -1) allocations.value.splice(idx, 1);
             });
-            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
+            if (action.data.refitAddedKeys) {
+                action.data.refitAddedKeys.forEach(key => {
+                    const idx = allocations.value.findIndex(a => a.key === key);
+                    if (idx > -1) allocations.value.splice(idx, 1);
+                });
+            }
+            if (action.data.refitRemovedSnapshots) {
+                action.data.refitRemovedSnapshots.forEach(snap => allocations.value.push(snap));
+            }
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
                 const a = allocations.value.find(al => al.key === key);
                 if (a) {
                     a.operation_date = oldDate;
                     a.shift = oldShift || '';
+                    if (oldQuantity !== undefined) a.quantity = oldQuantity;
+                    if (oldAllocatedMinutes !== undefined) a.allocated_minutes = oldAllocatedMinutes;
                 }
             });
             break;
@@ -2829,11 +2919,22 @@ function undoLastAction() {
                 const idx = allocations.value.findIndex(a => a.key === key);
                 if (idx > -1) allocations.value.splice(idx, 1);
             });
-            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
+            if (action.data.refitAddedKeys) {
+                action.data.refitAddedKeys.forEach(key => {
+                    const idx = allocations.value.findIndex(a => a.key === key);
+                    if (idx > -1) allocations.value.splice(idx, 1);
+                });
+            }
+            if (action.data.refitRemovedSnapshots) {
+                action.data.refitRemovedSnapshots.forEach(snap => allocations.value.push(snap));
+            }
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
                 const a = allocations.value.find(al => al.key === key);
                 if (a) {
                     a.operation_date = oldDate;
                     a.shift = oldShift || '';
+                    if (oldQuantity !== undefined) a.quantity = oldQuantity;
+                    if (oldAllocatedMinutes !== undefined) a.allocated_minutes = oldAllocatedMinutes;
                 }
             });
             if (action.data.sourceRemoved) {
@@ -2884,12 +2985,24 @@ function undoLastAction() {
             if (action.data.removedSnapshots?.length) {
                 action.data.removedSnapshots.forEach(snap => allocations.value.push(snap));
             }
-            // Reverse shifted allocations first
-            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
+            // Undo refit: remove spill allocations and restore removed allocs
+            if (action.data.refitAddedKeys) {
+                action.data.refitAddedKeys.forEach(key => {
+                    const idx = allocations.value.findIndex(a => a.key === key);
+                    if (idx > -1) allocations.value.splice(idx, 1);
+                });
+            }
+            if (action.data.refitRemovedSnapshots) {
+                action.data.refitRemovedSnapshots.forEach(snap => allocations.value.push(snap));
+            }
+            // Reverse shifted allocations with quantity/minutes restoration
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
                 const a = allocations.value.find(al => al.key === key);
                 if (a) {
                     a.operation_date = oldDate;
                     a.shift = oldShift || '';
+                    if (oldQuantity !== undefined) a.quantity = oldQuantity;
+                    if (oldAllocatedMinutes !== undefined) a.allocated_minutes = oldAllocatedMinutes;
                 }
             });
             // Then reverse group move with quantity/minutes restoration
@@ -2910,12 +3023,24 @@ function undoLastAction() {
             });
             break;
         case 'delete_group_and_backfill':
-            // Reverse shifted allocations first
-            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
+            // Undo refit: remove spill allocations and restore removed allocs
+            if (action.data.refitAddedKeys) {
+                action.data.refitAddedKeys.forEach(key => {
+                    const idx = allocations.value.findIndex(a => a.key === key);
+                    if (idx > -1) allocations.value.splice(idx, 1);
+                });
+            }
+            if (action.data.refitRemovedSnapshots) {
+                action.data.refitRemovedSnapshots.forEach(snap => allocations.value.push(snap));
+            }
+            // Reverse shifted allocations with quantity/minutes restoration
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
                 const a = allocations.value.find(al => al.key === key);
                 if (a) {
                     a.operation_date = oldDate;
                     a.shift = oldShift || '';
+                    if (oldQuantity !== undefined) a.quantity = oldQuantity;
+                    if (oldAllocatedMinutes !== undefined) a.allocated_minutes = oldAllocatedMinutes;
                 }
             });
             // Then restore deleted allocations
@@ -3393,12 +3518,16 @@ function confirmShift() {
     if (sd.type === 'move_group') {
         // Shift conflicting allocations to new dates
         const shiftedAllocations = [];
+        const shiftedAllocRefs = [];
         sd.affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
-            shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift });
+            shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
             allocation.operation_date = newDate;
             const newShift = getShiftForDate(newDate);
             allocation.shift = newShift?.name || '';
+            shiftedAllocRefs.push(allocation);
         });
+
+        const refitResult = refitShiftedAllocations(shiftedAllocRefs);
 
         // Execute the group move
         const moveResult = executeMoveGroup(sd.groupData, sd.targetDays, sd.targetMachineId);
@@ -3407,7 +3536,9 @@ function confirmShift() {
             moveAllocations: moveResult.allocations,
             overflowKeys: moveResult.overflowKeys,
             removedSnapshots: moveResult.removedSnapshots,
-            shiftedAllocations
+            shiftedAllocations,
+            refitAddedKeys: refitResult.addedKeys,
+            refitRemovedSnapshots: refitResult.removedSnapshots
         });
         frappe.show_alert({ message: __(`Shifted ${shiftedAllocations.length} allocation(s) and moved group successfully`), indicator: 'green' });
         closeShiftModal();
@@ -3490,12 +3621,16 @@ function executeShiftAndAllocate(shiftData, sourceResult) {
     const { affectedAllocations, pendingDropData: pd, dropQty, type } = shiftData;
 
     const shiftedAllocations = [];
+    const shiftedAllocRefs = [];
     affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
-        shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift });
+        shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
         allocation.operation_date = newDate;
         const newShift = getShiftForDate(newDate);
         allocation.shift = newShift?.name || '';
+        shiftedAllocRefs.push(allocation);
     });
+
+    const refitResult = refitShiftedAllocations(shiftedAllocRefs);
 
     const orderForSplit = type === 'move' ? pd.order : undefined;
     const processForSplit = type === 'move' ? pd.process : undefined;
@@ -3508,6 +3643,8 @@ function executeShiftAndAllocate(shiftData, sourceResult) {
         saveAction('shift_and_move', {
             addedKeys: allocationKeys,
             shiftedAllocations,
+            refitAddedKeys: refitResult.addedKeys,
+            refitRemovedSnapshots: refitResult.removedSnapshots,
             sourceRemoved: sourceResult.sourceRemoved,
             sourceKey: shiftData.sourceKey,
             sourceSnapshot: sourceResult.sourceSnapshot || null,
@@ -3517,7 +3654,9 @@ function executeShiftAndAllocate(shiftData, sourceResult) {
     } else if (allocationsMade > 0 || shiftedAllocations.length > 0) {
         saveAction('shift_and_add', {
             addedKeys: allocationKeys,
-            shiftedAllocations
+            shiftedAllocations,
+            refitAddedKeys: refitResult.addedKeys,
+            refitRemovedSnapshots: refitResult.removedSnapshots
         });
     }
 

@@ -12,6 +12,16 @@
                     </button>
                 </div>
             </div>
+            <div v-if="!readOnly() && itemData.availableColours.length > 0" class="colour-selector">
+                <span class="colour-selector-label">Colours:</span>
+                <span
+                    v-for="colour in itemData.availableColours"
+                    :key="colour"
+                    class="colour-tag"
+                    :class="itemData.colours.includes(colour) ? 'selected' : 'unselected'"
+                    @click="toggleColour(itemName, colour)"
+                >{{ colour }}</span>
+            </div>
             <table class="table table-bordered table-sm" v-if="itemData.colours.length > 0 && itemData.sizes.length > 0">
                 <thead>
                     <tr>
@@ -41,7 +51,12 @@
                 </tbody>
             </table>
             <div v-else class="text-muted">
-                Loading colours and sizes from item master...
+                <template v-if="itemData.availableColours.length > 0 && itemData.colours.length === 0">
+                    Select colours above to enter quantities.
+                </template>
+                <template v-else>
+                    Loading colours and sizes from item master...
+                </template>
             </div>
         </div>
     </div>
@@ -79,6 +94,7 @@ async function initMatrix(items = null, orderDetails = null) {
         if (!itemName) return;
 
         matrixData.value[itemName] = {
+            availableColours: [],
             sizes: [],
             colours: [],
             quantities: {}
@@ -106,6 +122,10 @@ function loadOrderDetails(orderDetails = null) {
 
         const item = matrixData.value[itemName];
 
+        if (!item.availableColours.includes(detail.colour)) {
+            item.availableColours.push(detail.colour);
+        }
+
         if (!item.colours.includes(detail.colour)) {
             item.colours.push(detail.colour);
             item.quantities[detail.colour] = {};
@@ -117,6 +137,18 @@ function loadOrderDetails(orderDetails = null) {
 
         item.quantities[detail.colour][detail.size] = detail.quantity;
     });
+
+    // Ensure all selected colours have entries for all sizes
+    Object.keys(matrixData.value).forEach(itemName => {
+        const item = matrixData.value[itemName];
+        item.colours.forEach(colour => {
+            item.sizes.forEach(size => {
+                if (item.quantities[colour][size] === undefined) {
+                    item.quantities[colour][size] = 0;
+                }
+            });
+        });
+    });
 }
 
 async function loadFromItem(itemName) {
@@ -125,29 +157,31 @@ async function loadFromItem(itemName) {
             method: 'albion.albion.doctype.order.order.get_item_details',
             args: { item_code: itemName }
         });
-        
+
         if (response.message) {
             const itemData = matrixData.value[itemName];
-            
-            // Load colours
+
+            // Load colours into availableColours (not selected by default)
             response.message.colours.forEach(colour => {
-                if (!itemData.colours.includes(colour.colour)) {
-                    itemData.colours.push(colour.colour);
-                    itemData.quantities[colour.colour] = {};
+                if (!itemData.availableColours.includes(colour.colour)) {
+                    itemData.availableColours.push(colour.colour);
                 }
             });
-            
+
             // Load sizes
             response.message.sizes.forEach(size => {
                 if (!itemData.sizes.includes(size.size)) {
                     itemData.sizes.push(size.size);
                 }
             });
-            
-            // Initialize quantities
+
+            // Initialize quantities for already-selected colours
             itemData.colours.forEach(colour => {
+                if (!itemData.quantities[colour]) {
+                    itemData.quantities[colour] = {};
+                }
                 itemData.sizes.forEach(size => {
-                    if (!itemData.quantities[colour][size]) {
+                    if (itemData.quantities[colour][size] === undefined) {
                         itemData.quantities[colour][size] = 0;
                     }
                 });
@@ -159,8 +193,59 @@ async function loadFromItem(itemName) {
     }
 }
 
+function toggleColour(itemName, colour) {
+    const itemData = matrixData.value[itemName];
+    const idx = itemData.colours.indexOf(colour);
+
+    if (idx === -1) {
+        // Select: add colour and initialize quantities
+        itemData.colours.push(colour);
+        itemData.quantities[colour] = {};
+        itemData.sizes.forEach(size => {
+            itemData.quantities[colour][size] = 0;
+        });
+    } else {
+        // Deselect: check if any quantities are non-zero
+        const hasQty = itemData.sizes.some(size => {
+            return (parseFloat(itemData.quantities[colour][size]) || 0) > 0;
+        });
+        if (hasQty) {
+            frappe.msgprint(__('Remove quantities for {0} first before deselecting.', [colour]));
+            return;
+        }
+        itemData.colours.splice(idx, 1);
+        delete itemData.quantities[colour];
+    }
+
+    const details = getData();
+    emit('updated', details);
+    if (!cur_frm.is_dirty()) {
+        cur_frm.dirty();
+    }
+}
+
 async function refreshItem(itemName) {
+    const itemData = matrixData.value[itemName];
+    const prevColours = [...itemData.colours];
+    const prevQuantities = JSON.parse(JSON.stringify(itemData.quantities));
+
+    // Reset availableColours and sizes, then reload from Item master
+    itemData.availableColours = [];
+    itemData.sizes = [];
+
     await loadFromItem(itemName);
+
+    // Restore previous colour selections and quantities
+    itemData.colours = prevColours.filter(c => itemData.availableColours.includes(c));
+    itemData.quantities = {};
+    itemData.colours.forEach(colour => {
+        itemData.quantities[colour] = {};
+        itemData.sizes.forEach(size => {
+            itemData.quantities[colour][size] = (prevQuantities[colour] && prevQuantities[colour][size] !== undefined)
+                ? prevQuantities[colour][size]
+                : 0;
+        });
+    });
 }
 
 function onQuantityChange() {
@@ -181,7 +266,7 @@ function getRowTotal(quantities) {
 
 function getData() {
     const details = [];
-    
+
     Object.keys(matrixData.value).forEach(item => {
         const itemData = matrixData.value[item];
         itemData.colours.forEach(colour => {
@@ -198,7 +283,7 @@ function getData() {
             });
         });
     });
-    
+
     return details;
 }
 
@@ -234,6 +319,42 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
 .item-actions {
     display: flex;
     gap: 8px;
+}
+.colour-selector {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+.colour-selector-label {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-right: 2px;
+}
+.colour-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+}
+.colour-tag.selected {
+    background-color: var(--primary);
+    color: #fff;
+    border: 1px solid var(--primary);
+}
+.colour-tag.unselected {
+    background-color: var(--control-bg);
+    color: var(--text-muted);
+    border: 1px dashed var(--gray-400);
+}
+.colour-tag.unselected:hover {
+    border-color: var(--primary);
+    color: var(--primary);
 }
 .qty-input {
     width: 80px;
