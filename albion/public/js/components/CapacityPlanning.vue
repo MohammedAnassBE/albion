@@ -1206,20 +1206,109 @@ function onBarContextMenu(event, group) {
 }
 
 function executeMoveGroup(groupData, targetDays, newMachineId) {
+    // Compute minutesPerUnit and total quantity from group totals
+    const totalQty = targetDays.reduce((s, { alloc }) => s + alloc.quantity, 0);
+    const totalMin = targetDays.reduce((s, { alloc }) => s + alloc.allocated_minutes, 0);
+    const minutesPerUnit = totalQty > 0 ? totalMin / totalQty : 0;
+
+    // Save undo data including old quantity/minutes (full snapshot for removed allocs)
     const undoData = targetDays.map(({ alloc }) => ({
         key: alloc.key,
         oldMachineId: alloc.machine_id,
         oldDate: alloc.operation_date,
-        oldShift: alloc.shift
+        oldShift: alloc.shift,
+        oldQuantity: alloc.quantity,
+        oldAllocatedMinutes: alloc.allocated_minutes
     }));
 
+    // Move all allocations to new positions first
     targetDays.forEach(({ alloc, newDate }) => {
         alloc.machine_id = newMachineId;
         alloc.operation_date = newDate;
         alloc.shift = getShiftForDate(newDate)?.name || '';
     });
 
-    return undoData;
+    // Redistribute total quantity across target days based on each day's capacity
+    let remaining = totalQty;
+    const removedSnapshots = [];
+
+    for (const { alloc, newDate } of targetDays) {
+        if (remaining <= 0 || minutesPerUnit <= 0) {
+            // Save full snapshot before removing (for undo)
+            const ud = undoData.find(u => u.key === alloc.key);
+            removedSnapshots.push({
+                key: alloc.key,
+                machine_id: ud.oldMachineId,
+                operation_date: ud.oldDate,
+                shift: ud.oldShift,
+                order: alloc.order,
+                item: alloc.item,
+                process: alloc.process,
+                colour: alloc.colour,
+                size: alloc.size,
+                quantity: ud.oldQuantity,
+                allocated_minutes: ud.oldAllocatedMinutes
+            });
+            const idx = allocations.value.findIndex(a => a.key === alloc.key);
+            if (idx > -1) allocations.value.splice(idx, 1);
+            continue;
+        }
+
+        const effectiveCap = getEffectiveMinutes(newDate, newMachineId);
+        const maxQty = Math.floor(effectiveCap / minutesPerUnit);
+        const allocQty = Math.min(remaining, maxQty);
+
+        alloc.quantity = allocQty;
+        alloc.allocated_minutes = allocQty * minutesPerUnit;
+        remaining -= allocQty;
+    }
+
+    // Place overflow on subsequent available days if quantity remains
+    const overflowKeys = [];
+    if (remaining > 0 && minutesPerUnit > 0) {
+        const lastTargetDate = targetDays[targetDays.length - 1].newDate;
+        const allMovedKeys = targetDays.map(({ alloc }) => alloc.key);
+        let currentDate = getNextDate(lastTargetDate);
+        const refAlloc = targetDays[0].alloc;
+
+        while (remaining > 0 && currentDate) {
+            if (!isPastDate(currentDate) && validateMachineDaySlot(newMachineId, currentDate, allMovedKeys)) {
+                const effectiveCap = getEffectiveMinutes(currentDate, newMachineId);
+                const maxQty = Math.floor(effectiveCap / minutesPerUnit);
+                const allocQty = Math.min(remaining, maxQty);
+
+                if (allocQty > 0) {
+                    const key = `${newMachineId}-${currentDate}-gmove-${Date.now()}-${overflowKeys.length}`;
+                    const shift = getShiftForDate(currentDate);
+                    allocations.value.push({
+                        key,
+                        machine_id: newMachineId,
+                        operation_date: currentDate,
+                        shift: shift?.name || '',
+                        order: refAlloc.order,
+                        item: refAlloc.item,
+                        process: refAlloc.process,
+                        colour: refAlloc.colour,
+                        size: refAlloc.size,
+                        quantity: allocQty,
+                        allocated_minutes: allocQty * minutesPerUnit
+                    });
+                    overflowKeys.push(key);
+                    remaining -= allocQty;
+                }
+            }
+            currentDate = getNextDate(currentDate);
+        }
+
+        if (remaining > 0) {
+            frappe.show_alert({
+                message: __(`${remaining} units could not be placed (no available days)`),
+                indicator: 'orange'
+            });
+        }
+    }
+
+    return { allocations: undoData, overflowKeys, removedSnapshots };
 }
 
 function computeGroupMoveShiftPlan(machineId, targetDays, conflicting, excludeKeys, groupData) {
@@ -1333,8 +1422,8 @@ function moveGroup(groupData, newMachineId, newStartDate) {
 
     if (conflicting.length === 0) {
         // No conflicts - move directly
-        const undoData = executeMoveGroup(groupData, targetDays, newMachineId);
-        saveAction('move_group', { allocations: undoData });
+        const result = executeMoveGroup(groupData, targetDays, newMachineId);
+        saveAction('move_group', { allocations: result.allocations, overflowKeys: result.overflowKeys, removedSnapshots: result.removedSnapshots });
         frappe.show_alert({ message: __('Group moved successfully'), indicator: 'green' });
         return;
     }
@@ -1775,11 +1864,13 @@ function confirmShiftByDays() {
     };
 
     // Execute the primary group move
-    const moveUndoData = executeMoveGroup(groupData, preview.targetDays, machineId);
+    const moveResult = executeMoveGroup(groupData, preview.targetDays, machineId);
 
     if (shiftedAllocations.length > 0) {
         saveAction('shift_and_move_group', {
-            moveAllocations: moveUndoData,
+            moveAllocations: moveResult.allocations,
+            overflowKeys: moveResult.overflowKeys,
+            removedSnapshots: moveResult.removedSnapshots,
             shiftedAllocations
         });
         const groupCount = new Set(preview.affected.map(a => {
@@ -1788,7 +1879,7 @@ function confirmShiftByDays() {
         })).size;
         frappe.show_alert({ message: __(`Shifted ${groupCount} group(s) and moved group by ${shiftByDaysCount.value} day(s)`), indicator: 'green' });
     } else {
-        saveAction('move_group', { allocations: moveUndoData });
+        saveAction('move_group', { allocations: moveResult.allocations, overflowKeys: moveResult.overflowKeys, removedSnapshots: moveResult.removedSnapshots });
         frappe.show_alert({ message: __(`Group shifted by ${shiftByDaysCount.value} day(s)`), indicator: 'green' });
     }
 
@@ -1933,6 +2024,442 @@ function getDateAtOffset(dateStr, offset) {
     if (idx < 0) return null;
     const target = idx + offset;
     return target >= 0 && target < dates.length ? dates[target] : null;
+}
+
+// === Reflow After Shift Alteration ===
+
+function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) {
+    // Determine affected machines
+    const affectedMachines = machineId
+        ? [machineId]
+        : machines.value.map(m => m.machine_id);
+
+    const allAdded = [];
+    const allRemoved = [];
+    const allModified = [];
+    let totalUnplaced = 0;
+
+    for (const mId of affectedMachines) {
+        const cellAllocs = getAllocations(mId, dateStr);
+        if (cellAllocs.length === 0) continue;
+
+        if (alterationType === 'Reduce') {
+            const result = reflowForBreak(mId, dateStr);
+            allAdded.push(...result.addedKeys);
+            allRemoved.push(...result.removedKeys);
+            allModified.push(...result.modified);
+            totalUnplaced += result.unplaced;
+        } else {
+            const result = reflowForOvertime(mId, dateStr);
+            allAdded.push(...result.addedKeys);
+            allRemoved.push(...result.removedKeys);
+            allModified.push(...result.modified);
+        }
+    }
+
+    // Only save undo if something changed
+    if (allAdded.length || allRemoved.length || allModified.length) {
+        // Deduplicate modified entries (keep first snapshot per key)
+        const seenMod = new Set();
+        const dedupedModified = allModified.filter(m => {
+            if (seenMod.has(m.key)) return false;
+            seenMod.add(m.key);
+            return true;
+        });
+
+        saveAction('alteration_reflow', {
+            addedKeys: [...new Set(allAdded)],
+            removedKeys: allRemoved,
+            modified: dedupedModified
+        });
+
+        const parts = [];
+        if (allAdded.length) parts.push(`${allAdded.length} created`);
+        if (allRemoved.length) parts.push(`${allRemoved.length} removed`);
+        if (allModified.length) parts.push(`${allModified.length} adjusted`);
+        frappe.show_alert({
+            message: __('Reflow complete: ' + parts.join(', ')),
+            indicator: totalUnplaced > 0 ? 'orange' : 'green'
+        });
+
+        if (totalUnplaced > 0) {
+            frappe.show_alert({
+                message: __(`Warning: ${totalUnplaced} qty could not be placed`),
+                indicator: 'orange'
+            });
+        }
+    }
+}
+
+function reflowForBreak(machineId, dateStr) {
+    const addedKeys = [];
+    const removedKeys = [];
+    const modified = [];
+    let unplaced = 0;
+
+    const effectiveCap = getEffectiveMinutes(dateStr, machineId);
+    const cellAllocs = getAllocations(machineId, dateStr);
+    const usedMin = cellAllocs.reduce((s, a) => s + a.allocated_minutes, 0);
+
+    if (usedMin <= effectiveCap) {
+        return { addedKeys, removedKeys, modified, unplaced };
+    }
+
+    // Need to trim excess
+    let excess = usedMin - effectiveCap;
+
+    // Process allocations in reverse order (trim from last added)
+    const sorted = [...cellAllocs].sort((a, b) => b.key.localeCompare(a.key));
+
+    for (const alloc of sorted) {
+        if (excess <= 0) break;
+
+        const minutesPerUnit = alloc.quantity > 0 ? alloc.allocated_minutes / alloc.quantity : 0;
+        if (minutesPerUnit <= 0) continue;
+
+        if (alloc.allocated_minutes <= excess) {
+            // Remove entire allocation and spill all qty forward
+            excess -= alloc.allocated_minutes;
+            removedKeys.push({ ...alloc }); // snapshot
+            const idx = allocations.value.findIndex(a => a.key === alloc.key);
+            if (idx > -1) allocations.value.splice(idx, 1);
+
+            const spillResult = spillForward(
+                machineId, dateStr, alloc.quantity, minutesPerUnit,
+                alloc.item, alloc.colour, alloc.size, alloc.order, alloc.process, 0
+            );
+            addedKeys.push(...spillResult.addedKeys);
+            removedKeys.push(...spillResult.cascadedRemoved);
+            modified.push(...spillResult.cascadedModified);
+            unplaced += spillResult.remaining;
+        } else {
+            // Trim partial qty
+            const trimMinutes = excess;
+            const trimQty = Math.floor(trimMinutes / minutesPerUnit);
+            if (trimQty < 1) continue;
+
+            const actualTrimMin = trimQty * minutesPerUnit;
+            modified.push({ key: alloc.key, oldQty: alloc.quantity, oldMinutes: alloc.allocated_minutes });
+            alloc.quantity -= trimQty;
+            alloc.allocated_minutes -= actualTrimMin;
+            excess -= actualTrimMin;
+
+            const spillResult = spillForward(
+                machineId, dateStr, trimQty, minutesPerUnit,
+                alloc.item, alloc.colour, alloc.size, alloc.order, alloc.process, 0
+            );
+            addedKeys.push(...spillResult.addedKeys);
+            removedKeys.push(...spillResult.cascadedRemoved);
+            modified.push(...spillResult.cascadedModified);
+            unplaced += spillResult.remaining;
+        }
+    }
+
+    return { addedKeys, removedKeys, modified, unplaced };
+}
+
+function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour, size, order, process, depth) {
+    const MAX_CASCADE = 50;
+    if (depth >= MAX_CASCADE || qty < MIN_BATCH_SIZE) {
+        return { addedKeys: [], cascadedRemoved: [], cascadedModified: [], remaining: qty };
+    }
+
+    const addedKeys = [];
+    const cascadedRemoved = [];
+    const cascadedModified = [];
+    let remaining = qty;
+    let currentDate = getNextDate(afterDateStr);
+
+    while (remaining >= MIN_BATCH_SIZE && currentDate) {
+        const cellAllocs = getAllocations(machineId, currentDate);
+        const effectiveCap = getEffectiveMinutes(currentDate, machineId);
+        const usedMin = getUsedMinutes(machineId, currentDate);
+        const availMin = effectiveCap - usedMin;
+
+        // Check if same group exists on this day
+        const sameGroup = cellAllocs.find(a =>
+            a.item === item && a.colour === colour && a.size === size &&
+            a.order === order && a.process === process
+        );
+
+        if (sameGroup) {
+            // Increase existing allocation up to available capacity
+            const canFitQty = Math.floor(availMin / minutesPerUnit);
+            const addQty = Math.min(remaining, canFitQty);
+            if (addQty >= MIN_BATCH_SIZE) {
+                cascadedModified.push({ key: sameGroup.key, oldQty: sameGroup.quantity, oldMinutes: sameGroup.allocated_minutes });
+                sameGroup.quantity += addQty;
+                sameGroup.allocated_minutes += addQty * minutesPerUnit;
+                remaining -= addQty;
+            }
+            currentDate = getNextDate(currentDate);
+            continue;
+        }
+
+        if (cellAllocs.length === 0) {
+            // Empty day — create new allocation
+            const canFitQty = Math.floor(effectiveCap / minutesPerUnit);
+            const allocQty = Math.min(remaining, canFitQty);
+            if (allocQty >= MIN_BATCH_SIZE) {
+                const shift = getShiftForDate(currentDate);
+                const key = `${machineId}-${currentDate}-reflow-${Date.now()}-${addedKeys.length}`;
+                allocations.value.push({
+                    key,
+                    machine_id: machineId,
+                    operation_date: currentDate,
+                    shift: shift?.name || '',
+                    order,
+                    item,
+                    process,
+                    colour,
+                    size,
+                    quantity: allocQty,
+                    allocated_minutes: allocQty * minutesPerUnit
+                });
+                addedKeys.push(key);
+                remaining -= allocQty;
+            }
+            currentDate = getNextDate(currentDate);
+            continue;
+        }
+
+        // Different group on this day — displace it forward, then place ours
+        const occupant = cellAllocs[0];
+        const occMinPerUnit = occupant.quantity > 0 ? occupant.allocated_minutes / occupant.quantity : 0;
+
+        // Displace occupant forward
+        cascadedRemoved.push({ ...occupant });
+        const occQty = occupant.quantity;
+        const idx = allocations.value.findIndex(a => a.key === occupant.key);
+        if (idx > -1) allocations.value.splice(idx, 1);
+
+        const cascadeResult = spillForward(
+            machineId, currentDate, occQty, occMinPerUnit,
+            occupant.item, occupant.colour, occupant.size, occupant.order, occupant.process, depth + 1
+        );
+        addedKeys.push(...cascadeResult.addedKeys);
+        cascadedRemoved.push(...cascadeResult.cascadedRemoved);
+        cascadedModified.push(...cascadeResult.cascadedModified);
+
+        // Now place our qty on the freed day
+        const canFitQty = Math.floor(effectiveCap / minutesPerUnit);
+        const allocQty = Math.min(remaining, canFitQty);
+        if (allocQty >= MIN_BATCH_SIZE) {
+            const shift = getShiftForDate(currentDate);
+            const key = `${machineId}-${currentDate}-reflow-${Date.now()}-${addedKeys.length}`;
+            allocations.value.push({
+                key,
+                machine_id: machineId,
+                operation_date: currentDate,
+                shift: shift?.name || '',
+                order,
+                item,
+                process,
+                colour,
+                size,
+                quantity: allocQty,
+                allocated_minutes: allocQty * minutesPerUnit
+            });
+            addedKeys.push(key);
+            remaining -= allocQty;
+        }
+
+        if (cascadeResult.remaining > 0) {
+            // Occupant couldn't be fully placed — count as unplaced
+            remaining += cascadeResult.remaining;
+        }
+
+        currentDate = getNextDate(currentDate);
+    }
+
+    return { addedKeys, cascadedRemoved, cascadedModified, remaining };
+}
+
+function reflowForOvertime(machineId, dateStr) {
+    const addedKeys = [];
+    const removedKeys = [];
+    const modified = [];
+
+    const effectiveCap = getEffectiveMinutes(dateStr, machineId);
+    const usedMin = getUsedMinutes(machineId, dateStr);
+    const freeMin = effectiveCap - usedMin;
+
+    if (freeMin <= 0) {
+        return { addedKeys, removedKeys, modified };
+    }
+
+    // Find what's on this cell to determine the group identity
+    const cellAllocs = getAllocations(machineId, dateStr);
+    if (cellAllocs.length === 0) {
+        return { addedKeys, removedKeys, modified };
+    }
+
+    const refAlloc = cellAllocs[0];
+    const groupItem = refAlloc.item;
+    const groupColour = refAlloc.colour;
+    const groupSize = refAlloc.size;
+    const groupOrder = refAlloc.order;
+    const groupProcess = refAlloc.process;
+    const minutesPerUnit = refAlloc.quantity > 0 ? refAlloc.allocated_minutes / refAlloc.quantity : 0;
+
+    if (minutesPerUnit <= 0) {
+        return { addedKeys, removedKeys, modified };
+    }
+
+    let freeCapacity = freeMin;
+
+    // Look at subsequent days for same-group allocations to pull back
+    let nextDate = getNextDate(dateStr);
+    while (freeCapacity > 0 && nextDate) {
+        const nextAllocs = getAllocations(machineId, nextDate);
+        const sameGroup = nextAllocs.find(a =>
+            a.item === groupItem && a.colour === groupColour && a.size === groupSize &&
+            a.order === groupOrder && a.process === groupProcess
+        );
+
+        if (!sameGroup) {
+            nextDate = getNextDate(nextDate);
+            continue;
+        }
+
+        const canPullQty = Math.floor(freeCapacity / minutesPerUnit);
+        if (canPullQty < MIN_BATCH_SIZE) break;
+
+        const pullQty = Math.min(canPullQty, sameGroup.quantity);
+        const pullMin = pullQty * minutesPerUnit;
+
+        // Add to current day's allocation
+        modified.push({ key: refAlloc.key, oldQty: refAlloc.quantity, oldMinutes: refAlloc.allocated_minutes });
+        refAlloc.quantity += pullQty;
+        refAlloc.allocated_minutes += pullMin;
+        freeCapacity -= pullMin;
+
+        // Reduce or remove from next day
+        if (pullQty >= sameGroup.quantity) {
+            // Remove entirely
+            removedKeys.push({ ...sameGroup });
+            const idx = allocations.value.findIndex(a => a.key === sameGroup.key);
+            if (idx > -1) allocations.value.splice(idx, 1);
+
+            // Compact: pull further allocations into the freed day
+            const compactResult = compactAfterPull(
+                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+            );
+            addedKeys.push(...compactResult.addedKeys);
+            removedKeys.push(...compactResult.removedKeys);
+            modified.push(...compactResult.modified);
+        } else {
+            modified.push({ key: sameGroup.key, oldQty: sameGroup.quantity, oldMinutes: sameGroup.allocated_minutes });
+            sameGroup.quantity -= pullQty;
+            sameGroup.allocated_minutes -= pullMin;
+
+            // Compact the partially-reduced day — pull from further days to fill freed capacity
+            const compactResult = compactAfterPull(
+                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+            );
+            addedKeys.push(...compactResult.addedKeys);
+            removedKeys.push(...compactResult.removedKeys);
+            modified.push(...compactResult.modified);
+        }
+
+        nextDate = getNextDate(nextDate);
+    }
+
+    return { addedKeys, removedKeys, modified };
+}
+
+function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit) {
+    const addedKeys = [];
+    const removedKeys = [];
+    const modified = [];
+
+    const effectiveCap = getEffectiveMinutes(freedDateStr, machineId);
+    let freeMin = effectiveCap - getUsedMinutes(machineId, freedDateStr);
+
+    if (freeMin <= 0) return { addedKeys, removedKeys, modified };
+
+    // Look further out for same-group allocations
+    let nextDate = getNextDate(freedDateStr);
+    while (freeMin > 0 && nextDate) {
+        const nextAllocs = getAllocations(machineId, nextDate);
+        const sameGroup = nextAllocs.find(a =>
+            a.item === groupItem && a.colour === groupColour && a.size === groupSize &&
+            a.order === groupOrder && a.process === groupProcess
+        );
+
+        if (!sameGroup) {
+            nextDate = getNextDate(nextDate);
+            continue;
+        }
+
+        const canPullQty = Math.floor(freeMin / minutesPerUnit);
+        if (canPullQty < MIN_BATCH_SIZE) break;
+
+        const pullQty = Math.min(canPullQty, sameGroup.quantity);
+        const pullMin = pullQty * minutesPerUnit;
+
+        // Create or augment allocation on freed day
+        const freedAllocs = getAllocations(machineId, freedDateStr);
+        const existingOnFreed = freedAllocs.find(a =>
+            a.item === groupItem && a.colour === groupColour && a.size === groupSize &&
+            a.order === groupOrder && a.process === groupProcess
+        );
+
+        if (existingOnFreed) {
+            modified.push({ key: existingOnFreed.key, oldQty: existingOnFreed.quantity, oldMinutes: existingOnFreed.allocated_minutes });
+            existingOnFreed.quantity += pullQty;
+            existingOnFreed.allocated_minutes += pullMin;
+        } else {
+            const shift = getShiftForDate(freedDateStr);
+            const key = `${machineId}-${freedDateStr}-compact-${Date.now()}-${addedKeys.length}`;
+            allocations.value.push({
+                key,
+                machine_id: machineId,
+                operation_date: freedDateStr,
+                shift: shift?.name || '',
+                order: groupOrder,
+                item: groupItem,
+                process: groupProcess,
+                colour: groupColour,
+                size: groupSize,
+                quantity: pullQty,
+                allocated_minutes: pullMin
+            });
+            addedKeys.push(key);
+            freeMin -= pullMin;
+
+            // Reduce or remove source
+            if (pullQty >= sameGroup.quantity) {
+                removedKeys.push({ ...sameGroup });
+                const idx = allocations.value.findIndex(a => a.key === sameGroup.key);
+                if (idx > -1) allocations.value.splice(idx, 1);
+            } else {
+                modified.push({ key: sameGroup.key, oldQty: sameGroup.quantity, oldMinutes: sameGroup.allocated_minutes });
+                sameGroup.quantity -= pullQty;
+                sameGroup.allocated_minutes -= pullMin;
+            }
+
+            nextDate = getNextDate(nextDate);
+            continue;
+        }
+
+        freeMin -= pullMin;
+
+        // Reduce or remove source
+        if (pullQty >= sameGroup.quantity) {
+            removedKeys.push({ ...sameGroup });
+            const idx = allocations.value.findIndex(a => a.key === sameGroup.key);
+            if (idx > -1) allocations.value.splice(idx, 1);
+        } else {
+            modified.push({ key: sameGroup.key, oldQty: sameGroup.quantity, oldMinutes: sameGroup.allocated_minutes });
+            sameGroup.quantity -= pullQty;
+            sameGroup.allocated_minutes -= pullMin;
+        }
+
+        nextDate = getNextDate(nextDate);
+    }
+
+    return { addedKeys, removedKeys, modified };
 }
 
 function simulateAutoSplit(machineId, startDateStr, totalQty, minutesPerUnit) {
@@ -2243,16 +2770,41 @@ function undoLastAction() {
             }
             break;
         case 'move_group':
-            action.data.allocations.forEach(({ key, oldMachineId, oldDate, oldShift }) => {
+            // Remove overflow allocations first
+            if (action.data.overflowKeys?.length) {
+                action.data.overflowKeys.forEach(key => {
+                    const idx = allocations.value.findIndex(a => a.key === key);
+                    if (idx > -1) allocations.value.splice(idx, 1);
+                });
+            }
+            // Re-add removed allocations (consolidated days that were eliminated)
+            if (action.data.removedSnapshots?.length) {
+                action.data.removedSnapshots.forEach(snap => allocations.value.push(snap));
+            }
+            // Restore original position, quantity, and minutes
+            action.data.allocations.forEach(({ key, oldMachineId, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
                 const a = allocations.value.find(al => al.key === key);
                 if (a) {
                     a.machine_id = oldMachineId;
                     a.operation_date = oldDate;
                     a.shift = oldShift || '';
+                    if (oldQuantity !== undefined) a.quantity = oldQuantity;
+                    if (oldAllocatedMinutes !== undefined) a.allocated_minutes = oldAllocatedMinutes;
                 }
             });
             break;
         case 'shift_and_move_group':
+            // Remove overflow allocations first
+            if (action.data.overflowKeys?.length) {
+                action.data.overflowKeys.forEach(key => {
+                    const idx = allocations.value.findIndex(a => a.key === key);
+                    if (idx > -1) allocations.value.splice(idx, 1);
+                });
+            }
+            // Re-add removed allocations (consolidated days that were eliminated)
+            if (action.data.removedSnapshots?.length) {
+                action.data.removedSnapshots.forEach(snap => allocations.value.push(snap));
+            }
             // Reverse shifted allocations first
             action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
                 const a = allocations.value.find(al => al.key === key);
@@ -2261,13 +2813,15 @@ function undoLastAction() {
                     a.shift = oldShift || '';
                 }
             });
-            // Then reverse group move
-            action.data.moveAllocations.forEach(({ key, oldMachineId, oldDate, oldShift }) => {
+            // Then reverse group move with quantity/minutes restoration
+            action.data.moveAllocations.forEach(({ key, oldMachineId, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
                 const a = allocations.value.find(al => al.key === key);
                 if (a) {
                     a.machine_id = oldMachineId;
                     a.operation_date = oldDate;
                     a.shift = oldShift || '';
+                    if (oldQuantity !== undefined) a.quantity = oldQuantity;
+                    if (oldAllocatedMinutes !== undefined) a.allocated_minutes = oldAllocatedMinutes;
                 }
             });
             break;
@@ -2301,6 +2855,25 @@ function undoLastAction() {
             break;
         case 'split_group':
             splitMarkers.value.delete(action.data.markerKey);
+            break;
+        case 'alteration_reflow':
+            // Remove all newly created allocations
+            action.data.addedKeys.forEach(key => {
+                const idx = allocations.value.findIndex(a => a.key === key);
+                if (idx > -1) allocations.value.splice(idx, 1);
+            });
+            // Restore removed allocations (full snapshots)
+            action.data.removedKeys.forEach(snapshot => {
+                allocations.value.push(snapshot);
+            });
+            // Restore modified allocations to their old qty/minutes
+            action.data.modified.forEach(({ key, oldQty, oldMinutes }) => {
+                const a = allocations.value.find(al => al.key === key);
+                if (a) {
+                    a.quantity = oldQty;
+                    a.allocated_minutes = oldMinutes;
+                }
+            });
             break;
     }
 
@@ -2747,10 +3320,12 @@ function confirmShift() {
         });
 
         // Execute the group move
-        const moveUndoData = executeMoveGroup(sd.groupData, sd.targetDays, sd.targetMachineId);
+        const moveResult = executeMoveGroup(sd.groupData, sd.targetDays, sd.targetMachineId);
 
         saveAction('shift_and_move_group', {
-            moveAllocations: moveUndoData,
+            moveAllocations: moveResult.allocations,
+            overflowKeys: moveResult.overflowKeys,
+            removedSnapshots: moveResult.removedSnapshots,
             shiftedAllocations
         });
         frappe.show_alert({ message: __(`Shifted ${shiftedAllocations.length} allocation(s) and moved group successfully`), indicator: 'green' });
@@ -3017,7 +3592,11 @@ async function saveAllocations() {
     try {
         const response = await frappe.call({
             method: 'albion.albion.page.capacity_planning.capacity_planning.save_allocations',
-            args: { allocations: allocations.value }
+            args: {
+                allocations: allocations.value,
+                start_date: startDate.value,
+                end_date: endDate.value
+            }
         });
         if (response.message) {
             frappe.show_alert({ message: __('Allocations saved successfully'), indicator: 'green' });
@@ -3070,6 +3649,7 @@ async function confirmAlteration() {
         frappe.show_alert({ message: __('Shift alteration added'), indicator: 'green' });
         closeAlterationModal();
         await loadShiftCalendars();
+        autoReflowAfterAlteration(form.date, form.machine || null, form.alteration_type, form.minutes);
     } catch (e) {
         console.error('Error adding alteration:', e);
         frappe.show_alert({ message: __('Error adding alteration'), indicator: 'red' });

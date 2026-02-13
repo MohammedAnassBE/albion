@@ -251,7 +251,7 @@ def get_all_allocations(start_date, end_date):
 
 
 @frappe.whitelist()
-def save_allocations(allocations):
+def save_allocations(allocations, start_date=None, end_date=None):
     """Save capacity allocations to Machine Operation"""
     if isinstance(allocations, str):
         import json
@@ -349,6 +349,17 @@ def save_allocations(allocations):
     if errors:
         frappe.log_error(title="Capacity Planning Save Errors", message="\n".join(errors))
         frappe.throw(_("Some allocations failed to save. Check error log."))
+
+    # Delete orphaned records not in the saved list
+    if start_date and end_date:
+        all_existing = frappe.get_all(
+            "Machine Operation",
+            filters={"operation_date": ["between", [start_date, end_date]]},
+            fields=["name"]
+        )
+        for rec in all_existing:
+            if rec.name not in saved:
+                frappe.delete_doc("Machine Operation", rec.name, ignore_permissions=True)
 
     return saved
 

@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2026-02-09 17:30:00.000000",
+ "creation": "2026-02-09 17:30:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -22,16 +22,18 @@
    "label": "Is Default"
   },
   {
+   "depends_on": "eval: !doc.is_default",
    "fieldname": "start_date",
    "fieldtype": "Date",
    "label": "Start Date",
-   "reqd": 1
+   "mandatory_depends_on": "eval: !doc.is_default"
   },
   {
+   "depends_on": "eval: !doc.is_default",
    "fieldname": "end_date",
    "fieldtype": "Date",
    "label": "End Date",
-   "reqd": 1
+   "mandatory_depends_on": "eval: !doc.is_default"
   },
   {
    "fieldname": "total_duration_minutes",
@@ -66,7 +68,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-12 10:00:00.000000",
+ "modified": "2026-02-12 15:42:37.696247",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Shift Calendar",
