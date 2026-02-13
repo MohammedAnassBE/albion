@@ -41,6 +41,7 @@ def get_order_data(order_name):
                 "item_doc": {
                     "item_code": item_doc.item_code,
                     "item_name": item_doc.item_name,
+                    "machine_gg": item_doc.machine_gg,
                     "processes": processes
                 }
             })
@@ -391,7 +392,7 @@ def get_machines():
     """Get all active machines"""
     machines = frappe.get_all(
         "Machine",
-        fields=["machine_id", "machine_name"],
+        fields=["machine_id", "machine_name", "machine_gg"],
         order_by="machine_id"
     )
     return machines
@@ -414,7 +415,7 @@ def get_orders():
     orders = frappe.get_all(
         "Order",
         filters={"docstatus": 1},
-        fields=["name", "order_date", "delivery_date", "docstatus"],
+        fields=["name", "order_date", "delivery_date", "docstatus", "customer"],
         order_by="creation desc"
     )
     return orders

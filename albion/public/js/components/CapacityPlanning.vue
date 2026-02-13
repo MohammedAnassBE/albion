@@ -2,12 +2,39 @@
     <div class="capacity-planning">
         <div class="cp-header">
             <div class="cp-filters">
-                <div class="filter-group">
-                    <div class="frappe-field" ref="orderFieldRef"></div>
-                    <div class="frappe-field" ref="processFieldRef"></div>
-                    <div class="frappe-field" ref="viewTypeFieldRef"></div>
-                    <div class="frappe-field" ref="startDateFieldRef"></div>
-                    <div class="frappe-field" ref="endDateFieldRef"></div>
+                <div class="filter-rows">
+                    <div class="filter-row">
+                        <div class="filter-field">
+                            <label class="filter-label">Customer</label>
+                            <div class="frappe-field" ref="customerFieldRef"></div>
+                        </div>
+                        <div class="filter-field">
+                            <label class="filter-label">Order</label>
+                            <div class="frappe-field" ref="orderFieldRef"></div>
+                        </div>
+                        <div class="filter-field">
+                            <label class="filter-label">Start Date</label>
+                            <div class="frappe-field" ref="startDateFieldRef"></div>
+                        </div>
+                        <div class="filter-field">
+                            <label class="filter-label">End Date</label>
+                            <div class="frappe-field" ref="endDateFieldRef"></div>
+                        </div>
+                    </div>
+                    <div class="filter-row">
+                        <div class="filter-field">
+                            <label class="filter-label">Process</label>
+                            <div class="frappe-field" ref="processFieldRef"></div>
+                        </div>
+                        <div class="filter-field">
+                            <label class="filter-label">View Type</label>
+                            <div class="frappe-field" ref="viewTypeFieldRef"></div>
+                        </div>
+                        <div class="filter-field">
+                            <label class="filter-label">Machine GG</label>
+                            <div class="frappe-field" ref="machineGGFieldRef"></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="action-group">
                     <button class="btn btn-default" @click="undoLastAction" :disabled="actionHistory.length === 0">Undo</button>
@@ -30,24 +57,6 @@
                     <h4>Workload</h4>
                     <span class="panel-subtitle">Drag items to calendar</span>
                 </div>
-                <div class="workload-summary" v-if="workloadItems.length > 0">
-                    <div class="summary-item">
-                        <span class="label">Total Items</span>
-                        <span class="value">{{ workloadItems.length }}</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="label">Fully Allocated</span>
-                        <span class="value">{{ fullyAllocatedCount }}</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="label">Partial</span>
-                        <span class="value">{{ partialAllocatedCount }}</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="label">Pending</span>
-                        <span class="value">{{ pendingCount }}</span>
-                    </div>
-                </div>
                 <div class="workload-list">
                     <div v-if="workloadItems.length === 0" class="empty-state">
                         <div class="empty-icon">&#9776;</div>
@@ -61,14 +70,14 @@
                             'fully-allocated': getAllocationStatus(item) === 'full',
                             'partial-allocated': getAllocationStatus(item) === 'partial',
                             'pending': getAllocationStatus(item) === 'pending',
-                            'invalid': !isValidForProcess(item),
-                            'locked': isLockedToOtherView(item)
+                            'invalid': !isValidForProcess(item)
                         }"
-                        :draggable="isValidForProcess(item) && getAllocationStatus(item) !== 'full' && !isLockedToOtherView(item)"
+                        :draggable="isValidForProcess(item) && getAllocationStatus(item) !== 'full'"
                         @dragstart="onDragStart($event, item)"
+                        @dragend="onDragEnd"
                     >
                         <div class="item-header">
-                            <span class="drag-handle" v-if="isValidForProcess(item) && getAllocationStatus(item) !== 'full' && !isLockedToOtherView(item)">&#8942;&#8942;</span>
+                            <span class="drag-handle" v-if="isValidForProcess(item) && getAllocationStatus(item) !== 'full'">&#8942;&#8942;</span>
                             <span class="item-name">{{ item.item }}</span>
                             <span class="item-qty">{{ item.quantity }}</span>
                         </div>
@@ -84,13 +93,10 @@
                         <div v-if="!isValidForProcess(item)" class="invalid-reason">
                             Process not defined for this item
                         </div>
-                        <div v-else-if="isLockedToOtherView(item)" class="locked-reason">
-                            Allocated in {{ getLockedViewTypeLabel(item) }} view
-                        </div>
                         <div v-else-if="getAllocatedQuantity(item) > 0" class="allocation-status" :class="getAllocationStatus(item)">
                             Allocated: {{ getAllocatedQuantity(item) }} / {{ item.quantity }}
                         </div>
-                        <div v-if="getAllocatedQuantity(item) > 0 && !isLockedToOtherView(item)" class="item-progress">
+                        <div v-if="getAllocatedQuantity(item) > 0" class="item-progress">
                             <div class="item-progress-fill" :style="{ width: Math.min(100, (getAllocatedQuantity(item) / item.quantity) * 100) + '%' }" :class="getAllocationStatus(item)"></div>
                         </div>
                     </div>
@@ -101,12 +107,6 @@
             <div class="cp-right-panel">
                 <div class="calendar-header">
                     <h4>Capacity Calendar</h4>
-                    <div class="calendar-legend">
-                        <span class="legend-item"><span class="dot available"></span> Available</span>
-                        <span class="legend-item"><span class="dot allocated"></span> Allocated</span>
-                        <span class="legend-item"><span class="dot full"></span> Full</span>
-                        <span class="legend-item"><span class="dot conflict"></span> Conflict</span>
-                    </div>
                 </div>
                 <div class="calendar-wrapper">
                     <div class="gantt-grid" :style="ganttGridStyle">
@@ -128,15 +128,12 @@
                         </div>
 
                         <!-- Machine rows -->
-                        <template v-for="(machine, mIdx) in machines" :key="machine.machine_id">
+                        <template v-for="(machine, mIdx) in filteredMachines" :key="machine.machine_id">
                             <!-- Machine label cell -->
-                            <div class="gantt-machine-cell" :style="{ gridRow: mIdx + 2 }">
+                            <div class="gantt-machine-cell" :class="{ 'machine-disabled': !isMachineCompatible(machine.machine_id) }" :style="{ gridRow: mIdx + 2 }">
                                 <div class="machine-info">
                                     <div class="machine-title">
                                         <span class="machine-id">{{ machine.machine_id }}</span>
-                                        <span class="machine-utilization" :class="getUtilizationClass(machine.machine_id)">
-                                            {{ getMachineUtilization(machine.machine_id) }}%
-                                        </span>
                                     </div>
                                     <span class="machine-name">{{ machine.machine_name }}</span>
                                 </div>
@@ -146,9 +143,9 @@
                             <div v-for="(date, dIdx) in dateRange"
                                  :key="machine.machine_id+'-'+date"
                                  class="gantt-date-cell"
-                                 :class="getCellClass(machine.machine_id, date)"
+                                 :class="[getCellClass(machine.machine_id, date), { 'machine-disabled': !isMachineCompatible(machine.machine_id) }]"
                                  :style="{ gridRow: mIdx + 2, gridColumn: dIdx + 2 }"
-                                 @dragover.prevent
+                                 @dragover="onCellDragOver($event, machine.machine_id)"
                                  @drop="onDrop($event, machine.machine_id, date)">
                                 <span v-if="getCellAlterationBadge(date, machine.machine_id)"
                                       class="alteration-badge"
@@ -171,6 +168,7 @@
 
                             <!-- Gantt bar layer (overlays date cells in same row) -->
                             <div class="gantt-bar-layer"
+                                 :class="{ 'machine-disabled': !isMachineCompatible(machine.machine_id) }"
                                  :style="{ gridRow: mIdx + 2, gridColumn: `2 / ${dateRange.length + 2}`, minHeight: getBarLayerHeight(machine.machine_id) + 'px' }">
                                 <div v-for="group in getGroupsForMachine(machine.machine_id)"
                                      :key="group.group_id"
@@ -179,7 +177,7 @@
                                      :title="getGroupTooltip(group)"
                                      draggable="true"
                                      @dragstart="onGroupDragStart($event, group)"
-                                     @dragover.prevent
+                                     @dragover="onCellDragOver($event, machine.machine_id)"
                                      @drop="onBarDrop($event, machine.machine_id)"
                                      @contextmenu.prevent="onBarContextMenu($event, group)"
                                      @click.stop="selectGroup(group)">
@@ -508,15 +506,17 @@
 </template>
 
 <script setup>
+import './CapacityPlanning.css';
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 
 const emit = defineEmits(['saveAllocations']);
 
 // State - internal refs that can be updated via load_data
-const orders = ref([]);
 const processes = ref([]);
 const machines = ref([]);
 
+const selectedCustomer = ref('');
+const selectedMachineGG = ref('');
 const selectedOrder = ref('');
 const selectedProcess = ref('');
 const viewType = ref('item_wise');
@@ -525,6 +525,8 @@ const endDate = ref('');
 const orderData = ref(null);
 
 // Template refs for Frappe fields
+const customerFieldRef = ref(null);
+const machineGGFieldRef = ref(null);
 const orderFieldRef = ref(null);
 const processFieldRef = ref(null);
 const viewTypeFieldRef = ref(null);
@@ -532,6 +534,8 @@ const startDateFieldRef = ref(null);
 const endDateFieldRef = ref(null);
 
 // Frappe control instances
+let customerControl = null;
+let machineGGControl = null;
 let orderControl = null;
 let processControl = null;
 let viewTypeControl = null;
@@ -542,13 +546,6 @@ const defaultCalendar = ref(null);
 const allocations = ref([]);
 const actionHistory = ref([]);
 const validationErrors = ref([]);
-
-// Modal states
-const showSplitModal = ref(false);
-const showEditModal = ref(false);
-const selectedAllocation = ref(null);
-const splitQuantity = ref(0);
-const editQuantity = ref(0);
 
 // Drop quantity modal state
 const showDropModal = ref(false);
@@ -573,6 +570,9 @@ const showEditGroupModal = ref(false);
 const editGroupQuantity = ref(0);
 const showSplitGroupModal = ref(false);
 const splitGroupDate = ref('');
+
+// Drag tracking for machine_gg filtering
+const draggingItem = ref(null);
 
 // Shift group by days modal state
 const showShiftByDaysModal = ref(false);
@@ -603,6 +603,28 @@ const BAR_HEIGHT = 68;
 const BAR_GAP = 4;
 const BAR_TOP_OFFSET = 22;
 
+// Machine GG lookup: Map<itemCode, machineGG>
+const itemMachineGG = computed(() => {
+    const map = new Map();
+    if (orderData.value && orderData.value.items) {
+        orderData.value.items.forEach(item => {
+            if (item.item_doc && item.item_doc.machine_gg) {
+                map.set(item.item, item.item_doc.machine_gg);
+            }
+        });
+    }
+    return map;
+});
+
+function isMachineCompatible(machineId) {
+    if (!draggingItem.value) return true;
+    const itemGG = itemMachineGG.value.get(draggingItem.value.item);
+    if (!itemGG) return true; // no machine_gg on item → all machines allowed
+    const machine = machines.value.find(m => m.machine_id === machineId);
+    if (!machine || !machine.machine_gg) return true; // no machine_gg on machine → allowed
+    return machine.machine_gg === itemGG;
+}
+
 // Computed
 const dateRange = computed(() => {
     const dates = [];
@@ -617,6 +639,11 @@ const dateRange = computed(() => {
 const ganttGridStyle = computed(() => ({
     gridTemplateColumns: `180px repeat(${dateRange.value.length}, ${COL_WIDTH}px)`,
 }));
+
+const filteredMachines = computed(() => {
+    if (!selectedMachineGG.value) return machines.value;
+    return machines.value.filter(m => m.machine_gg === selectedMachineGG.value);
+});
 
 const availableProcesses = computed(() => {
     if (!orderData.value || !processes.value) return [];
@@ -692,10 +719,6 @@ const workloadItems = computed(() => {
     }
     return items;
 });
-
-const fullyAllocatedCount = computed(() => workloadItems.value.filter(item => getAllocationStatus(item) === 'full').length);
-const partialAllocatedCount = computed(() => workloadItems.value.filter(item => getAllocationStatus(item) === 'partial').length);
-const pendingCount = computed(() => workloadItems.value.filter(item => getAllocationStatus(item) === 'pending').length);
 
 // Grouping computed - merges consecutive-day allocations into Gantt groups
 const groupedAllocations = computed(() => {
@@ -787,7 +810,6 @@ const groupedAllocationsWithLanes = computed(() => {
 
 // Methods
 function loadData(data) {
-    if (data.orders) orders.value = data.orders;
     if (data.processes) processes.value = data.processes;
     if (data.machines) machines.value = data.machines;
 }
@@ -875,12 +897,6 @@ function getEffectiveMinutes(dateStr, machineId = null) {
     return Math.max(0, base);
 }
 
-function hasDayLevelAlterations(dateStr) {
-    const cal = getCalendarForDate(dateStr);
-    if (!cal || !cal.alterations) return false;
-    return cal.alterations.some(a => a.date === dateStr && !a.machine);
-}
-
 function getCellAlterationBadge(dateStr, machineId) {
     const base = getShiftMinutes(dateStr);
     const effective = getEffectiveMinutes(dateStr, machineId);
@@ -962,22 +978,6 @@ function getCellClass(machineId, dateStr) {
     return classes.join(' ');
 }
 
-function getMachineUtilization(machineId) {
-    let totalUsed = 0;
-    let totalCapacity = 0;
-    dateRange.value.forEach(date => {
-        totalUsed += getUsedMinutes(machineId, date);
-        totalCapacity += getEffectiveMinutes(date, machineId);
-    });
-    return totalCapacity > 0 ? Math.round((totalUsed / totalCapacity) * 100) : 0;
-}
-
-function getUtilizationClass(machineId) {
-    const pct = getMachineUtilization(machineId);
-    if (pct >= 90) return 'util-high';
-    if (pct >= 50) return 'util-medium';
-    return 'util-low';
-}
 
 function hasConflict(alloc) {
     const item = workloadItems.value.find(i =>
@@ -1034,43 +1034,6 @@ function getAllocationStatus(item) {
     if (allocated >= item.quantity) return 'full';
     if (allocated > 0) return 'partial';
     return 'pending';
-}
-
-function isItemAllocated(item) {
-    return allocations.value.some(a =>
-        a.item === item.item &&
-        a.process === selectedProcess.value &&
-        a.colour === item.colour &&
-        a.size === item.size
-    );
-}
-
-// View type lock detection
-function getLockedViewType(itemCode) {
-    const itemAllocations = allocations.value.filter(a =>
-        a.item === itemCode &&
-        a.process === selectedProcess.value &&
-        a.order === selectedOrder.value
-    );
-    if (itemAllocations.length === 0) return null;
-
-    const sample = itemAllocations[0];
-    if (sample.colour && !sample.size) return 'colour_wise';
-    if (!sample.colour && sample.size) return 'size_wise';
-    if (!sample.colour && !sample.size) return 'item_wise';
-    return null;
-}
-
-function isLockedToOtherView(item) {
-    const locked = getLockedViewType(item.item);
-    return locked !== null && locked !== viewType.value;
-}
-
-const VIEW_TYPE_LABELS = { item_wise: 'Item Wise', colour_wise: 'Colour Wise', size_wise: 'Size Wise' };
-
-function getLockedViewTypeLabel(item) {
-    const locked = getLockedViewType(item.item);
-    return locked ? VIEW_TYPE_LABELS[locked] : '';
 }
 
 // === Gantt Grouping Helpers ===
@@ -1296,73 +1259,6 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
     return { allocations: undoData, overflowKeys, removedSnapshots };
 }
 
-function computeGroupMoveShiftPlan(machineId, targetDays, conflicting, excludeKeys, groupData) {
-    const dates = dateRange.value;
-    const targetDateSet = new Set(targetDays.map(t => t.newDate));
-
-    // Build a set of occupied dates on the target machine after shifting
-    const occupiedDates = new Set();
-    // The group's target dates will be occupied by the group
-    targetDateSet.forEach(d => occupiedDates.add(d));
-    // Other existing allocations on this machine (not conflicting, not being moved)
-    allocations.value.forEach(a => {
-        if (a.machine_id === machineId && !excludeKeys.includes(a.key) && !conflicting.some(c => c.key === a.key)) {
-            occupiedDates.add(a.operation_date);
-        }
-    });
-
-    // Compute vacated dates: old group dates that are NOT in the new target set
-    // These become available for placing conflicting allocations (same-machine moves)
-    let vacatedDates = [];
-    if (groupData) {
-        const oldDates = groupData.alloc_keys
-            .map(key => allocations.value.find(a => a.key === key))
-            .filter(Boolean)
-            .map(a => a.operation_date)
-            .sort();
-        vacatedDates = oldDates.filter(d => !targetDateSet.has(d) && !occupiedDates.has(d) && !isPastDate(d));
-    }
-
-    // Find the last target date to start searching from after it
-    const lastTargetDate = targetDays[targetDays.length - 1].newDate;
-    const lastTargetIdx = dates.indexOf(lastTargetDate);
-
-    // Build candidate dates: vacated dates first, then forward from after last target
-    const forwardDates = dates.slice(lastTargetIdx + 1).filter(d => !occupiedDates.has(d) && !isPastDate(d));
-    const candidateDates = [...vacatedDates, ...forwardDates.filter(d => !vacatedDates.includes(d))];
-
-    const affected = [];
-    // Sort conflicting by date
-    const sorted = [...conflicting].sort((a, b) => a.operation_date.localeCompare(b.operation_date));
-    const usedCandidates = new Set();
-
-    sorted.forEach(alloc => {
-        let placed = false;
-        for (const d of candidateDates) {
-            if (!usedCandidates.has(d)) {
-                affected.push({
-                    allocation: alloc,
-                    currentDate: alloc.operation_date,
-                    newDate: d
-                });
-                usedCandidates.add(d);
-                occupiedDates.add(d);
-                placed = true;
-                break;
-            }
-        }
-        if (!placed) {
-            affected.push({
-                allocation: alloc,
-                currentDate: alloc.operation_date,
-                newDate: null
-            });
-        }
-    });
-
-    return { affected };
-}
-
 function moveGroup(groupData, newMachineId, newStartDate) {
     const oldStart = new Date(groupData.start_date);
     const newStart = new Date(newStartDate);
@@ -1516,13 +1412,6 @@ function moveGroup(groupData, newMachineId, newStartDate) {
     showShiftModal.value = true;
 }
 
-function openEditGroupModal() {
-    if (!selectedGroup.value) return;
-    editGroupQuantity.value = selectedGroup.value.total_quantity;
-    showEditGroupModal.value = true;
-    closeContextMenu();
-}
-
 function closeEditGroupModal() {
     showEditGroupModal.value = false;
 }
@@ -1573,17 +1462,6 @@ function confirmEditGroup() {
     saveAction('edit_group', { allocations: undoData });
     frappe.show_alert({ message: __('Group quantity updated'), indicator: 'green' });
     closeEditGroupModal();
-}
-
-function openSplitGroupModal() {
-    if (!selectedGroup.value || selectedGroup.value.allocs.length < 2) {
-        frappe.show_alert({ message: __('Cannot split a single-day group'), indicator: 'orange' });
-        closeContextMenu();
-        return;
-    }
-    splitGroupDate.value = selectedGroup.value.allocs[1].operation_date;
-    showSplitGroupModal.value = true;
-    closeContextMenu();
 }
 
 function closeSplitGroupModal() {
@@ -1961,15 +1839,6 @@ function declineBackfill() {
 function closeBackfillModal() {
     showBackfillModal.value = false;
     backfillModalData.value = null;
-}
-
-// Shift helpers
-function getDateAtOffset(dateStr, offset) {
-    const dates = dateRange.value;
-    const idx = dates.indexOf(dateStr);
-    if (idx < 0) return null;
-    const target = idx + offset;
-    return target >= 0 && target < dates.length ? dates[target] : null;
 }
 
 // === Reflow After Shift Alteration ===
@@ -3021,12 +2890,19 @@ function undoLastAction() {
 }
 
 // Drag and Drop
-function onDragStart(event, item) {
-    event.dataTransfer.setData('application/json', JSON.stringify(item));
+function onCellDragOver(event, machineId) {
+    if (isMachineCompatible(machineId)) {
+        event.preventDefault(); // allow drop only on compatible machines
+    }
 }
 
-function onAllocationDragStart(event, alloc) {
-    event.dataTransfer.setData('application/allocation', JSON.stringify(alloc));
+function onDragStart(event, item) {
+    event.dataTransfer.setData('application/json', JSON.stringify(item));
+    draggingItem.value = item;
+}
+
+function onDragEnd() {
+    draggingItem.value = null;
 }
 
 function getNextDate(currentDateStr) {
@@ -3096,20 +2972,19 @@ function onDrop(event, machineId, dateStr) {
         errors.push('Process not defined for this item');
     }
 
+    // Machine GG compatibility check
+    const draggedItemGG = itemMachineGG.value.get(item.item);
+    if (draggedItemGG) {
+        const targetMachine = machines.value.find(m => m.machine_id === machineId);
+        if (targetMachine && targetMachine.machine_gg && targetMachine.machine_gg !== draggedItemGG) {
+            errors.push(`Machine GG mismatch: item requires "${draggedItemGG}" but machine has "${targetMachine.machine_gg}"`);
+        }
+    }
+
     if (errors.length > 0) {
         validationErrors.value = errors;
         frappe.show_alert({
             message: __(errors[0]),
-            indicator: 'red'
-        });
-        return;
-    }
-
-    // View type lock check
-    const lockedView = getLockedViewType(item.item);
-    if (lockedView && lockedView !== viewType.value) {
-        frappe.show_alert({
-            message: __(`This item is already allocated in ${VIEW_TYPE_LABELS[lockedView]} view. Delete existing allocations first to use a different view type.`),
             indicator: 'red'
         });
         return;
@@ -3604,34 +3479,6 @@ function executeShiftAndAllocate(shiftData, sourceResult) {
     }
 }
 
-async function removeAllocation(alloc) {
-    const idx = allocations.value.findIndex(a => a.key === alloc.key);
-    if (idx > -1) {
-        if (alloc.name) {
-            try {
-                const response = await frappe.call({
-                    method: 'albion.albion.page.capacity_planning.capacity_planning.delete_allocation',
-                    args: { allocation_name: alloc.name }
-                });
-                if (response.message && response.message.success) {
-                    saveAction('delete', { allocation: { ...alloc } });
-                    allocations.value.splice(idx, 1);
-                    frappe.show_alert({ message: __('Allocation deleted'), indicator: 'green' });
-                } else {
-                    frappe.show_alert({ message: __('Failed to delete: ') + (response.message?.message || 'Unknown error'), indicator: 'red' });
-                }
-            } catch (e) {
-                console.error('Error deleting allocation:', e);
-                frappe.show_alert({ message: __('Error deleting allocation'), indicator: 'red' });
-            }
-        } else {
-            saveAction('delete', { allocation: { ...alloc } });
-            allocations.value.splice(idx, 1);
-            frappe.show_alert({ message: __('Allocation removed'), indicator: 'blue' });
-        }
-    }
-}
-
 // Context Menu
 function closeContextMenu() {
     contextMenu.value.show = false;
@@ -3808,6 +3655,36 @@ async function confirmAlteration() {
 }
 
 function initFrappeControls() {
+    // Customer — Link field to filter orders
+    customerControl = frappe.ui.form.make_control({
+        df: {
+            fieldtype: 'Link',
+            fieldname: 'customer',
+            label: 'Customer',
+            options: 'Customer',
+            placeholder: 'Select Customer',
+            change() {
+                selectedCustomer.value = customerControl.get_value() || '';
+                // Update Order control query to filter by customer
+                if (orderControl) {
+                    orderControl.df.get_query = () => {
+                        const filters = { docstatus: 1 };
+                        if (selectedCustomer.value) filters.customer = selectedCustomer.value;
+                        return { filters };
+                    };
+                    // Clear current order selection when customer changes
+                    orderControl.set_value('');
+                    selectedOrder.value = '';
+                    orderData.value = null;
+                }
+            }
+        },
+        parent: customerFieldRef.value,
+        render_input: true,
+        only_input: true
+    });
+    customerControl.refresh();
+
     // Order — Link field with search
     orderControl = frappe.ui.form.make_control({
         df: {
@@ -3816,13 +3693,19 @@ function initFrappeControls() {
             label: 'Order',
             options: 'Order',
             placeholder: 'Select Order',
+            get_query() {
+                const filters = { docstatus: 1 };
+                if (selectedCustomer.value) filters.customer = selectedCustomer.value;
+                return { filters };
+            },
             change() {
                 selectedOrder.value = orderControl.get_value() || '';
                 onOrderChange();
             }
         },
         parent: orderFieldRef.value,
-        render_input: true
+        render_input: true,
+        only_input: true
     });
     orderControl.refresh();
 
@@ -3839,7 +3722,8 @@ function initFrappeControls() {
             }
         },
         parent: processFieldRef.value,
-        render_input: true
+        render_input: true,
+        only_input: true
     });
     processControl.refresh();
 
@@ -3860,10 +3744,29 @@ function initFrappeControls() {
             }
         },
         parent: viewTypeFieldRef.value,
-        render_input: true
+        render_input: true,
+        only_input: true
     });
     viewTypeControl.set_value('item_wise');
     viewTypeControl.refresh();
+
+    // Machine GG — Link field to filter machines
+    machineGGControl = frappe.ui.form.make_control({
+        df: {
+            fieldtype: 'Link',
+            fieldname: 'machine_gg',
+            label: 'Machine GG',
+            options: 'Machine GG',
+            placeholder: 'Select Machine GG',
+            change() {
+                selectedMachineGG.value = machineGGControl.get_value() || '';
+            }
+        },
+        parent: machineGGFieldRef.value,
+        render_input: true,
+        only_input: true
+    });
+    machineGGControl.refresh();
 
     // Start Date
     startDateControl = frappe.ui.form.make_control({
@@ -3876,7 +3779,8 @@ function initFrappeControls() {
             }
         },
         parent: startDateFieldRef.value,
-        render_input: true
+        render_input: true,
+        only_input: true
     });
     startDateControl.refresh();
 
@@ -3891,7 +3795,8 @@ function initFrappeControls() {
             }
         },
         parent: endDateFieldRef.value,
-        render_input: true
+        render_input: true,
+        only_input: true
     });
     endDateControl.refresh();
 }
@@ -3942,997 +3847,3 @@ defineExpose({
 });
 </script>
 
-<style scoped>
-/* ===== Design System Tokens ===== */
-/* Spacing: 4px scale (4, 8, 12, 16, 20, 24, 32) */
-/* Radius: 4 (sm), 6 (md), 10 (lg), 14 (xl) */
-/* Shadows: sm, md, lg */
-/* Font: 10, 11, 12, 13, 14, 16 */
-/* Colors: slate-50..900 base, blue/green/amber/red semantic */
-
-/* ===== Layout Shell ===== */
-.capacity-planning {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: #f8fafc;
-    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
-}
-
-.cp-header {
-    background: white;
-    padding: 12px 20px;
-    border-bottom: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
-
-.cp-filters {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 16px;
-}
-
-.filter-group {
-    display: flex;
-    gap: 16px;
-    align-items: flex-end;
-    flex-wrap: wrap;
-}
-
-.action-group {
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
-}
-
-.frappe-field {
-    min-width: 160px;
-}
-
-.frappe-field :deep(.frappe-control) {
-    margin-bottom: 0;
-}
-
-.frappe-field :deep(.frappe-control .form-group) {
-    margin-bottom: 0;
-}
-
-.frappe-field :deep(.clearfix) {
-    display: none;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.form-group label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-}
-
-.text-info { color: #2563eb; }
-.text-danger { color: #ef4444; }
-
-/* ===== Validation ===== */
-.validation-alerts {
-    padding: 8px 20px;
-    background: #fef2f2;
-    border-bottom: 1px solid #fecaca;
-}
-
-.alert {
-    padding: 8px 12px;
-    margin-bottom: 4px;
-    border-radius: 6px;
-    font-size: 13px;
-}
-
-.alert-danger {
-    background: #fee2e2;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
-}
-
-/* ===== Body Layout ===== */
-.cp-body {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-}
-
-/* ===== Left Panel - Workload ===== */
-.cp-left-panel {
-    width: 280px;
-    background: white;
-    border-right: 1px solid #e2e8f0;
-    display: flex;
-    flex-direction: column;
-}
-
-.panel-header {
-    padding: 16px;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.panel-header h4 {
-    font-size: 14px;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0 0 2px 0;
-}
-
-.panel-subtitle {
-    font-size: 12px;
-    color: #94a3b8;
-}
-
-.workload-summary {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    padding: 12px 16px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.summary-item {
-    display: flex;
-    gap: 4px;
-    font-size: 11px;
-}
-
-.summary-item .label {
-    color: #94a3b8;
-}
-
-.summary-item .value {
-    font-weight: 700;
-    color: #0f172a;
-}
-
-.workload-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-}
-
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 48px 20px;
-    color: #94a3b8;
-}
-
-.empty-icon {
-    font-size: 32px;
-    margin-bottom: 12px;
-    opacity: 0.4;
-}
-
-.empty-text {
-    font-size: 13px;
-    text-align: center;
-}
-
-.workload-item {
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background: white;
-    margin-bottom: 8px;
-    border-left: 3px solid transparent;
-    cursor: grab;
-    transition: box-shadow 0.15s, border-color 0.15s;
-}
-
-.workload-item:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    border-color: #cbd5e1;
-}
-
-.workload-item.fully-allocated {
-    border-left-color: #10b981;
-    background: #f8fafc;
-    opacity: 0.65;
-    cursor: not-allowed;
-}
-
-.workload-item.partial-allocated {
-    border-left-color: #f59e0b;
-}
-
-.workload-item.pending {
-    border-left-color: #3b82f6;
-}
-
-.workload-item.invalid {
-    border-left-color: #ef4444;
-    opacity: 0.5;
-    background: #fef2f2;
-    cursor: not-allowed;
-}
-
-.workload-item.locked {
-    border-left-color: #8b5cf6;
-    opacity: 0.55;
-    background: #faf5ff;
-    cursor: not-allowed;
-}
-
-.workload-item:active {
-    cursor: grabbing;
-}
-
-.item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
-}
-
-.drag-handle {
-    color: #cbd5e1;
-    cursor: grab;
-    font-size: 12px;
-    margin-right: 6px;
-    user-select: none;
-}
-
-.item-name {
-    font-weight: 600;
-    font-size: 13px;
-    color: #0f172a;
-    flex: 1;
-}
-
-.item-qty {
-    background: #f1f5f9;
-    color: #334155;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.item-detail {
-    font-size: 12px;
-    color: #64748b;
-}
-
-.item-minutes {
-    font-size: 11px;
-    color: #94a3b8;
-    margin-top: 4px;
-}
-
-.item-progress {
-    height: 3px;
-    background: #f1f5f9;
-    border-radius: 2px;
-    margin-top: 8px;
-    overflow: hidden;
-}
-
-.item-progress-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.3s;
-}
-
-.item-progress-fill.full { background: #10b981; }
-.item-progress-fill.partial { background: #f59e0b; }
-.item-progress-fill.pending { background: #3b82f6; }
-
-.allocation-status {
-    font-size: 11px;
-    margin-top: 4px;
-    font-weight: 600;
-}
-
-.allocation-status.full { color: #059669; }
-.allocation-status.partial { color: #d97706; }
-.allocation-status.pending { color: #2563eb; }
-
-.invalid-reason {
-    font-size: 11px;
-    color: #dc2626;
-    margin-top: 4px;
-}
-
-.locked-reason {
-    font-size: 11px;
-    color: #7c3aed;
-    font-weight: 600;
-    margin-top: 4px;
-}
-
-/* ===== Right Panel - Calendar ===== */
-.cp-right-panel {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.calendar-header {
-    background: white;
-    padding: 10px 20px;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.calendar-header h4 {
-    font-size: 14px;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0;
-}
-
-.calendar-legend {
-    display: flex;
-    gap: 16px;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: #64748b;
-}
-
-.dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-
-.dot.available { background: white; border: 1.5px solid #cbd5e1; }
-.dot.allocated { background: #e2e8f0; border: 1.5px solid #94a3b8; }
-.dot.full { background: #fecaca; border: 1.5px solid #f87171; }
-.dot.conflict { background: #fecaca; border: 2px solid #ef4444; }
-
-.calendar-wrapper {
-    flex: 1;
-    overflow: auto;
-    background: #f8fafc;
-}
-
-/* ===== Gantt Grid ===== */
-.gantt-grid {
-    display: grid;
-    width: max-content;
-}
-
-.gantt-corner-cell {
-    grid-row: 1;
-    grid-column: 1;
-    background: #f1f5f9;
-    padding: 12px 16px;
-    font-weight: 700;
-    font-size: 12px;
-    color: #475569;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: 1px solid #e2e8f0;
-    position: sticky;
-    left: 0;
-    top: 0;
-    z-index: 30;
-    display: flex;
-    align-items: center;
-}
-
-.gantt-date-header {
-    background: #f1f5f9;
-    padding: 10px 8px;
-    text-align: center;
-    border: 1px solid #e2e8f0;
-    border-left: none;
-    position: sticky;
-    top: 0;
-    z-index: 15;
-}
-
-.gantt-date-header.weekend {
-    background: #fef9c3;
-}
-
-.gantt-date-header.past-date {
-    background: #fef2f2;
-}
-
-.date-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.day-date {
-    font-weight: 700;
-    font-size: 12px;
-    color: #1e293b;
-}
-
-.shift-info {
-    font-size: 10px;
-    color: #64748b;
-    font-weight: 500;
-}
-
-.day-alteration-badge {
-    font-size: 9px;
-    font-weight: 700;
-    padding: 1px 5px;
-    border-radius: 3px;
-    margin-left: 4px;
-    vertical-align: middle;
-}
-
-.gantt-date-header {
-    cursor: pointer;
-}
-
-.gantt-date-header:hover {
-    background: #e2e8f0 !important;
-}
-
-.gantt-machine-cell {
-    grid-column: 1;
-    background: #f8fafc;
-    padding: 12px 16px;
-    border: 1px solid #e2e8f0;
-    border-top: none;
-    position: sticky;
-    left: 0;
-    z-index: 20;
-    display: flex;
-    align-items: flex-start;
-}
-
-.machine-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.machine-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-}
-
-.machine-id {
-    font-weight: 700;
-    font-size: 13px;
-    color: #0f172a;
-}
-
-.machine-name {
-    font-size: 11px;
-    color: #64748b;
-}
-
-.machine-utilization {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 4px;
-}
-
-.util-low {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.util-medium {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.util-high {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-/* ===== Date Cells (Drop Targets) ===== */
-.gantt-date-cell {
-    position: relative;
-    border: 1px solid #e2e8f0;
-    border-top: none;
-    border-left: none;
-    padding: 4px 6px;
-    min-height: 98px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    transition: background 0.15s, box-shadow 0.15s;
-}
-
-.gantt-date-cell:hover {
-    box-shadow: inset 0 0 0 2px #93c5fd;
-}
-
-.cell-available {
-    background: white;
-}
-
-.cell-allocated {
-    background: #f8fafc;
-}
-
-.cell-full {
-    background: #fff1f2;
-}
-
-.cell-conflict {
-    background: #fff1f2;
-    box-shadow: inset 0 0 0 2px #f87171;
-}
-
-.cell-top-row {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    min-height: 18px;
-}
-
-.alteration-badge {
-    position: absolute;
-    top: 3px;
-    left: 4px;
-    z-index: 11;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 3px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-}
-
-.badge-add {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.badge-reduce {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.cell-altered-add {
-    background: #f0fdf4 !important;
-}
-
-.cell-altered-reduce {
-    background: #fffbeb !important;
-}
-
-.cell-add-btn {
-    display: none;
-    width: 18px;
-    height: 18px;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-    background: white;
-    color: #64748b;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
-    margin-left: auto;
-}
-
-.gantt-date-cell:hover .cell-add-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.cell-add-btn:hover {
-    background: #3b82f6;
-    color: white;
-    border-color: #3b82f6;
-}
-
-.cell-utilization {
-    position: absolute;
-    top: 3px;
-    left: 4px;
-    right: 4px;
-    z-index: 10;
-}
-
-.util-bar {
-    position: relative;
-    height: 16px;
-    background: #e2e8f0;
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.util-fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    border-radius: 3px;
-    transition: width 0.3s;
-}
-
-.util-label {
-    position: relative;
-    z-index: 1;
-    display: block;
-    text-align: end;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 16px;
-    color: #1e293b;
-}
-
-.util-fill.bar-ok { background: #86efac; }
-.util-fill.bar-warning { background: #fde68a; }
-.util-fill.bar-low { background: #fca5a5; }
-.util-bar.bar-ok { background: #dcfce7; }
-.util-bar.bar-warning { background: #fef9c3; }
-.util-bar.bar-low { background: #fee2e2; }
-
-/* ===== Gantt Bars ===== */
-.gantt-bar-layer {
-    position: relative;
-    pointer-events: none;
-    z-index: 5;
-}
-
-.gantt-bar {
-    position: absolute;
-    pointer-events: auto;
-    cursor: grab;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 2px;
-    padding: 7px 12px 6px;
-    overflow: hidden;
-    white-space: nowrap;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-    transition: box-shadow 0.15s, transform 0.15s;
-    border: 1px solid rgba(0,0,0,0.06);
-    border-left: none;
-}
-
-.gantt-bar:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
-    transform: translateY(-1px);
-    z-index: 10;
-}
-
-.gantt-bar:active {
-    cursor: grabbing;
-    transform: translateY(0);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-}
-
-/* --- Bar Row: Top (Item + Qty) --- */
-.bar-row-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-}
-
-.bar-item {
-    font-weight: 700;
-    font-size: 13px;
-    color: #0f172a;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.3;
-}
-
-.bar-qty {
-    background: rgba(0,0,0,0.08);
-    padding: 1px 7px;
-    border-radius: 4px;
-    font-weight: 800;
-    font-size: 12px;
-    color: #0f172a;
-    flex-shrink: 0;
-}
-
-/* --- Bar Row: Mid (Process + Minutes) --- */
-.bar-row-mid {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-}
-
-.bar-process {
-    font-weight: 500;
-    color: #334155;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 11px;
-    line-height: 1.3;
-}
-
-.bar-minutes {
-    color: #475569;
-    flex-shrink: 0;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-/* --- Bar Row: Bottom (Tags) --- */
-.bar-row-bot {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    overflow: hidden;
-    margin-top: 2px;
-}
-
-.bar-tag {
-    font-size: 10px;
-    padding: 2px 7px;
-    border-radius: 4px;
-    max-width: 140px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 1.3;
-    font-weight: 600;
-}
-
-.bar-tag b {
-    font-weight: 800;
-    margin-right: 1px;
-}
-
-.order-tag {
-    color: #1e40af;
-    background: rgba(59, 130, 246, 0.14);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-.colour-tag {
-    color: #c2410c;
-    background: rgba(249, 115, 22, 0.12);
-    border: 1px solid rgba(249, 115, 22, 0.2);
-}
-
-.size-tag {
-    color: #3f3f46;
-    background: rgba(113, 113, 122, 0.12);
-    border: 1px solid rgba(113, 113, 122, 0.18);
-}
-
-/* ===== Modals ===== */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(15, 23, 42, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(2px);
-}
-
-.modal-content {
-    background: white;
-    padding: 24px;
-    border-radius: 14px;
-    min-width: 320px;
-    max-width: 420px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
-}
-
-.modal-content h4 {
-    font-size: 16px;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0 0 16px 0;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    margin-top: 20px;
-}
-
-/* ===== Buttons ===== */
-.btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    transition: background 0.15s, box-shadow 0.15s;
-}
-
-.btn-primary {
-    background: #2563eb;
-    color: white;
-    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3);
-}
-
-.btn-primary:hover {
-    background: #1d4ed8;
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
-}
-
-.btn-default {
-    background: white;
-    border: 1px solid #e2e8f0;
-    color: #334155;
-}
-
-.btn-default:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-}
-
-.btn-secondary {
-    background: #f1f5f9;
-    color: #334155;
-}
-
-.btn-secondary:hover {
-    background: #e2e8f0;
-}
-
-.btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-/* ===== Context Menu ===== */
-.context-menu {
-    position: fixed;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
-    z-index: 1000;
-    min-width: 190px;
-    padding: 4px;
-}
-
-.menu-item {
-    padding: 9px 14px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    border-radius: 6px;
-    margin: 2px 0;
-    color: #334155;
-    transition: background 0.1s;
-}
-
-.menu-item:hover {
-    background: #f1f5f9;
-}
-
-.menu-item.text-danger {
-    color: #dc2626;
-}
-
-.menu-item.text-danger:hover {
-    background: #fef2f2;
-}
-
-/* ===== Shift Modal ===== */
-.shift-modal {
-    background: white;
-    padding: 24px;
-    border-radius: 14px;
-    min-width: 500px;
-    max-width: 700px;
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
-}
-
-.shift-modal h4 {
-    font-size: 16px;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0 0 12px 0;
-}
-
-.shift-explanation {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    font-size: 13px;
-    color: #1e40af;
-}
-
-.shift-explanation p {
-    margin: 0 0 4px 0;
-}
-
-.shift-explanation p:last-child {
-    margin-bottom: 0;
-}
-
-.shift-table-wrapper {
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    margin-bottom: 16px;
-}
-
-.shift-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-}
-
-.shift-table th {
-    background: #f1f5f9;
-    padding: 8px 12px;
-    text-align: left;
-    font-weight: 700;
-    color: #475569;
-    border-bottom: 1px solid #e2e8f0;
-    position: sticky;
-    top: 0;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-
-.shift-table td {
-    padding: 8px 12px;
-    border-bottom: 1px solid #f1f5f9;
-    color: #334155;
-}
-
-.shift-table tr:last-child td {
-    border-bottom: none;
-}
-
-/* ===== Backfill Modal ===== */
-.backfill-explanation {
-    background: #fffbeb;
-    border: 1px solid #fde68a;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    font-size: 13px;
-    color: #92400e;
-}
-
-.backfill-explanation p {
-    margin: 0 0 4px 0;
-}
-
-.backfill-explanation p:last-child {
-    margin-bottom: 0;
-}
-</style>
