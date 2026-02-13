@@ -9,6 +9,20 @@
   "start_date",
   "end_date",
   "total_duration_minutes",
+  "working_days_section",
+  "sunday",
+  "cb_mon",
+  "monday",
+  "cb_tue",
+  "tuesday",
+  "cb_wed",
+  "wednesday",
+  "sb_working2",
+  "thursday",
+  "cb_fri",
+  "friday",
+  "cb_sat",
+  "saturday",
   "shifts_section",
   "shifts",
   "alterations_section",
@@ -40,6 +54,79 @@
    "fieldtype": "Int",
    "label": "Total Duration (Minutes)",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval: doc.is_default",
+   "fieldname": "working_days_section",
+   "fieldtype": "Section Break",
+   "label": "Working Days"
+  },
+  {
+   "default": "0",
+   "fieldname": "sunday",
+   "fieldtype": "Check",
+   "label": "Sunday"
+  },
+  {
+   "fieldname": "cb_mon",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "monday",
+   "fieldtype": "Check",
+   "label": "Monday"
+  },
+  {
+   "fieldname": "cb_tue",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "tuesday",
+   "fieldtype": "Check",
+   "label": "Tuesday"
+  },
+  {
+   "fieldname": "cb_wed",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "wednesday",
+   "fieldtype": "Check",
+   "label": "Wednesday"
+  },
+  {
+   "depends_on": "eval: doc.is_default",
+   "fieldname": "sb_working2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "thursday",
+   "fieldtype": "Check",
+   "label": "Thursday"
+  },
+  {
+   "fieldname": "cb_fri",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "friday",
+   "fieldtype": "Check",
+   "label": "Friday"
+  },
+  {
+   "fieldname": "cb_sat",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "saturday",
+   "fieldtype": "Check",
+   "label": "Saturday"
   },
   {
    "fieldname": "shifts_section",

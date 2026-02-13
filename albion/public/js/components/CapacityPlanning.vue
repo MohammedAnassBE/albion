@@ -870,6 +870,7 @@ function getShiftNamesForDate(dateStr) {
 }
 
 function getShiftMinutes(dateStr) {
+    if (isOffDay(dateStr)) return 0;
     const cal = getCalendarForDate(dateStr);
     return cal ? (cal.total_duration_minutes || 480) : 480;
 }
@@ -921,10 +922,12 @@ function getDayAlterationDelta(dateStr) {
     };
 }
 
-function isWeekend(dateStr) {
-    const date = new Date(dateStr);
-    const day = date.getDay();
-    return day === 0 || day === 6;
+function isOffDay(dateStr) {
+    const cal = defaultCalendar.value;
+    if (!cal) return false;
+    const dayIndex = new Date(dateStr).getDay(); // 0=Sun..6=Sat
+    const dayFields = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    return !cal[dayFields[dayIndex]];
 }
 
 function isPastDate(dateStr) {
@@ -936,7 +939,7 @@ function isPastDate(dateStr) {
 
 function getDateHeaderClass(dateStr) {
     if (isPastDate(dateStr)) return 'past-date';
-    if (isWeekend(dateStr)) return 'weekend';
+    if (isOffDay(dateStr)) return 'weekly-off';
     return '';
 }
 
@@ -1041,10 +1044,16 @@ function getAllocationStatus(item) {
 // === Gantt Grouping Helpers ===
 
 function isNextDay(dateA, dateB) {
+    const fmt = (dt) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
     const [y, m, d] = dateA.split('-').map(Number);
-    const next = new Date(y, m - 1, d + 1);
-    const expected = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`;
-    return expected === dateB;
+    let cursor = fmt(new Date(y, m - 1, d + 1));
+    // Skip over off days between dateA and dateB
+    while (cursor < dateB) {
+        if (!isOffDay(cursor)) return false;
+        const [cy, cm, cd] = cursor.split('-').map(Number);
+        cursor = fmt(new Date(cy, cm - 1, cd + 1));
+    }
+    return cursor === dateB;
 }
 
 function isGroupSplit(machineId, date1, date2) {
@@ -1877,7 +1886,62 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
 
     for (const mId of affectedMachines) {
         const cellAllocs = getAllocations(mId, dateStr);
-        if (cellAllocs.length === 0) continue;
+        if (cellAllocs.length === 0) {
+            // Off-day with new overtime: pull from subsequent groups
+            if (alterationType === 'Add' && getEffectiveMinutes(dateStr, mId) > 0) {
+                let searchDate = getNextDate(dateStr);
+                let refAlloc = null;
+                while (searchDate && !refAlloc) {
+                    const sa = getAllocations(mId, searchDate);
+                    if (sa.length > 0) refAlloc = sa[0];
+                    else searchDate = getNextDate(searchDate);
+                }
+
+                if (refAlloc) {
+                    const mpu = refAlloc.quantity > 0 ? refAlloc.allocated_minutes / refAlloc.quantity : 0;
+                    if (mpu > 0) {
+                        // Capture old end date
+                        const groupAllocs = allocations.value.filter(a =>
+                            a.machine_id === mId && a.item === refAlloc.item &&
+                            a.colour === refAlloc.colour && a.size === refAlloc.size &&
+                            a.order === refAlloc.order && a.process === refAlloc.process
+                        );
+                        const oldEndDate = groupAllocs.reduce((latest, a) =>
+                            !latest || a.operation_date > latest ? a.operation_date : latest, null);
+
+                        // Pull back allocations into the off-day
+                        const result = compactAfterPull(
+                            mId, dateStr, refAlloc.item, refAlloc.colour, refAlloc.size,
+                            refAlloc.order, refAlloc.process, mpu
+                        );
+                        allAdded.push(...result.addedKeys);
+                        allRemoved.push(...result.removedKeys);
+                        allModified.push(...result.modified);
+
+                        // Shift subsequent groups left if end date shrunk
+                        const groupAllocsAfter = allocations.value.filter(a =>
+                            a.machine_id === mId && a.item === refAlloc.item &&
+                            a.colour === refAlloc.colour && a.size === refAlloc.size &&
+                            a.order === refAlloc.order && a.process === refAlloc.process
+                        );
+                        const newEndDate = groupAllocsAfter.reduce((latest, a) =>
+                            !latest || a.operation_date > latest ? a.operation_date : latest, null);
+
+                        if (newEndDate && oldEndDate > newEndDate) {
+                            const dates = dateRange.value;
+                            const freedDays = dates.indexOf(oldEndDate) - dates.indexOf(newEndDate);
+                            if (freedDays > 0) {
+                                const shiftResult = shiftSubsequentAllocsLeft(mId, newEndDate, freedDays);
+                                allModified.push(...shiftResult.modified);
+                                if (shiftResult.addedKeys) allAdded.push(...shiftResult.addedKeys);
+                                if (shiftResult.removedSnapshots) allRemoved.push(...shiftResult.removedSnapshots);
+                            }
+                        }
+                    }
+                }
+            }
+            continue;
+        }
 
         if (alterationType === 'Reduce') {
             const result = reflowForBreak(mId, dateStr);
@@ -3052,9 +3116,9 @@ function onDrop(event, machineId, dateStr) {
         return;
     }
 
-    if (isWeekend(dateStr)) {
+    if (isOffDay(dateStr)) {
         frappe.show_alert({
-            message: __('Warning: Allocating to weekend'),
+            message: __('Warning: Allocating to a weekly off day'),
             indicator: 'orange'
         });
     }

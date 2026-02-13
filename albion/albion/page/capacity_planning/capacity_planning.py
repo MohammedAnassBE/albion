@@ -119,7 +119,14 @@ def _get_calendar_data(calendar_name):
         "is_default": doc.is_default,
         "total_duration_minutes": doc.total_duration_minutes or 0,
         "shifts": shifts,
-        "alterations": alterations
+        "alterations": alterations,
+        "sunday": doc.sunday,
+        "monday": doc.monday,
+        "tuesday": doc.tuesday,
+        "wednesday": doc.wednesday,
+        "thursday": doc.thursday,
+        "friday": doc.friday,
+        "saturday": doc.saturday,
     }
 
 

@@ -366,7 +366,7 @@
     cursor: pointer;
 }
 
-.gantt-date-header.weekend {
+.gantt-date-header.weekly-off {
     background: #fef9c3;
 }
 
