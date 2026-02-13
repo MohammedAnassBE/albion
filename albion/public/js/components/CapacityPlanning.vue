@@ -177,6 +177,7 @@
                                      :title="getGroupTooltip(group)"
                                      draggable="true"
                                      @dragstart="onGroupDragStart($event, group)"
+                                     @dragend="onDragEnd"
                                      @dragover="onCellDragOver($event, machine.machine_id)"
                                      @drop="onBarDrop($event, machine.machine_id)"
                                      @contextmenu.prevent="onBarContextMenu($event, group)"
@@ -345,6 +346,7 @@
                 <div class="modal-actions">
                     <button class="btn btn-primary" @click="confirmBackfill">Shift Backward</button>
                     <button class="btn btn-default" @click="declineBackfill">Just Delete</button>
+                    <button class="btn btn-secondary" @click="cancelDeleteGroup">Cancel</button>
                 </div>
             </div>
         </div>
@@ -1142,6 +1144,7 @@ function onGroupDragStart(event, group) {
         total_minutes: group.total_minutes,
     }));
     event.dataTransfer.effectAllowed = 'move';
+    draggingItem.value = { item: group.item };
 }
 
 function onBarContextMenu(event, group) {
@@ -1265,6 +1268,16 @@ function moveGroup(groupData, newMachineId, newStartDate) {
     const dayOffset = Math.round((newStart - oldStart) / (1000 * 60 * 60 * 24));
 
     if (dayOffset === 0 && groupData.machine_id === newMachineId) return;
+
+    // Machine GG compatibility check
+    const itemGG = itemMachineGG.value.get(groupData.item);
+    if (itemGG) {
+        const targetMachine = machines.value.find(m => m.machine_id === newMachineId);
+        if (targetMachine && targetMachine.machine_gg && targetMachine.machine_gg !== itemGG) {
+            frappe.show_alert({ message: __(`Cannot move: item requires Machine GG "${itemGG}" but target machine has "${targetMachine.machine_gg}"`), indicator: 'red' });
+            return;
+        }
+    }
 
     const groupAllocs = groupData.alloc_keys.map(key => allocations.value.find(a => a.key === key)).filter(Boolean);
 
@@ -1752,32 +1765,19 @@ function computeBackfillPlan(machineId, gapStartDate, deletedKeys) {
     return { affected };
 }
 
-async function deleteGroup() {
+function deleteGroup() {
     if (!selectedGroup.value) return;
     closeContextMenu();
 
     const group = selectedGroup.value;
     const allocs = group.alloc_keys.map(key => allocations.value.find(a => a.key === key)).filter(Boolean);
 
-    const savedAllocs = allocs.filter(a => a.name);
-    for (const alloc of savedAllocs) {
-        try {
-            await frappe.call({
-                method: 'albion.albion.page.capacity_planning.capacity_planning.delete_allocation',
-                args: { allocation_name: alloc.name }
-            });
-        } catch (e) {
-            console.error('Error deleting allocation:', e);
-            frappe.show_alert({ message: __('Error deleting some allocations'), indicator: 'red' });
-            return;
-        }
-    }
-
     const undoData = allocs.map(a => ({ ...a }));
     const machineId = group.machine_id;
     const gapStartDate = group.start_date;
     const deletedKeys = group.alloc_keys;
 
+    // Remove from local state first (needed to compute backfill gaps)
     allocs.forEach(alloc => {
         const idx = allocations.value.findIndex(a => a.key === alloc.key);
         if (idx > -1) allocations.value.splice(idx, 1);
@@ -1790,12 +1790,24 @@ async function deleteGroup() {
         backfillModalData.value = {
             machineId,
             deletedAllocations: undoData,
+            deletedKeys,
             affectedAllocations: affected
         };
         showBackfillModal.value = true;
     } else {
-        saveAction('delete_group', { allocations: undoData });
-        frappe.show_alert({ message: __(`Deleted group: ${group.allocs.length} day(s)`), indicator: 'green' });
+        // No backfill candidates — confirm before finalizing
+        frappe.confirm(
+            __(`Delete group: ${group.allocs.length} day(s)?`),
+            () => {
+                // Confirmed
+                saveAction('delete_group', { allocations: undoData });
+                frappe.show_alert({ message: __(`Deleted group: ${group.allocs.length} day(s)`), indicator: 'green' });
+            },
+            () => {
+                // Cancelled — restore allocations
+                undoData.forEach(a => allocations.value.push(a));
+            }
+        );
     }
 
     selectedGroup.value = null;
@@ -1833,6 +1845,15 @@ function declineBackfill() {
 
     saveAction('delete_group', { allocations: bd.deletedAllocations });
     frappe.show_alert({ message: __('Group deleted'), indicator: 'green' });
+    closeBackfillModal();
+}
+
+function cancelDeleteGroup() {
+    if (backfillModalData.value) {
+        backfillModalData.value.deletedAllocations.forEach(a => {
+            allocations.value.push(a);
+        });
+    }
     closeBackfillModal();
 }
 
@@ -3073,6 +3094,16 @@ function moveAllocation(alloc, newMachineId, newDateStr) {
     if (!dateRange.value.includes(newDateStr)) {
         frappe.show_alert({ message: __('Date outside calendar range'), indicator: 'red' });
         return;
+    }
+
+    // Machine GG compatibility check
+    const itemGG = itemMachineGG.value.get(actualAlloc.item);
+    if (itemGG) {
+        const targetMachine = machines.value.find(m => m.machine_id === newMachineId);
+        if (targetMachine && targetMachine.machine_gg && targetMachine.machine_gg !== itemGG) {
+            frappe.show_alert({ message: __(`Cannot move: Machine GG mismatch`), indicator: 'red' });
+            return;
+        }
     }
 
     // One-item-per-machine-day validation
