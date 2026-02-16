@@ -1066,6 +1066,35 @@ function addDaysToDate(dateStr, days) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
+function addWorkingDays(dateStr, count, machineId) {
+    const dates = dateRange.value;
+    const startIdx = dates.indexOf(dateStr);
+    if (startIdx < 0) return null;
+
+    const direction = count > 0 ? 1 : -1;
+    let remaining = Math.abs(count);
+    let idx = startIdx;
+
+    while (remaining > 0) {
+        idx += direction;
+        if (idx < 0 || idx >= dates.length) return null;
+        if (getEffectiveMinutes(dates[idx], machineId) > 0) {
+            remaining--;
+        }
+    }
+    return dates[idx];
+}
+
+function getNextWorkingDay(dateStr, machineId) {
+    const dates = dateRange.value;
+    let idx = dates.indexOf(dateStr);
+    if (idx < 0) return null;
+    while (++idx < dates.length) {
+        if (getEffectiveMinutes(dates[idx], machineId) > 0) return dates[idx];
+    }
+    return null;
+}
+
 function getGroupsForMachine(machineId) {
     return groupedAllocationsWithLanes.value.filter(g => g.machine_id === machineId);
 }
@@ -1217,6 +1246,26 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
         const effectiveCap = getEffectiveMinutes(newDate, newMachineId);
         const maxQty = Math.floor(effectiveCap / minutesPerUnit);
         const allocQty = Math.min(remaining, maxQty);
+
+        if (allocQty <= 0) {
+            // No usable capacity on this day — remove the zombie allocation
+            const ud = undoData.find(u => u.key === alloc.key);
+            if (ud) {
+                removedSnapshots.push({
+                    key: alloc.key,
+                    machine_id: ud.oldMachineId,
+                    operation_date: ud.oldDate,
+                    shift: ud.oldShift,
+                    order: alloc.order, item: alloc.item, process: alloc.process,
+                    colour: alloc.colour, size: alloc.size,
+                    quantity: ud.oldQuantity,
+                    allocated_minutes: ud.oldAllocatedMinutes
+                });
+            }
+            const idx = allocations.value.findIndex(a => a.key === alloc.key);
+            if (idx > -1) allocations.value.splice(idx, 1);
+            continue;
+        }
 
         alloc.quantity = allocQty;
         alloc.allocated_minutes = allocQty * minutesPerUnit;
@@ -1537,7 +1586,7 @@ function computeShiftByDaysPreview() {
     const machineId = group.machine_id;
     const dates = dateRange.value;
 
-    // Compute the primary group's new target dates
+    // Compute the primary group's new target dates using working days
     const groupAllocs = group.alloc_keys
         .map(key => allocations.value.find(a => a.key === key))
         .filter(Boolean);
@@ -1547,25 +1596,40 @@ function computeShiftByDaysPreview() {
         return;
     }
 
-    const targetDays = groupAllocs.map(alloc => ({
-        alloc,
-        newDate: addDaysToDate(alloc.operation_date, dayOffset)
-    }));
+    // Sort group allocs by date
+    const sortedAllocs = [...groupAllocs].sort((a, b) => a.operation_date.localeCompare(b.operation_date));
 
-    const newStart = addDaysToDate(group.start_date, dayOffset);
-    const newEnd = addDaysToDate(group.end_date, dayOffset);
+    // Compute first alloc's new date using working days
+    const firstNewDate = addWorkingDays(sortedAllocs[0].operation_date, dayOffset, machineId);
+    if (!firstNewDate) {
+        shiftByDaysPreview.value = { error: 'Shift would place days outside calendar range. Extend the end date first.' };
+        return;
+    }
 
-    // Validate primary group's target dates
-    for (const { newDate } of targetDays) {
-        if (!dates.includes(newDate)) {
+    // Lay out allocs on consecutive working days from firstNewDate
+    const targetDays = [];
+    let currentWorkDate = firstNewDate;
+    for (const alloc of sortedAllocs) {
+        if (!currentWorkDate) {
+            shiftByDaysPreview.value = { error: 'Not enough working days in calendar range.' };
+            return;
+        }
+        if (!dates.includes(currentWorkDate)) {
             shiftByDaysPreview.value = { error: 'Shift would place days outside calendar range. Extend the end date first.' };
             return;
         }
-        if (isPastDate(newDate)) {
+        if (isPastDate(currentWorkDate)) {
             shiftByDaysPreview.value = { error: 'Cannot shift to past dates' };
             return;
         }
+        targetDays.push({ alloc, newDate: currentWorkDate });
+        if (alloc !== sortedAllocs[sortedAllocs.length - 1]) {
+            currentWorkDate = getNextWorkingDay(currentWorkDate, machineId);
+        }
     }
+
+    const newStart = targetDays[0].newDate;
+    const newEnd = targetDays[targetDays.length - 1].newDate;
 
     // Get all groups on this machine (from the computed groupedAllocations)
     const machineGroups = groupedAllocations.value
@@ -1595,7 +1659,16 @@ function computeShiftByDaysPreview() {
             if (otherGroup.end_date < newStart) continue;
             if (otherGroup.start_date > currentEnd) break;
 
-            const pushDays = dates.indexOf(addDaysToDate(currentEnd, 1)) - dates.indexOf(otherGroup.start_date);
+            const nextDayIdx = dates.indexOf(addDaysToDate(currentEnd, 1));
+            if (nextDayIdx < 0) {
+                // At calendar boundary — can't push overlapping group
+                outOfBounds = true;
+                for (const alloc of otherGroup.allocObjs) {
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+                }
+                continue;
+            }
+            const pushDays = nextDayIdx - dates.indexOf(otherGroup.start_date);
             if (pushDays <= 0) continue;
 
             groupShifts.set(otherGroup.group_id, pushDays);
@@ -1619,27 +1692,6 @@ function computeShiftByDaysPreview() {
             }
 
             currentEnd = outOfBounds ? currentEnd : pushedEnd;
-        }
-    }
-
-    // Shift all subsequent groups on the same machine by dayOffset
-    for (const otherGroup of machineGroups) {
-        if (groupShifts.has(otherGroup.group_id)) continue; // already handled by cascade
-        if (otherGroup.start_date <= group.end_date) continue; // not subsequent
-
-        groupShifts.set(otherGroup.group_id, dayOffset);
-
-        const pushedEnd = addDaysToDate(otherGroup.end_date, dayOffset);
-        if (!dates.includes(pushedEnd)) outOfBounds = true;
-
-        for (const alloc of otherGroup.allocObjs) {
-            const nd = addDaysToDate(alloc.operation_date, dayOffset);
-            if (!dates.includes(nd) || isPastDate(nd)) {
-                outOfBounds = true;
-                affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
-            } else {
-                affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: nd });
-            }
         }
     }
 
