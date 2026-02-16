@@ -1293,6 +1293,7 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
     // Redistribute total quantity across target days based on each day's capacity
     let remaining = totalQty;
     const removedSnapshots = [];
+    let lastPlacedDate = targetDays[0].newDate;
 
     for (const { alloc, newDate } of targetDays) {
         if (remaining <= 0 || minutesPerUnit <= 0) {
@@ -1343,12 +1344,13 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
         alloc.quantity = allocQty;
         alloc.allocated_minutes = allocQty * minutesPerUnit;
         remaining -= allocQty;
+        lastPlacedDate = newDate;
     }
 
     // Place overflow on subsequent available days if quantity remains
     const overflowKeys = [];
     if (remaining > 0 && minutesPerUnit > 0) {
-        const lastTargetDate = targetDays[targetDays.length - 1].newDate;
+        const lastTargetDate = lastPlacedDate;
         const allMovedKeys = targetDays.map(({ alloc }) => alloc.key);
         let currentDate = getNextDate(lastTargetDate);
         const refAlloc = targetDays[0].alloc;
@@ -1417,10 +1419,23 @@ function moveGroup(groupData, newMachineId, newStartDate) {
         return;
     }
 
-    const targetDays = groupAllocs.map(alloc => ({
-        alloc,
-        newDate: addDaysToDate(alloc.operation_date, dayOffset)
-    }));
+    // Sort allocs by date to ensure chronological assignment
+    groupAllocs.sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+
+    // Pack into consecutive working days from drop date (skip holidays)
+    // Prevents mid-week gaps when original group spans weekends
+    const targetDays = [];
+    let _nextDate = newStartDate;
+    for (const alloc of groupAllocs) {
+        while (_nextDate && getEffectiveMinutes(_nextDate, newMachineId) <= 0) {
+            _nextDate = getNextDate(_nextDate);
+        }
+        if (!_nextDate) {
+            _nextDate = targetDays[targetDays.length - 1].newDate;
+        }
+        targetDays.push({ alloc, newDate: _nextDate });
+        _nextDate = getNextDate(_nextDate);
+    }
 
     const dates = dateRange.value;
     const newEndDate = targetDays[targetDays.length - 1].newDate;
