@@ -1,6 +1,8 @@
-frappe.dom.set_style("/* sfc-style:/home/anas/frappe-15/apps/albion/albion/public/js/components/OrderMatrix.vue?type=style&index=0 */\n.order-matrix[data-v-736a6fcc] {\n  margin-top: 20px;\n}\n.item-section[data-v-736a6fcc] {\n  margin-bottom: 30px;\n  padding: 15px;\n  border: 1px solid #d1d8dd;\n  border-radius: 4px;\n}\n.item-header[data-v-736a6fcc] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 15px;\n  padding-bottom: 10px;\n  border-bottom: 1px solid #d1d8dd;\n}\n.item-title[data-v-736a6fcc] {\n  margin: 0;\n}\n.item-actions[data-v-736a6fcc] {\n  display: flex;\n  gap: 8px;\n}\n.qty-input[data-v-736a6fcc] {\n  width: 80px;\n  text-align: right;\n}\n.colour-header[data-v-736a6fcc],\n.colour-cell[data-v-736a6fcc] {\n  min-width: 100px;\n  font-weight: bold;\n}\n.size-header[data-v-736a6fcc] {\n  min-width: 80px;\n  text-align: center;\n}\n.total-header[data-v-736a6fcc],\n.total-cell[data-v-736a6fcc] {\n  min-width: 80px;\n  text-align: right;\n  font-weight: bold;\n}\n\n/* sfc-style:/home/anas/frappe-15/apps/albion/albion/public/js/components/CapacityPlanning.vue?type=style&index=0 */\n.capacity-planning[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n  background: #f9fafb;\n}\n.cp-header[data-v-662cf2e2] {\n  background: white;\n  padding: 12px 16px;\n  border-bottom: 1px solid #e5e7eb;\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);\n}\n.cp-filters[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: end;\n}\n.filter-group[data-v-662cf2e2] {\n  display: flex;\n  gap: 12px;\n  align-items: end;\n  flex-wrap: wrap;\n}\n.action-group[data-v-662cf2e2] {\n  display: flex;\n  gap: 8px;\n  align-items: end;\n}\n.form-group[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n.form-group label[data-v-662cf2e2] {\n  font-size: 12px;\n  font-weight: 500;\n  color: #374151;\n}\n.form-control[data-v-662cf2e2] {\n  min-width: unset;\n  width: 100%;\n  padding: 7px 12px;\n  border: 1px solid #e5e7eb;\n  border-radius: 8px;\n  font-size: 13px;\n  background: white;\n  transition: border-color 0.2s, box-shadow 0.2s;\n}\nselect.form-control[data-v-662cf2e2] {\n  -webkit-appearance: menulist;\n  -moz-appearance: menulist;\n  appearance: menulist;\n  padding-block: 0;\n}\n.form-control[data-v-662cf2e2]:focus {\n  outline: none;\n  border-color: #2563eb;\n  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);\n}\n.form-control[data-v-662cf2e2]:disabled {\n  background: #f3f4f6;\n  color: #9ca3af;\n  cursor: not-allowed;\n}\n.text-info[data-v-662cf2e2] {\n  color: #2563eb;\n}\n.border-danger[data-v-662cf2e2] {\n  border-color: #ef4444 !important;\n}\n.text-danger[data-v-662cf2e2] {\n  color: #ef4444;\n}\n.validation-alerts[data-v-662cf2e2] {\n  padding: 10px 15px;\n  background: #fef2f2;\n}\n.alert[data-v-662cf2e2] {\n  padding: 8px 12px;\n  margin-bottom: 5px;\n  border-radius: 6px;\n}\n.alert-danger[data-v-662cf2e2] {\n  background: #fee2e2;\n  color: #dc2626;\n}\n.cp-body[data-v-662cf2e2] {\n  display: flex;\n  flex: 1;\n  overflow: hidden;\n}\n.cp-left-panel[data-v-662cf2e2] {\n  width: 280px;\n  background: white;\n  border-right: 1px solid #e5e7eb;\n  display: flex;\n  flex-direction: column;\n}\n.panel-header[data-v-662cf2e2] {\n  padding: 14px 12px;\n  border-bottom: 1px solid #e5e7eb;\n}\n.panel-header h4[data-v-662cf2e2] {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111827;\n  margin: 0 0 2px 0;\n}\n.panel-subtitle[data-v-662cf2e2] {\n  font-size: 12px;\n  color: #9ca3af;\n}\n.workload-summary[data-v-662cf2e2] {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 6px;\n  padding: 10px 12px;\n  background: #f9fafb;\n  border-bottom: 1px solid #e5e7eb;\n}\n.summary-item[data-v-662cf2e2] {\n  display: flex;\n  gap: 5px;\n  font-size: 11px;\n}\n.summary-item .label[data-v-662cf2e2] {\n  color: #9ca3af;\n}\n.summary-item .value[data-v-662cf2e2] {\n  font-weight: 600;\n  color: #111827;\n}\n.workload-list[data-v-662cf2e2] {\n  flex: 1;\n  overflow-y: auto;\n  padding: 10px;\n}\n.empty-state[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  padding: 40px 20px;\n  color: #9ca3af;\n}\n.empty-icon[data-v-662cf2e2] {\n  font-size: 32px;\n  margin-bottom: 12px;\n  opacity: 0.5;\n}\n.empty-text[data-v-662cf2e2] {\n  font-size: 13px;\n  text-align: center;\n}\n.workload-item[data-v-662cf2e2] {\n  padding: 10px 12px;\n  border-radius: 8px;\n  border: 1px solid #e5e7eb;\n  background: white;\n  margin-bottom: 8px;\n  border-left: 3px solid transparent;\n  cursor: grab;\n  transition: all 0.2s;\n}\n.workload-item[data-v-662cf2e2]:hover {\n  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);\n}\n.workload-item.fully-allocated[data-v-662cf2e2] {\n  border-left-color: #10b981;\n  background: #f9fafb;\n  opacity: 0.7;\n  cursor: not-allowed;\n}\n.workload-item.partial-allocated[data-v-662cf2e2] {\n  border-left-color: #f59e0b;\n  background: white;\n}\n.workload-item.pending[data-v-662cf2e2] {\n  border-left-color: #3b82f6;\n}\n.workload-item.invalid[data-v-662cf2e2] {\n  border-left-color: #ef4444;\n  opacity: 0.5;\n  background: #fef2f2;\n  cursor: not-allowed;\n}\n.workload-item.locked[data-v-662cf2e2] {\n  border-left-color: #8b5cf6;\n  opacity: 0.6;\n  background: #faf5ff;\n  cursor: not-allowed;\n}\n.workload-item[data-v-662cf2e2]:active {\n  cursor: grabbing;\n}\n.item-header[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 5px;\n}\n.drag-handle[data-v-662cf2e2] {\n  color: #d1d5db;\n  cursor: grab;\n  font-size: 12px;\n  margin-right: 6px;\n  user-select: none;\n}\n.item-name[data-v-662cf2e2] {\n  font-weight: 600;\n  color: #111827;\n  flex: 1;\n}\n.item-qty[data-v-662cf2e2] {\n  background: #f3f4f6;\n  color: #374151;\n  padding: 2px 8px;\n  border-radius: 10px;\n  font-size: 11px;\n  font-weight: 600;\n}\n.item-detail[data-v-662cf2e2] {\n  font-size: 12px;\n  color: #6b7280;\n}\n.item-minutes[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #9ca3af;\n  margin-top: 5px;\n}\n.item-progress[data-v-662cf2e2] {\n  height: 3px;\n  background: #f3f4f6;\n  border-radius: 2px;\n  margin-top: 6px;\n  overflow: hidden;\n}\n.item-progress-fill[data-v-662cf2e2] {\n  height: 100%;\n  border-radius: 2px;\n  transition: width 0.3s;\n}\n.item-progress-fill.full[data-v-662cf2e2] {\n  background: #10b981;\n}\n.item-progress-fill.partial[data-v-662cf2e2] {\n  background: #f59e0b;\n}\n.item-progress-fill.pending[data-v-662cf2e2] {\n  background: #3b82f6;\n}\n.allocation-status[data-v-662cf2e2] {\n  font-size: 11px;\n  margin-top: 5px;\n  font-weight: 600;\n}\n.allocation-status.full[data-v-662cf2e2] {\n  color: #10b981;\n}\n.allocation-status.partial[data-v-662cf2e2] {\n  color: #f59e0b;\n}\n.allocation-status.pending[data-v-662cf2e2] {\n  color: #3b82f6;\n}\n.invalid-reason[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #ef4444;\n  margin-top: 5px;\n}\n.locked-reason[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #8b5cf6;\n  font-weight: 600;\n  margin-top: 5px;\n}\n.cp-right-panel[data-v-662cf2e2] {\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n}\n.calendar-header[data-v-662cf2e2] {\n  background: white;\n  padding: 10px 16px;\n  border-bottom: 1px solid #e5e7eb;\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n.calendar-header h4[data-v-662cf2e2] {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111827;\n  margin: 0;\n}\n.calendar-legend[data-v-662cf2e2] {\n  display: flex;\n  gap: 15px;\n}\n.legend-item[data-v-662cf2e2] {\n  display: flex;\n  align-items: center;\n  gap: 5px;\n  font-size: 12px;\n  color: #6b7280;\n}\n.dot[data-v-662cf2e2] {\n  width: 8px;\n  height: 8px;\n  border-radius: 50%;\n}\n.dot.available[data-v-662cf2e2] {\n  background: white;\n  border: 1px solid #e5e7eb;\n}\n.dot.allocated[data-v-662cf2e2] {\n  background: #f8fafc;\n  border: 1px solid #cbd5e1;\n}\n.dot.full[data-v-662cf2e2] {\n  background: #fef2f2;\n  border: 1px solid #fca5a5;\n}\n.dot.conflict[data-v-662cf2e2] {\n  background: #fef2f2;\n  border: 2px solid #ef4444;\n}\n.calendar-wrapper[data-v-662cf2e2] {\n  flex: 1;\n  overflow: auto;\n  background: white;\n}\n.calendar-table[data-v-662cf2e2] {\n  width: 100%;\n  border-collapse: collapse;\n}\n.calendar-table th[data-v-662cf2e2],\n.calendar-table td[data-v-662cf2e2] {\n  border: 1px solid #e5e7eb;\n  min-width: 130px;\n}\n.machine-header[data-v-662cf2e2] {\n  background: #f9fafb;\n  padding: 10px;\n  font-weight: 600;\n  font-size: 13px;\n  color: #111827;\n  position: sticky;\n  left: 0;\n  z-index: 10;\n}\n.date-header[data-v-662cf2e2] {\n  background: #f9fafb;\n  padding: 10px 8px;\n  text-align: center;\n}\n.date-header.weekend[data-v-662cf2e2] {\n  background: #fef3c7;\n}\n.date-header.past-date[data-v-662cf2e2] {\n  background: #fee2e2;\n}\n.date-cell[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n.day-date[data-v-662cf2e2] {\n  font-weight: 600;\n  font-size: 12px;\n  color: #111827;\n}\n.shift-info[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #6b7280;\n}\n.machine-cell[data-v-662cf2e2] {\n  background: #f9fafb;\n  padding: 12px;\n  border-right: 1px solid #e5e7eb;\n  position: sticky;\n  left: 0;\n  z-index: 10;\n}\n.machine-info[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n}\n.machine-title[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n.machine-id[data-v-662cf2e2] {\n  font-weight: 600;\n  font-size: 13px;\n  color: #111827;\n}\n.machine-name[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #6b7280;\n  margin-top: 2px;\n}\n.machine-utilization[data-v-662cf2e2] {\n  font-size: 11px;\n  font-weight: 600;\n  padding: 1px 6px;\n  border-radius: 4px;\n}\n.util-low[data-v-662cf2e2] {\n  background: #ecfdf5;\n  color: #059669;\n}\n.util-medium[data-v-662cf2e2] {\n  background: #fef3c7;\n  color: #d97706;\n}\n.util-high[data-v-662cf2e2] {\n  background: #fee2e2;\n  color: #dc2626;\n}\n.calendar-cell[data-v-662cf2e2] {\n  padding: 6px 8px;\n  vertical-align: top;\n  min-height: 80px;\n  transition: background 0.2s;\n}\n.cell-available[data-v-662cf2e2] {\n  background: white;\n}\n.cell-allocated[data-v-662cf2e2] {\n  background: #f8fafc;\n}\n.cell-full[data-v-662cf2e2] {\n  background: #fef2f2;\n}\n.cell-conflict[data-v-662cf2e2] {\n  background: #fef2f2;\n  border: 2px solid #ef4444;\n}\n.calendar-cell[data-v-662cf2e2]:hover {\n  box-shadow: inset 0 0 0 2px #3b82f6;\n}\n.cell-content[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.allocation-item[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  padding: 6px 8px;\n  border-radius: 6px;\n  font-size: 12px;\n  background: white;\n  border-left: 3px solid;\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);\n  cursor: grab;\n  border-top: 1px solid #f3f4f6;\n  border-right: 1px solid #f3f4f6;\n  border-bottom: 1px solid #f3f4f6;\n}\n.allocation-item[data-v-662cf2e2]:hover {\n  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n}\n.allocation-item[data-v-662cf2e2]:active {\n  cursor: grabbing;\n}\n.allocation-item.conflict[data-v-662cf2e2] {\n  border: 2px solid #ef4444;\n  border-left: 3px solid #ef4444;\n  animation: pulse-662cf2e2 1.5s infinite;\n}\n@keyframes pulse-662cf2e2 {\n  0% {\n    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);\n  }\n  70% {\n    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);\n  }\n  100% {\n    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);\n  }\n}\n.alloc-header[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n.alloc-footer[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-top: 2px;\n}\n.alloc-item[data-v-662cf2e2] {\n  font-weight: 600;\n  color: #111827;\n}\n.alloc-qty[data-v-662cf2e2] {\n  background: #f3f4f6;\n  padding: 1px 6px;\n  border-radius: 4px;\n  font-size: 11px;\n  font-weight: 600;\n  color: #374151;\n}\n.alloc-process[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #6b7280;\n}\n.alloc-mins[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #6b7280;\n}\n.btn-remove[data-v-662cf2e2] {\n  width: 18px;\n  height: 18px;\n  font-size: 12px;\n  border-radius: 4px;\n  background: transparent;\n  border: none;\n  cursor: pointer;\n  line-height: 1;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #9ca3af;\n  opacity: 0;\n  transition: opacity 0.15s;\n}\n.allocation-item:hover .btn-remove[data-v-662cf2e2] {\n  opacity: 1;\n}\n.btn-remove[data-v-662cf2e2]:hover {\n  background: #fee2e2;\n  color: #ef4444;\n}\n.cell-summary[data-v-662cf2e2] {\n  margin-top: auto;\n  padding-top: 5px;\n  border-top: 1px dashed #e5e7eb;\n  font-size: 11px;\n  text-align: right;\n}\n.used-minutes[data-v-662cf2e2] {\n  font-weight: 600;\n  color: #111827;\n}\n.remaining-minutes[data-v-662cf2e2] {\n  color: #9ca3af;\n}\n.capacity-bar[data-v-662cf2e2] {\n  height: 6px;\n  background: #f3f4f6;\n  border-radius: 3px;\n  overflow: hidden;\n  margin-top: 2px;\n}\n.capacity-fill[data-v-662cf2e2] {\n  height: 100%;\n  border-radius: 3px;\n  transition: width 0.3s;\n}\n.capacity-fill.bar-ok[data-v-662cf2e2] {\n  background: #10b981;\n}\n.capacity-fill.bar-warning[data-v-662cf2e2] {\n  background: #f59e0b;\n}\n.capacity-fill.bar-full[data-v-662cf2e2] {\n  background: #ef4444;\n}\n.modal-overlay[data-v-662cf2e2] {\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  background: rgba(0, 0, 0, 0.5);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 1000;\n}\n.modal-content[data-v-662cf2e2] {\n  background: white;\n  padding: 24px;\n  border-radius: 12px;\n  min-width: 300px;\n  max-width: 400px;\n}\n.modal-content h4[data-v-662cf2e2] {\n  font-size: 16px;\n  font-weight: 600;\n  color: #111827;\n  margin: 0 0 15px 0;\n}\n.modal-actions[data-v-662cf2e2] {\n  display: flex;\n  gap: 10px;\n  justify-content: flex-end;\n  margin-top: 15px;\n}\n.btn[data-v-662cf2e2] {\n  padding: 7px 16px;\n  border: none;\n  border-radius: 8px;\n  cursor: pointer;\n  font-size: 13px;\n  font-weight: 500;\n}\n.btn-primary[data-v-662cf2e2] {\n  background: #2563eb;\n  color: white;\n}\n.btn-primary[data-v-662cf2e2]:hover {\n  background: #1d4ed8;\n}\n.btn-default[data-v-662cf2e2] {\n  background: white;\n  border: 1px solid #e5e7eb;\n  color: #374151;\n}\n.btn-default[data-v-662cf2e2]:hover {\n  background: #f9fafb;\n}\n.btn-secondary[data-v-662cf2e2] {\n  background: #f3f4f6;\n  color: #374151;\n}\n.btn-secondary[data-v-662cf2e2]:hover {\n  background: #e5e7eb;\n}\n.btn[data-v-662cf2e2]:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n.context-menu[data-v-662cf2e2] {\n  position: fixed;\n  background: white;\n  border: 1px solid #e5e7eb;\n  border-radius: 8px;\n  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);\n  z-index: 1000;\n  min-width: 150px;\n  padding: 4px;\n}\n.menu-item[data-v-662cf2e2] {\n  padding: 8px 14px;\n  cursor: pointer;\n  font-size: 13px;\n  border-radius: 4px;\n  margin: 2px 0;\n  color: #374151;\n}\n.menu-item[data-v-662cf2e2]:hover {\n  background: #f3f4f6;\n}\n.menu-item.text-danger[data-v-662cf2e2] {\n  color: #ef4444;\n}\n.menu-item.text-danger[data-v-662cf2e2]:hover {\n  background: #fef2f2;\n}\n.shift-modal[data-v-662cf2e2] {\n  background: white;\n  padding: 24px;\n  border-radius: 12px;\n  min-width: 500px;\n  max-width: 700px;\n  max-height: 80vh;\n  display: flex;\n  flex-direction: column;\n}\n.shift-modal h4[data-v-662cf2e2] {\n  font-size: 16px;\n  font-weight: 600;\n  color: #111827;\n  margin: 0 0 12px 0;\n}\n.shift-explanation[data-v-662cf2e2] {\n  background: #eff6ff;\n  border: 1px solid #bfdbfe;\n  border-radius: 8px;\n  padding: 10px 14px;\n  margin-bottom: 14px;\n  font-size: 13px;\n  color: #1e40af;\n}\n.shift-explanation p[data-v-662cf2e2] {\n  margin: 0 0 4px 0;\n}\n.shift-explanation p[data-v-662cf2e2]:last-child {\n  margin-bottom: 0;\n}\n.shift-table-wrapper[data-v-662cf2e2] {\n  max-height: 300px;\n  overflow-y: auto;\n  border: 1px solid #e5e7eb;\n  border-radius: 8px;\n  margin-bottom: 14px;\n}\n.shift-table[data-v-662cf2e2] {\n  width: 100%;\n  border-collapse: collapse;\n  font-size: 12px;\n}\n.shift-table th[data-v-662cf2e2] {\n  background: #f9fafb;\n  padding: 8px 10px;\n  text-align: left;\n  font-weight: 600;\n  color: #374151;\n  border-bottom: 1px solid #e5e7eb;\n  position: sticky;\n  top: 0;\n}\n.shift-table td[data-v-662cf2e2] {\n  padding: 6px 10px;\n  border-bottom: 1px solid #f3f4f6;\n  color: #374151;\n}\n.shift-table tr:last-child td[data-v-662cf2e2] {\n  border-bottom: none;\n}\n/*# sourceMappingURL=albion.bundle.EEJ2JA4C.css.map */\n");
+frappe.dom.set_style("/* sfc-style:/home/anas/frappe-15/apps/albion/albion/public/js/components/OrderMatrix.vue?type=style&index=0 */\n.order-matrix[data-v-736a6fcc] {\n  padding: 4px 0;\n}\n.empty-state[data-v-736a6fcc] {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  padding: 40px 20px;\n  color: var(--text-muted);\n}\n.empty-state-icon[data-v-736a6fcc] {\n  margin-bottom: 12px;\n  opacity: 0.4;\n}\n.empty-state p[data-v-736a6fcc] {\n  margin: 0;\n  font-size: var(--text-sm);\n}\n.item-card[data-v-736a6fcc] {\n  background: var(--card-bg, #fff);\n  border: 1px solid var(--border-color, #e2e8f0);\n  border-radius: 8px;\n  margin-bottom: 16px;\n  overflow: hidden;\n}\n.item-card-header[data-v-736a6fcc] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 12px 16px;\n  background: var(--subtle-fg, #f8fafc);\n  border-bottom: 1px solid var(--border-color, #e2e8f0);\n}\n.item-card-title[data-v-736a6fcc] {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n}\n.item-badge[data-v-736a6fcc] {\n  display: inline-flex;\n  align-items: center;\n  font-size: var(--text-base);\n  font-weight: 600;\n  color: var(--text-color);\n}\n.item-grand-total[data-v-736a6fcc] {\n  font-size: var(--text-sm);\n  color: var(--text-muted);\n}\n.item-grand-total strong[data-v-736a6fcc] {\n  color: var(--text-color);\n}\n.item-card-actions[data-v-736a6fcc] {\n  display: flex;\n  gap: 6px;\n}\n.btn-refresh[data-v-736a6fcc] {\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n  padding: 4px 10px;\n  font-size: 12px;\n  font-weight: 500;\n  color: var(--text-muted);\n  background: var(--control-bg, #f0f0f0);\n  border: 1px solid var(--border-color, #e2e8f0);\n  border-radius: 6px;\n  cursor: pointer;\n  transition: all 0.15s ease;\n}\n.btn-refresh[data-v-736a6fcc]:hover {\n  color: var(--text-color);\n  border-color: var(--gray-400);\n  background: var(--fg-color, #fff);\n}\n.colour-selector[data-v-736a6fcc] {\n  padding: 10px 16px;\n  border-bottom: 1px solid var(--border-color, #e2e8f0);\n}\n.colour-selector-label[data-v-736a6fcc] {\n  display: block;\n  font-size: 11px;\n  font-weight: 600;\n  text-transform: uppercase;\n  letter-spacing: 0.05em;\n  color: var(--text-muted);\n  margin-bottom: 8px;\n}\n.colour-chips[data-v-736a6fcc] {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n.colour-chip[data-v-736a6fcc] {\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n  padding: 5px 12px;\n  border-radius: 20px;\n  font-size: 12px;\n  font-weight: 500;\n  cursor: pointer;\n  user-select: none;\n  transition: all 0.15s ease;\n  border: 1px solid var(--border-color, #e2e8f0);\n  background: var(--control-bg, #f5f5f5);\n  color: var(--text-muted);\n}\n.colour-chip[data-v-736a6fcc]:hover {\n  border-color: var(--primary);\n  color: var(--primary);\n}\n.colour-chip.active[data-v-736a6fcc] {\n  background: var(--primary);\n  border-color: var(--primary);\n  color: #fff;\n}\n.matrix-table-wrapper[data-v-736a6fcc] {\n  overflow-x: auto;\n  padding: 0;\n}\n.matrix-table[data-v-736a6fcc] {\n  width: 100%;\n  border-collapse: collapse;\n  font-size: var(--text-sm);\n}\n.matrix-table thead tr[data-v-736a6fcc] {\n  background: var(--subtle-fg, #f8fafc);\n}\n.matrix-table th[data-v-736a6fcc] {\n  padding: 8px 12px;\n  font-size: 11px;\n  font-weight: 600;\n  text-transform: uppercase;\n  letter-spacing: 0.04em;\n  color: var(--text-muted);\n  border-bottom: 2px solid var(--border-color, #e2e8f0);\n  white-space: nowrap;\n}\n.th-colour[data-v-736a6fcc] {\n  text-align: left;\n  min-width: 120px;\n}\n.th-size[data-v-736a6fcc] {\n  text-align: center;\n  min-width: 80px;\n}\n.th-total[data-v-736a6fcc] {\n  text-align: right;\n  min-width: 80px;\n}\n.matrix-table tbody tr[data-v-736a6fcc] {\n  transition: background 0.1s ease;\n}\n.matrix-table tbody tr[data-v-736a6fcc]:hover {\n  background: var(--subtle-fg, #f8fafc);\n}\n.matrix-table td[data-v-736a6fcc] {\n  padding: 4px 8px;\n  border-bottom: 1px solid var(--border-color, #e2e8f0);\n}\n.td-colour[data-v-736a6fcc] {\n  font-weight: 600;\n  color: var(--text-color);\n  padding-left: 16px;\n  white-space: nowrap;\n}\n.td-qty[data-v-736a6fcc] {\n  text-align: center;\n  padding: 4px 6px;\n}\n.qty-input[data-v-736a6fcc] {\n  width: 100%;\n  max-width: 72px;\n  margin: 0 auto;\n  display: block;\n  padding: 5px 8px;\n  text-align: center;\n  font-size: var(--text-sm);\n  font-weight: 500;\n  border: 1px solid transparent;\n  border-radius: 6px;\n  background: var(--control-bg, #f5f5f5);\n  color: var(--text-color);\n  transition: all 0.15s ease;\n  -moz-appearance: textfield;\n}\n.qty-input[data-v-736a6fcc]::-webkit-outer-spin-button,\n.qty-input[data-v-736a6fcc]::-webkit-inner-spin-button {\n  -webkit-appearance: none;\n  margin: 0;\n}\n.qty-input[data-v-736a6fcc]:focus {\n  outline: none;\n  border-color: var(--primary);\n  background: var(--fg-color, #fff);\n  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 15%, transparent);\n}\n.qty-input[data-v-736a6fcc]::placeholder {\n  color: var(--text-light, #ccc);\n}\n.qty-input[readonly][data-v-736a6fcc] {\n  cursor: default;\n  background: transparent;\n}\n.td-row-total[data-v-736a6fcc] {\n  text-align: right;\n  font-weight: 700;\n  color: var(--text-color);\n  padding-right: 16px;\n  white-space: nowrap;\n}\n.matrix-table tfoot tr[data-v-736a6fcc] {\n  background: var(--subtle-fg, #f8fafc);\n}\n.matrix-table tfoot td[data-v-736a6fcc] {\n  padding: 8px 12px;\n  font-size: 11px;\n  font-weight: 700;\n  text-transform: uppercase;\n  letter-spacing: 0.04em;\n  color: var(--text-muted);\n  border-top: 2px solid var(--border-color, #e2e8f0);\n  border-bottom: none;\n}\n.tf-label[data-v-736a6fcc] {\n  text-align: left;\n  padding-left: 16px;\n}\n.tf-col-total[data-v-736a6fcc] {\n  text-align: center;\n}\n.tf-grand-total[data-v-736a6fcc] {\n  text-align: right;\n  color: var(--text-color);\n  font-size: var(--text-sm);\n  padding-right: 16px;\n}\n.item-empty[data-v-736a6fcc] {\n  padding: 24px 16px;\n  text-align: center;\n  color: var(--text-muted);\n  font-size: var(--text-sm);\n}\n\n/* sfc-style:/home/anas/frappe-15/apps/albion/albion/public/js/components/CapacityPlanning.vue?type=style&index=0 */\n.capacity-planning[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  height: calc(100vh - var(--navbar-height, 60px));\n  background: #f8fafc;\n  font-family:\n    -apple-system,\n    BlinkMacSystemFont,\n    \"Inter\",\n    \"Segoe UI\",\n    sans-serif;\n  overflow: hidden;\n}\n.cp-header[data-v-662cf2e2] {\n  background: white;\n  padding: 12px 20px;\n  border-bottom: 1px solid #e2e8f0;\n  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);\n  position: relative;\n  z-index: 10;\n  flex-shrink: 0;\n}\n.cp-header .awesomplete > [role=listbox][data-v-662cf2e2] {\n  z-index: 50 !important;\n}\n.cp-filters[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-end;\n  gap: 8px;\n}\n.filter-rows[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  flex: 1;\n}\n.filter-row[data-v-662cf2e2] {\n  display: flex;\n  gap: 16px;\n  align-items: flex-end;\n}\n.action-group[data-v-662cf2e2] {\n  display: flex;\n  gap: 8px;\n  align-items: flex-end;\n}\n.frappe-field[data-v-662cf2e2] {\n  min-width: 160px;\n}\n.filter-field[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  flex: 1;\n  min-width: 0;\n}\n.filter-label[data-v-662cf2e2] {\n  font-size: 11px;\n  font-weight: 600;\n  color: #64748b;\n  text-transform: uppercase;\n  letter-spacing: 0.4px;\n  margin-bottom: 4px;\n}\n.frappe-field[data-v-662cf2e2] .frappe-control {\n  margin-bottom: 0;\n}\n.frappe-field[data-v-662cf2e2] .frappe-control .form-group {\n  margin-bottom: 0;\n}\n.form-group[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.form-group label[data-v-662cf2e2] {\n  font-size: 11px;\n  font-weight: 600;\n  color: #64748b;\n  text-transform: uppercase;\n  letter-spacing: 0.4px;\n}\n.text-info[data-v-662cf2e2] {\n  color: #2563eb;\n}\n.text-danger[data-v-662cf2e2] {\n  color: #ef4444;\n}\n.validation-alerts[data-v-662cf2e2] {\n  padding: 8px 20px;\n  background: #fef2f2;\n  border-bottom: 1px solid #fecaca;\n  flex-shrink: 0;\n}\n.alert[data-v-662cf2e2] {\n  padding: 8px 12px;\n  margin-bottom: 4px;\n  border-radius: 6px;\n  font-size: 13px;\n}\n.alert-danger[data-v-662cf2e2] {\n  background: #fee2e2;\n  color: #b91c1c;\n  border: 1px solid #fecaca;\n}\n.cp-body[data-v-662cf2e2] {\n  display: flex;\n  flex: 1;\n  min-height: 0;\n  overflow: hidden;\n  position: relative;\n  z-index: 1;\n}\n.cp-left-panel[data-v-662cf2e2] {\n  width: 280px;\n  min-width: 280px;\n  background: white;\n  border-right: 1px solid #e2e8f0;\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n}\n.panel-header[data-v-662cf2e2] {\n  padding: 16px;\n  border-bottom: 1px solid #e2e8f0;\n  flex-shrink: 0;\n  cursor: pointer;\n  user-select: none;\n}\n.panel-header[data-v-662cf2e2]:hover {\n  background: #f8fafc;\n}\n.panel-header-row[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n.panel-header h4[data-v-662cf2e2] {\n  font-size: 14px;\n  font-weight: 700;\n  color: #0f172a;\n  margin: 0;\n}\n.panel-toggle-btn[data-v-662cf2e2] {\n  background: none;\n  border: none;\n  color: #64748b;\n  font-size: 12px;\n  cursor: pointer;\n  padding: 2px 4px;\n  line-height: 1;\n}\n.panel-subtitle[data-v-662cf2e2] {\n  font-size: 12px;\n  color: #94a3b8;\n  margin-top: 2px;\n}\n.cp-left-panel.panel-collapsed[data-v-662cf2e2] {\n  width: 44px;\n  min-width: 44px;\n}\n.panel-collapsed .panel-header[data-v-662cf2e2] {\n  padding: 12px 8px;\n  border-bottom: none;\n}\n.panel-collapsed .panel-header-row[data-v-662cf2e2] {\n  flex-direction: column;\n  gap: 8px;\n}\n.panel-collapsed .panel-header h4[data-v-662cf2e2] {\n  writing-mode: vertical-rl;\n  text-orientation: mixed;\n  font-size: 12px;\n}\n.workload-list[data-v-662cf2e2] {\n  flex: 1;\n  min-height: 0;\n  overflow-y: auto;\n  padding: 12px;\n}\n.empty-state[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  padding: 48px 20px;\n  color: #94a3b8;\n}\n.empty-icon[data-v-662cf2e2] {\n  font-size: 32px;\n  margin-bottom: 12px;\n  opacity: 0.4;\n}\n.empty-text[data-v-662cf2e2] {\n  font-size: 13px;\n  text-align: center;\n}\n.workload-item[data-v-662cf2e2] {\n  padding: 10px 12px;\n  border-radius: 8px;\n  border: 1px solid #e2e8f0;\n  background: white;\n  margin-bottom: 8px;\n  border-left: 3px solid transparent;\n  cursor: grab;\n  transition: box-shadow 0.15s, border-color 0.15s;\n}\n.workload-item[data-v-662cf2e2]:hover {\n  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);\n  border-color: #cbd5e1;\n}\n.workload-item.fully-allocated[data-v-662cf2e2] {\n  border-left-color: #10b981;\n  background: #f8fafc;\n  opacity: 0.65;\n  cursor: not-allowed;\n}\n.workload-item.partial-allocated[data-v-662cf2e2] {\n  border-left-color: #f59e0b;\n}\n.workload-item.pending[data-v-662cf2e2] {\n  border-left-color: #3b82f6;\n}\n.workload-item.invalid[data-v-662cf2e2] {\n  border-left-color: #ef4444;\n  opacity: 0.5;\n  background: #fef2f2;\n  cursor: not-allowed;\n}\n.workload-item[data-v-662cf2e2]:active {\n  cursor: grabbing;\n}\n.item-header[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 4px;\n}\n.drag-handle[data-v-662cf2e2] {\n  color: #cbd5e1;\n  cursor: grab;\n  font-size: 12px;\n  margin-right: 6px;\n  user-select: none;\n}\n.item-name[data-v-662cf2e2] {\n  font-weight: 600;\n  font-size: 13px;\n  color: #0f172a;\n  flex: 1;\n}\n.item-qty[data-v-662cf2e2] {\n  background: #f1f5f9;\n  color: #334155;\n  padding: 2px 8px;\n  border-radius: 10px;\n  font-size: 11px;\n  font-weight: 700;\n}\n.item-gg[data-v-662cf2e2] {\n  font-size: 11px;\n  font-weight: 600;\n  color: #6d28d9;\n  margin-top: 2px;\n}\n.item-detail[data-v-662cf2e2] {\n  font-size: 12px;\n  color: #64748b;\n}\n.item-minutes[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #94a3b8;\n  margin-top: 4px;\n}\n.item-progress[data-v-662cf2e2] {\n  height: 3px;\n  background: #f1f5f9;\n  border-radius: 2px;\n  margin-top: 8px;\n  overflow: hidden;\n}\n.item-progress-fill[data-v-662cf2e2] {\n  height: 100%;\n  border-radius: 2px;\n  transition: width 0.3s;\n}\n.item-progress-fill.full[data-v-662cf2e2] {\n  background: #10b981;\n}\n.item-progress-fill.partial[data-v-662cf2e2] {\n  background: #f59e0b;\n}\n.item-progress-fill.pending[data-v-662cf2e2] {\n  background: #3b82f6;\n}\n.allocation-status[data-v-662cf2e2] {\n  font-size: 11px;\n  margin-top: 4px;\n  font-weight: 600;\n}\n.allocation-status.full[data-v-662cf2e2] {\n  color: #059669;\n}\n.allocation-status.partial[data-v-662cf2e2] {\n  color: #d97706;\n}\n.allocation-status.pending[data-v-662cf2e2] {\n  color: #2563eb;\n}\n.invalid-reason[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #dc2626;\n  margin-top: 4px;\n}\n.cp-right-panel[data-v-662cf2e2] {\n  flex: 1;\n  min-width: 0;\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n}\n.calendar-header[data-v-662cf2e2] {\n  background: white;\n  padding: 10px 20px;\n  border-bottom: 1px solid #e2e8f0;\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  flex-shrink: 0;\n}\n.calendar-header h4[data-v-662cf2e2] {\n  font-size: 14px;\n  font-weight: 700;\n  color: #0f172a;\n  margin: 0;\n}\n.calendar-wrapper[data-v-662cf2e2] {\n  flex: 1;\n  min-height: 0;\n  overflow: auto;\n  background: #f8fafc;\n}\n.gantt-grid[data-v-662cf2e2] {\n  display: grid;\n  width: max-content;\n}\n.gantt-corner-cell[data-v-662cf2e2] {\n  grid-row: 1;\n  grid-column: 1;\n  background: #f1f5f9;\n  padding: 12px 16px;\n  font-weight: 700;\n  font-size: 12px;\n  color: #475569;\n  text-transform: uppercase;\n  letter-spacing: 0.5px;\n  border: 1px solid #e2e8f0;\n  position: sticky;\n  left: 0;\n  top: 0;\n  z-index: 30;\n  display: flex;\n  align-items: center;\n}\n.gantt-date-header[data-v-662cf2e2] {\n  background: #f1f5f9;\n  padding: 10px 8px;\n  text-align: center;\n  border: 1px solid #e2e8f0;\n  border-left: none;\n  position: sticky;\n  top: 0;\n  z-index: 15;\n  cursor: pointer;\n}\n.gantt-date-header.weekly-off[data-v-662cf2e2] {\n  background: #fef9c3;\n}\n.gantt-date-header.past-date[data-v-662cf2e2] {\n  background: #fef2f2;\n}\n.date-cell[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n.day-date[data-v-662cf2e2] {\n  font-weight: 700;\n  font-size: 12px;\n  color: #1e293b;\n}\n.shift-info[data-v-662cf2e2] {\n  font-size: 10px;\n  color: #64748b;\n  font-weight: 500;\n}\n.day-alteration-badge[data-v-662cf2e2] {\n  font-size: 9px;\n  font-weight: 700;\n  padding: 1px 5px;\n  border-radius: 3px;\n  margin-left: 4px;\n  vertical-align: middle;\n}\n.gantt-date-header[data-v-662cf2e2]:hover {\n  background: #e2e8f0 !important;\n}\n.gantt-machine-cell[data-v-662cf2e2] {\n  grid-column: 1;\n  background: #f8fafc;\n  padding: 12px 16px;\n  border: 1px solid #e2e8f0;\n  border-top: none;\n  position: sticky;\n  left: 0;\n  z-index: 20;\n  display: flex;\n  align-items: flex-start;\n}\n.machine-info[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n.machine-title[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 8px;\n}\n.machine-id[data-v-662cf2e2] {\n  font-weight: 700;\n  font-size: 13px;\n  color: #0f172a;\n}\n.machine-name[data-v-662cf2e2] {\n  font-size: 11px;\n  color: #64748b;\n}\n.machine-gg-badge[data-v-662cf2e2] {\n  font-size: 10px;\n  font-weight: 700;\n  color: #6d28d9;\n  background: #ede9fe;\n  padding: 1px 6px;\n  border-radius: 4px;\n  white-space: nowrap;\n}\n.gantt-date-cell[data-v-662cf2e2] {\n  position: relative;\n  border: 1px solid #e2e8f0;\n  border-top: none;\n  border-left: none;\n  padding: 4px 6px;\n  min-height: 98px;\n  display: flex;\n  flex-direction: column;\n  justify-content: flex-end;\n  transition: background 0.15s, box-shadow 0.15s;\n}\n.gantt-date-cell[data-v-662cf2e2]:hover {\n  box-shadow: inset 0 0 0 2px #93c5fd;\n}\n.cell-available[data-v-662cf2e2] {\n  background: white;\n}\n.cell-allocated[data-v-662cf2e2] {\n  background: #f8fafc;\n}\n.cell-full[data-v-662cf2e2] {\n  background: #fff1f2;\n}\n.cell-conflict[data-v-662cf2e2] {\n  background: #fff1f2;\n  box-shadow: inset 0 0 0 2px #f87171;\n}\n.cell-top-row[data-v-662cf2e2] {\n  display: flex;\n  justify-content: flex-end;\n  align-items: center;\n  min-height: 18px;\n}\n.alteration-badge[data-v-662cf2e2] {\n  position: absolute;\n  bottom: 3px;\n  left: 4px;\n  z-index: 11;\n  font-size: 10px;\n  font-weight: 700;\n  padding: 1px 6px;\n  border-radius: 3px;\n  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);\n}\n.badge-add[data-v-662cf2e2] {\n  background: #dcfce7;\n  color: #166534;\n}\n.badge-reduce[data-v-662cf2e2] {\n  background: #fef3c7;\n  color: #92400e;\n}\n.cell-altered-add[data-v-662cf2e2] {\n  background: #f0fdf4 !important;\n}\n.cell-altered-reduce[data-v-662cf2e2] {\n  background: #fffbeb !important;\n}\n.cell-add-btn[data-v-662cf2e2] {\n  display: none;\n  width: 18px;\n  height: 18px;\n  border: 1px solid #cbd5e1;\n  border-radius: 4px;\n  background: white;\n  color: #64748b;\n  font-size: 13px;\n  font-weight: 700;\n  cursor: pointer;\n  line-height: 1;\n  padding: 0;\n  margin-left: auto;\n}\n.gantt-date-cell:hover .cell-add-btn[data-v-662cf2e2] {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n}\n.cell-add-btn[data-v-662cf2e2]:hover {\n  background: #3b82f6;\n  color: white;\n  border-color: #3b82f6;\n}\n.cell-utilization[data-v-662cf2e2] {\n  position: absolute;\n  top: 3px;\n  left: 4px;\n  right: 4px;\n  z-index: 10;\n}\n.util-bar[data-v-662cf2e2] {\n  position: relative;\n  height: 16px;\n  background: #e2e8f0;\n  border-radius: 3px;\n  overflow: hidden;\n}\n.util-fill[data-v-662cf2e2] {\n  position: absolute;\n  top: 0;\n  left: 0;\n  height: 100%;\n  border-radius: 3px;\n  transition: width 0.3s;\n}\n.util-label[data-v-662cf2e2] {\n  position: relative;\n  z-index: 1;\n  display: block;\n  text-align: end;\n  font-size: 10px;\n  font-weight: 700;\n  line-height: 16px;\n  color: #1e293b;\n}\n.util-fill.bar-ok[data-v-662cf2e2] {\n  background: #86efac;\n}\n.util-fill.bar-warning[data-v-662cf2e2] {\n  background: #fde68a;\n}\n.util-fill.bar-low[data-v-662cf2e2] {\n  background: #fca5a5;\n}\n.util-bar.bar-ok[data-v-662cf2e2] {\n  background: #dcfce7;\n}\n.util-bar.bar-warning[data-v-662cf2e2] {\n  background: #fef9c3;\n}\n.util-bar.bar-low[data-v-662cf2e2] {\n  background: #fee2e2;\n}\n.gantt-bar-layer[data-v-662cf2e2] {\n  position: relative;\n  pointer-events: none;\n  z-index: 5;\n}\n.gantt-bar[data-v-662cf2e2] {\n  position: absolute;\n  pointer-events: auto;\n  cursor: grab;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  gap: 2px;\n  padding: 7px 12px 6px;\n  overflow: hidden;\n  white-space: nowrap;\n  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);\n  transition: box-shadow 0.15s, transform 0.15s;\n  border: 1px solid rgba(0, 0, 0, 0.06);\n  border-left: none;\n}\n.gantt-bar[data-v-662cf2e2]:hover {\n  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);\n  transform: translateY(-1px);\n  z-index: 10;\n}\n.gantt-bar[data-v-662cf2e2]:active {\n  cursor: grabbing;\n  transform: translateY(0);\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);\n}\n.bar-row-top[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 8px;\n}\n.bar-item[data-v-662cf2e2] {\n  font-weight: 700;\n  font-size: 13px;\n  color: #0f172a;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  line-height: 1.3;\n}\n.bar-qty[data-v-662cf2e2] {\n  background: rgba(0, 0, 0, 0.08);\n  padding: 1px 7px;\n  border-radius: 4px;\n  font-weight: 800;\n  font-size: 12px;\n  color: #0f172a;\n  flex-shrink: 0;\n}\n.bar-row-mid[data-v-662cf2e2] {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 8px;\n}\n.bar-process[data-v-662cf2e2] {\n  font-weight: 500;\n  color: #334155;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  font-size: 11px;\n  line-height: 1.3;\n}\n.bar-minutes[data-v-662cf2e2] {\n  color: #475569;\n  flex-shrink: 0;\n  font-size: 11px;\n  font-weight: 600;\n}\n.bar-row-bot[data-v-662cf2e2] {\n  display: flex;\n  gap: 6px;\n  align-items: center;\n  overflow: hidden;\n  margin-top: 2px;\n}\n.bar-tag[data-v-662cf2e2] {\n  font-size: 10px;\n  padding: 2px 7px;\n  border-radius: 4px;\n  max-width: 140px;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  line-height: 1.3;\n  font-weight: 600;\n}\n.bar-tag b[data-v-662cf2e2] {\n  font-weight: 800;\n  margin-right: 1px;\n}\n.order-tag[data-v-662cf2e2] {\n  color: #1e40af;\n  background: rgba(59, 130, 246, 0.14);\n  border: 1px solid rgba(59, 130, 246, 0.2);\n}\n.colour-tag[data-v-662cf2e2] {\n  color: #c2410c;\n  background: rgba(249, 115, 22, 0.12);\n  border: 1px solid rgba(249, 115, 22, 0.2);\n}\n.size-tag[data-v-662cf2e2] {\n  color: #3f3f46;\n  background: rgba(113, 113, 122, 0.12);\n  border: 1px solid rgba(113, 113, 122, 0.18);\n}\n.modal-overlay[data-v-662cf2e2] {\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  background: rgba(15, 23, 42, 0.5);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 1000;\n  backdrop-filter: blur(2px);\n}\n.modal-content[data-v-662cf2e2] {\n  background: white;\n  padding: 24px;\n  border-radius: 14px;\n  min-width: 320px;\n  max-width: 420px;\n  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.08);\n}\n.modal-content h4[data-v-662cf2e2] {\n  font-size: 16px;\n  font-weight: 700;\n  color: #0f172a;\n  margin: 0 0 16px 0;\n}\n.modal-actions[data-v-662cf2e2] {\n  display: flex;\n  gap: 8px;\n  justify-content: flex-end;\n  margin-top: 20px;\n}\n.btn[data-v-662cf2e2] {\n  padding: 8px 16px;\n  border: none;\n  border-radius: 8px;\n  cursor: pointer;\n  font-size: 13px;\n  font-weight: 600;\n  transition: background 0.15s, box-shadow 0.15s;\n}\n.btn-primary[data-v-662cf2e2] {\n  background: #2563eb;\n  color: white;\n  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3);\n}\n.btn-primary[data-v-662cf2e2]:hover {\n  background: #1d4ed8;\n  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);\n}\n.btn-default[data-v-662cf2e2] {\n  background: white;\n  border: 1px solid #e2e8f0;\n  color: #334155;\n}\n.btn-default[data-v-662cf2e2]:hover {\n  background: #f8fafc;\n  border-color: #cbd5e1;\n}\n.btn-secondary[data-v-662cf2e2] {\n  background: #f1f5f9;\n  color: #334155;\n}\n.btn-secondary[data-v-662cf2e2]:hover {\n  background: #e2e8f0;\n}\n.btn[data-v-662cf2e2]:disabled {\n  opacity: 0.4;\n  cursor: not-allowed;\n  pointer-events: none;\n}\n.context-menu[data-v-662cf2e2] {\n  position: fixed;\n  background: white;\n  border: 1px solid #e2e8f0;\n  border-radius: 10px;\n  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);\n  z-index: 1000;\n  min-width: 190px;\n  padding: 4px;\n}\n.menu-item[data-v-662cf2e2] {\n  padding: 9px 14px;\n  cursor: pointer;\n  font-size: 13px;\n  font-weight: 500;\n  border-radius: 6px;\n  margin: 2px 0;\n  color: #334155;\n  transition: background 0.1s;\n}\n.menu-item[data-v-662cf2e2]:hover {\n  background: #f1f5f9;\n}\n.menu-item.text-danger[data-v-662cf2e2] {\n  color: #dc2626;\n}\n.menu-item.text-danger[data-v-662cf2e2]:hover {\n  background: #fef2f2;\n}\n.gantt-tooltip[data-v-662cf2e2] {\n  position: fixed;\n  z-index: 9999;\n  pointer-events: none;\n  transform: translate(-50%, -100%);\n  background: #0f172a;\n  color: #f1f5f9;\n  border-radius: 10px;\n  padding: 12px 16px;\n  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);\n  min-width: 220px;\n  max-width: 300px;\n  animation: tooltip-in-662cf2e2 0.15s ease-out;\n}\n@keyframes tooltip-in-662cf2e2 {\n  from {\n    opacity: 0;\n    transform: translate(-50%, -100%) translateY(4px);\n  }\n  to {\n    opacity: 1;\n    transform: translate(-50%, -100%) translateY(0);\n  }\n}\n.gantt-tooltip[data-v-662cf2e2]::after {\n  content: \"\";\n  position: absolute;\n  bottom: -6px;\n  left: 50%;\n  transform: translateX(-50%);\n  border-left: 7px solid transparent;\n  border-right: 7px solid transparent;\n  border-top: 7px solid #0f172a;\n}\n.tooltip-header[data-v-662cf2e2] {\n  font-weight: 700;\n  font-size: 14px;\n  color: white;\n  margin-bottom: 8px;\n  padding-bottom: 8px;\n  border-bottom: 1px solid #334155;\n}\n.tooltip-grid[data-v-662cf2e2] {\n  display: grid;\n  grid-template-columns: auto 1fr;\n  gap: 4px 12px;\n  align-items: baseline;\n}\n.tooltip-label[data-v-662cf2e2] {\n  font-size: 11px;\n  font-weight: 500;\n  color: #94a3b8;\n  text-transform: uppercase;\n  letter-spacing: 0.3px;\n}\n.tooltip-value[data-v-662cf2e2] {\n  font-size: 12px;\n  font-weight: 600;\n  color: #e2e8f0;\n}\n.tooltip-qty[data-v-662cf2e2] {\n  color: #67e8f9;\n}\n.shift-modal[data-v-662cf2e2] {\n  background: white;\n  padding: 24px;\n  border-radius: 14px;\n  min-width: 500px;\n  max-width: 700px;\n  max-height: 80vh;\n  display: flex;\n  flex-direction: column;\n  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.08);\n}\n.shift-modal h4[data-v-662cf2e2] {\n  font-size: 16px;\n  font-weight: 700;\n  color: #0f172a;\n  margin: 0 0 12px 0;\n}\n.shift-explanation[data-v-662cf2e2] {\n  background: #eff6ff;\n  border: 1px solid #bfdbfe;\n  border-radius: 8px;\n  padding: 12px 16px;\n  margin-bottom: 16px;\n  font-size: 13px;\n  color: #1e40af;\n}\n.shift-explanation p[data-v-662cf2e2] {\n  margin: 0 0 4px 0;\n}\n.shift-explanation p[data-v-662cf2e2]:last-child {\n  margin-bottom: 0;\n}\n.shift-table-wrapper[data-v-662cf2e2] {\n  max-height: 300px;\n  overflow-y: auto;\n  border: 1px solid #e2e8f0;\n  border-radius: 8px;\n  margin-bottom: 16px;\n}\n.shift-table[data-v-662cf2e2] {\n  width: 100%;\n  border-collapse: collapse;\n  font-size: 12px;\n}\n.shift-table th[data-v-662cf2e2] {\n  background: #f1f5f9;\n  padding: 8px 12px;\n  text-align: left;\n  font-weight: 700;\n  color: #475569;\n  border-bottom: 1px solid #e2e8f0;\n  position: sticky;\n  top: 0;\n  font-size: 11px;\n  text-transform: uppercase;\n  letter-spacing: 0.3px;\n}\n.shift-table td[data-v-662cf2e2] {\n  padding: 8px 12px;\n  border-bottom: 1px solid #f1f5f9;\n  color: #334155;\n}\n.shift-table tr:last-child td[data-v-662cf2e2] {\n  border-bottom: none;\n}\n.backfill-explanation[data-v-662cf2e2] {\n  background: #fffbeb;\n  border: 1px solid #fde68a;\n  border-radius: 8px;\n  padding: 12px 16px;\n  margin-bottom: 16px;\n  font-size: 13px;\n  color: #92400e;\n}\n.backfill-explanation p[data-v-662cf2e2] {\n  margin: 0 0 4px 0;\n}\n.backfill-explanation p[data-v-662cf2e2]:last-child {\n  margin-bottom: 0;\n}\n.machine-disabled[data-v-662cf2e2] {\n  opacity: 0.35;\n  pointer-events: none;\n}\n.action-choice-modal[data-v-662cf2e2] {\n  max-width: 340px;\n  text-align: center;\n}\n.action-choice-date[data-v-662cf2e2] {\n  color: #64748b;\n  font-size: 13px;\n  margin-bottom: 16px;\n}\n.action-choice-buttons[data-v-662cf2e2] {\n  display: flex;\n  gap: 12px;\n  justify-content: center;\n  margin-bottom: 16px;\n}\n.action-choice-btn[data-v-662cf2e2] {\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 6px;\n  padding: 14px 12px;\n  font-size: 13px;\n  font-weight: 600;\n  border-radius: 8px;\n}\n.action-icon[data-v-662cf2e2] {\n  font-size: 20px;\n}\n.shift-checkbox-list[data-v-662cf2e2] {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  max-height: 220px;\n  overflow-y: auto;\n  border: 1px solid #e2e8f0;\n  border-radius: 6px;\n  padding: 8px;\n}\n.shift-checkbox-item[data-v-662cf2e2] {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  padding: 6px 8px;\n  border-radius: 4px;\n  cursor: pointer;\n  margin: 0;\n  font-weight: normal;\n}\n.shift-checkbox-item[data-v-662cf2e2]:hover {\n  background: #f1f5f9;\n}\n.shift-checkbox-item input[type=checkbox][data-v-662cf2e2] {\n  margin: 0;\n  width: 16px;\n  height: 16px;\n}\n.shift-checkbox-label[data-v-662cf2e2] {\n  flex: 1;\n}\n.shift-checkbox-mins[data-v-662cf2e2] {\n  color: #64748b;\n  font-size: 12px;\n}\n/*# sourceMappingURL=albion.bundle.DA3TE4N6.css.map */\n");
 (() => {
   var __defProp = Object.defineProperty;
+  var __defProps = Object.defineProperties;
+  var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
   var __getOwnPropSymbols = Object.getOwnPropertySymbols;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __propIsEnum = Object.prototype.propertyIsEnumerable;
@@ -16,6 +18,7 @@ frappe.dom.set_style("/* sfc-style:/home/anas/frappe-15/apps/albion/albion/publi
       }
     return a;
   };
+  var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 
   // ../../node_modules/@vue/shared/dist/shared.esm-bundler.js
   function makeMap(str) {
@@ -7801,6 +7804,60 @@ Expected function or array of functions, received type ${typeof value}.`
       el.value = newValue;
     }
   };
+  var vModelCheckbox = {
+    deep: true,
+    created(el, _, vnode) {
+      el[assignKey] = getModelAssigner(vnode);
+      addEventListener(el, "change", () => {
+        const modelValue = el._modelValue;
+        const elementValue = getValue(el);
+        const checked = el.checked;
+        const assign = el[assignKey];
+        if (isArray(modelValue)) {
+          const index = looseIndexOf(modelValue, elementValue);
+          const found = index !== -1;
+          if (checked && !found) {
+            assign(modelValue.concat(elementValue));
+          } else if (!checked && found) {
+            const filtered = [...modelValue];
+            filtered.splice(index, 1);
+            assign(filtered);
+          }
+        } else if (isSet(modelValue)) {
+          const cloned = new Set(modelValue);
+          if (checked) {
+            cloned.add(elementValue);
+          } else {
+            cloned.delete(elementValue);
+          }
+          assign(cloned);
+        } else {
+          assign(getCheckboxValue(el, checked));
+        }
+      });
+    },
+    mounted: setChecked,
+    beforeUpdate(el, binding, vnode) {
+      el[assignKey] = getModelAssigner(vnode);
+      setChecked(el, binding, vnode);
+    }
+  };
+  function setChecked(el, { value, oldValue }, vnode) {
+    el._modelValue = value;
+    let checked;
+    if (isArray(value)) {
+      checked = looseIndexOf(value, vnode.props.value) > -1;
+    } else if (isSet(value)) {
+      checked = value.has(vnode.props.value);
+    } else {
+      if (value === oldValue)
+        return;
+      checked = looseEqual(value, getCheckboxValue(el, true));
+    }
+    if (el.checked !== checked) {
+      el.checked = checked;
+    }
+  }
   var vModelSelect = {
     deep: true,
     created(el, { value, modifiers: { number } }, vnode) {
@@ -7866,6 +7923,10 @@ Expected function or array of functions, received type ${typeof value}.`
   }
   function getValue(el) {
     return "_value" in el ? el._value : el.value;
+  }
+  function getCheckboxValue(el, checked) {
+    const key = checked ? "_trueValue" : "_falseValue";
+    return key in el ? el[key] : checked;
   }
   var systemModifiers = ["ctrl", "shift", "alt", "meta"];
   var modifierGuards = {
@@ -8026,6 +8087,7 @@ Expected function or array of functions, received type ${typeof value}.`
           if (!itemName)
             return;
           matrixData.value[itemName] = {
+            availableColours: [],
             sizes: [],
             colours: [],
             quantities: {}
@@ -8049,6 +8111,9 @@ Expected function or array of functions, received type ${typeof value}.`
           if (!matrixData.value[itemName])
             return;
           const item = matrixData.value[itemName];
+          if (!item.availableColours.includes(detail.colour)) {
+            item.availableColours.push(detail.colour);
+          }
           if (!item.colours.includes(detail.colour)) {
             item.colours.push(detail.colour);
             item.quantities[detail.colour] = {};
@@ -8057,6 +8122,16 @@ Expected function or array of functions, received type ${typeof value}.`
             item.sizes.push(detail.size);
           }
           item.quantities[detail.colour][detail.size] = detail.quantity;
+        });
+        Object.keys(matrixData.value).forEach((itemName) => {
+          const item = matrixData.value[itemName];
+          item.colours.forEach((colour) => {
+            item.sizes.forEach((size) => {
+              if (item.quantities[colour][size] === void 0) {
+                item.quantities[colour][size] = 0;
+              }
+            });
+          });
         });
       }
       async function loadFromItem(itemName) {
@@ -8068,9 +8143,8 @@ Expected function or array of functions, received type ${typeof value}.`
           if (response.message) {
             const itemData = matrixData.value[itemName];
             response.message.colours.forEach((colour) => {
-              if (!itemData.colours.includes(colour.colour)) {
-                itemData.colours.push(colour.colour);
-                itemData.quantities[colour.colour] = {};
+              if (!itemData.availableColours.includes(colour.colour)) {
+                itemData.availableColours.push(colour.colour);
               }
             });
             response.message.sizes.forEach((size) => {
@@ -8079,8 +8153,11 @@ Expected function or array of functions, received type ${typeof value}.`
               }
             });
             itemData.colours.forEach((colour) => {
+              if (!itemData.quantities[colour]) {
+                itemData.quantities[colour] = {};
+              }
               itemData.sizes.forEach((size) => {
-                if (!itemData.quantities[colour][size]) {
+                if (itemData.quantities[colour][size] === void 0) {
                   itemData.quantities[colour][size] = 0;
                 }
               });
@@ -8091,8 +8168,47 @@ Expected function or array of functions, received type ${typeof value}.`
           frappe.msgprint("Error loading item details");
         }
       }
+      function toggleColour(itemName, colour) {
+        const itemData = matrixData.value[itemName];
+        const idx = itemData.colours.indexOf(colour);
+        if (idx === -1) {
+          itemData.colours.push(colour);
+          itemData.quantities[colour] = {};
+          itemData.sizes.forEach((size) => {
+            itemData.quantities[colour][size] = 0;
+          });
+        } else {
+          const hasQty = itemData.sizes.some((size) => {
+            return (parseFloat(itemData.quantities[colour][size]) || 0) > 0;
+          });
+          if (hasQty) {
+            frappe.msgprint(__("Remove quantities for {0} first before deselecting.", [colour]));
+            return;
+          }
+          itemData.colours.splice(idx, 1);
+          delete itemData.quantities[colour];
+        }
+        const details = getData();
+        emit2("updated", details);
+        if (!cur_frm.is_dirty()) {
+          cur_frm.dirty();
+        }
+      }
       async function refreshItem(itemName) {
+        const itemData = matrixData.value[itemName];
+        const prevColours = [...itemData.colours];
+        const prevQuantities = JSON.parse(JSON.stringify(itemData.quantities));
+        itemData.availableColours = [];
+        itemData.sizes = [];
         await loadFromItem(itemName);
+        itemData.colours = prevColours.filter((c) => itemData.availableColours.includes(c));
+        itemData.quantities = {};
+        itemData.colours.forEach((colour) => {
+          itemData.quantities[colour] = {};
+          itemData.sizes.forEach((size) => {
+            itemData.quantities[colour][size] = prevQuantities[colour] && prevQuantities[colour][size] !== void 0 ? prevQuantities[colour][size] : 0;
+          });
+        });
       }
       function onQuantityChange() {
         const details = getData();
@@ -8106,7 +8222,26 @@ Expected function or array of functions, received type ${typeof value}.`
         Object.values(quantities).forEach((qty) => {
           total += parseFloat(qty) || 0;
         });
-        return total.toFixed(2);
+        return formatQty(total);
+      }
+      function getColumnTotal(itemData, size) {
+        let total = 0;
+        itemData.colours.forEach((colour) => {
+          total += parseFloat(itemData.quantities[colour][size]) || 0;
+        });
+        return formatQty(total);
+      }
+      function getItemGrandTotal(itemData) {
+        let total = 0;
+        itemData.colours.forEach((colour) => {
+          Object.values(itemData.quantities[colour] || {}).forEach((qty) => {
+            total += parseFloat(qty) || 0;
+          });
+        });
+        return formatQty(total);
+      }
+      function formatQty(val) {
+        return val % 1 === 0 ? val.toLocaleString() : val.toFixed(2);
       }
       function getData() {
         const details = [];
@@ -8132,7 +8267,7 @@ Expected function or array of functions, received type ${typeof value}.`
       watch2(() => props.orderDetails, loadOrderDetails, { deep: true });
       onMounted(initMatrix);
       __expose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isReadOnly: props.isReadOnly });
-      const __returned__ = { props, emit: emit2, matrixData, readOnly, initMatrix, loadOrderDetails, loadFromItem, refreshItem, onQuantityChange, getRowTotal, getData, ref, watch: watch2, onMounted, unref };
+      const __returned__ = { props, emit: emit2, matrixData, readOnly, initMatrix, loadOrderDetails, loadFromItem, toggleColour, refreshItem, onQuantityChange, getRowTotal, getColumnTotal, getItemGrandTotal, formatQty, getData, ref, watch: watch2, onMounted, unref };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
     }
@@ -8143,82 +8278,182 @@ Expected function or array of functions, received type ${typeof value}.`
   var _hoisted_1 = { class: "order-matrix" };
   var _hoisted_2 = {
     key: 0,
-    class: "text-muted"
+    class: "empty-state"
   };
-  var _hoisted_3 = { class: "item-header" };
-  var _hoisted_4 = { class: "item-title" };
-  var _hoisted_5 = {
+  var _hoisted_3 = /* @__PURE__ */ createStaticVNode('<div class="empty-state-icon" data-v-736a6fcc><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-v-736a6fcc><rect x="3" y="3" width="18" height="18" rx="2" ry="2" data-v-736a6fcc></rect><line x1="3" y1="9" x2="21" y2="9" data-v-736a6fcc></line><line x1="9" y1="3" x2="9" y2="21" data-v-736a6fcc></line></svg></div><p data-v-736a6fcc>No items added. Add items in the table above to start entering quantities.</p>', 2);
+  var _hoisted_5 = [
+    _hoisted_3
+  ];
+  var _hoisted_6 = { class: "item-card-header" };
+  var _hoisted_7 = { class: "item-card-title" };
+  var _hoisted_8 = { class: "item-badge" };
+  var _hoisted_9 = {
     key: 0,
-    class: "item-actions"
+    class: "item-grand-total"
   };
-  var _hoisted_6 = ["onClick"];
-  var _hoisted_7 = {
+  var _hoisted_10 = {
     key: 0,
-    class: "table table-bordered table-sm"
+    class: "item-card-actions"
   };
-  var _hoisted_8 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("th", { class: "colour-header" }, "Colour", -1));
-  var _hoisted_9 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("th", { class: "total-header" }, "Total", -1));
-  var _hoisted_10 = { class: "colour-cell" };
-  var _hoisted_11 = ["onUpdate:modelValue", "readonly"];
-  var _hoisted_12 = { class: "total-cell" };
+  var _hoisted_11 = ["onClick"];
+  var _hoisted_12 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
+    width: "14",
+    height: "14",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }, [
+    /* @__PURE__ */ createBaseVNode("polyline", { points: "23 4 23 10 17 10" }),
+    /* @__PURE__ */ createBaseVNode("path", { d: "M20.49 15a9 9 0 1 1-2.12-9.36L23 10" })
+  ], -1));
   var _hoisted_13 = {
-    key: 1,
-    class: "text-muted"
+    key: 0,
+    class: "colour-selector"
   };
+  var _hoisted_14 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("span", { class: "colour-selector-label" }, "Select Colours", -1));
+  var _hoisted_15 = { class: "colour-chips" };
+  var _hoisted_16 = ["onClick"];
+  var _hoisted_17 = {
+    key: 0,
+    width: "12",
+    height: "12",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-width": "3",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  };
+  var _hoisted_18 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("polyline", { points: "20 6 9 17 4 12" }, null, -1));
+  var _hoisted_19 = [
+    _hoisted_18
+  ];
+  var _hoisted_20 = {
+    key: 1,
+    class: "matrix-table-wrapper"
+  };
+  var _hoisted_21 = { class: "matrix-table" };
+  var _hoisted_22 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("th", { class: "th-colour" }, "Colour", -1));
+  var _hoisted_23 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("th", { class: "th-total" }, "Total", -1));
+  var _hoisted_24 = { class: "td-colour" };
+  var _hoisted_25 = ["onUpdate:modelValue", "readonly"];
+  var _hoisted_26 = { class: "td-row-total" };
+  var _hoisted_27 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("td", { class: "tf-label" }, "Column Total", -1));
+  var _hoisted_28 = { class: "tf-grand-total" };
+  var _hoisted_29 = { class: "item-empty" };
   function render(_ctx, _cache, $props, $setup, $data, $options) {
     return openBlock(), createElementBlock("div", _hoisted_1, [
-      Object.keys($setup.matrixData).length === 0 ? (openBlock(), createElementBlock("div", _hoisted_2, " No items added. Please add items in the Items table above. ")) : createCommentVNode("v-if", true),
+      Object.keys($setup.matrixData).length === 0 ? (openBlock(), createElementBlock("div", _hoisted_2, [..._hoisted_5])) : createCommentVNode("v-if", true),
       (openBlock(true), createElementBlock(Fragment, null, renderList($setup.matrixData, (itemData, itemName) => {
         return openBlock(), createElementBlock("div", {
           key: itemName,
-          class: "item-section"
+          class: "item-card"
         }, [
-          createBaseVNode("div", _hoisted_3, [
-            createBaseVNode("h5", _hoisted_4, toDisplayString(itemName), 1),
-            !$setup.readOnly() ? (openBlock(), createElementBlock("div", _hoisted_5, [
+          createCommentVNode(" Card Header "),
+          createBaseVNode("div", _hoisted_6, [
+            createBaseVNode("div", _hoisted_7, [
+              createBaseVNode("span", _hoisted_8, toDisplayString(itemName), 1),
+              itemData.colours.length > 0 && itemData.sizes.length > 0 ? (openBlock(), createElementBlock("span", _hoisted_9, [
+                createTextVNode(" Total: "),
+                createBaseVNode("strong", null, toDisplayString($setup.getItemGrandTotal(itemData)), 1)
+              ])) : createCommentVNode("v-if", true)
+            ]),
+            !$setup.readOnly() ? (openBlock(), createElementBlock("div", _hoisted_10, [
               createBaseVNode("button", {
-                class: "btn btn-xs btn-default",
-                onClick: ($event) => $setup.refreshItem(itemName)
-              }, " Refresh ", 8, _hoisted_6)
+                class: "btn-refresh",
+                onClick: ($event) => $setup.refreshItem(itemName),
+                title: "Refresh from Item master"
+              }, [
+                _hoisted_12,
+                createTextVNode(" Refresh ")
+              ], 8, _hoisted_11)
             ])) : createCommentVNode("v-if", true)
           ]),
-          itemData.colours.length > 0 && itemData.sizes.length > 0 ? (openBlock(), createElementBlock("table", _hoisted_7, [
-            createBaseVNode("thead", null, [
-              createBaseVNode("tr", null, [
-                _hoisted_8,
-                (openBlock(true), createElementBlock(Fragment, null, renderList(itemData.sizes, (size) => {
-                  return openBlock(), createElementBlock("th", {
-                    key: size,
-                    class: "size-header"
-                  }, toDisplayString(size), 1);
-                }), 128)),
-                _hoisted_9
-              ])
-            ]),
-            createBaseVNode("tbody", null, [
-              (openBlock(true), createElementBlock(Fragment, null, renderList(itemData.colours, (colour) => {
-                return openBlock(), createElementBlock("tr", { key: colour }, [
-                  createBaseVNode("td", _hoisted_10, toDisplayString(colour), 1),
-                  (openBlock(true), createElementBlock(Fragment, null, renderList(itemData.sizes, (size) => {
-                    return openBlock(), createElementBlock("td", { key: size }, [
-                      withDirectives(createBaseVNode("input", {
-                        type: "number",
-                        class: "form-control form-control-sm qty-input",
-                        "onUpdate:modelValue": ($event) => itemData.quantities[colour][size] = $event,
-                        onChange: $setup.onQuantityChange,
-                        min: "0",
-                        step: "0.01",
-                        readonly: $setup.readOnly()
-                      }, null, 40, _hoisted_11), [
-                        [vModelText, itemData.quantities[colour][size]]
-                      ])
-                    ]);
-                  }), 128)),
-                  createBaseVNode("td", _hoisted_12, toDisplayString($setup.getRowTotal(itemData.quantities[colour])), 1)
-                ]);
+          createCommentVNode(" Colour Selector "),
+          !$setup.readOnly() && itemData.availableColours.length > 0 ? (openBlock(), createElementBlock("div", _hoisted_13, [
+            _hoisted_14,
+            createBaseVNode("div", _hoisted_15, [
+              (openBlock(true), createElementBlock(Fragment, null, renderList(itemData.availableColours, (colour) => {
+                return openBlock(), createElementBlock("span", {
+                  key: colour,
+                  class: normalizeClass(["colour-chip", { active: itemData.colours.includes(colour) }]),
+                  onClick: ($event) => $setup.toggleColour(itemName, colour)
+                }, [
+                  itemData.colours.includes(colour) ? (openBlock(), createElementBlock("svg", _hoisted_17, [..._hoisted_19])) : createCommentVNode("v-if", true),
+                  createTextVNode(" " + toDisplayString(colour), 1)
+                ], 10, _hoisted_16);
               }), 128))
             ])
-          ])) : (openBlock(), createElementBlock("div", _hoisted_13, " Loading colours and sizes from item master... "))
+          ])) : createCommentVNode("v-if", true),
+          createCommentVNode(" Matrix Table "),
+          itemData.colours.length > 0 && itemData.sizes.length > 0 ? (openBlock(), createElementBlock("div", _hoisted_20, [
+            createBaseVNode("table", _hoisted_21, [
+              createBaseVNode("thead", null, [
+                createBaseVNode("tr", null, [
+                  _hoisted_22,
+                  (openBlock(true), createElementBlock(Fragment, null, renderList(itemData.sizes, (size) => {
+                    return openBlock(), createElementBlock("th", {
+                      key: size,
+                      class: "th-size"
+                    }, toDisplayString(size), 1);
+                  }), 128)),
+                  _hoisted_23
+                ])
+              ]),
+              createBaseVNode("tbody", null, [
+                (openBlock(true), createElementBlock(Fragment, null, renderList(itemData.colours, (colour) => {
+                  return openBlock(), createElementBlock("tr", { key: colour }, [
+                    createBaseVNode("td", _hoisted_24, toDisplayString(colour), 1),
+                    (openBlock(true), createElementBlock(Fragment, null, renderList(itemData.sizes, (size) => {
+                      return openBlock(), createElementBlock("td", {
+                        key: size,
+                        class: "td-qty"
+                      }, [
+                        withDirectives(createBaseVNode("input", {
+                          type: "number",
+                          class: "qty-input",
+                          "onUpdate:modelValue": ($event) => itemData.quantities[colour][size] = $event,
+                          onChange: $setup.onQuantityChange,
+                          onFocus: _cache[0] || (_cache[0] = ($event) => $event.target.select()),
+                          min: "0",
+                          step: "0.01",
+                          readonly: $setup.readOnly(),
+                          placeholder: "0"
+                        }, null, 40, _hoisted_25), [
+                          [vModelText, itemData.quantities[colour][size]]
+                        ])
+                      ]);
+                    }), 128)),
+                    createBaseVNode("td", _hoisted_26, toDisplayString($setup.getRowTotal(itemData.quantities[colour])), 1)
+                  ]);
+                }), 128))
+              ]),
+              createBaseVNode("tfoot", null, [
+                createBaseVNode("tr", null, [
+                  _hoisted_27,
+                  (openBlock(true), createElementBlock(Fragment, null, renderList(itemData.sizes, (size) => {
+                    return openBlock(), createElementBlock("td", {
+                      key: size,
+                      class: "tf-col-total"
+                    }, toDisplayString($setup.getColumnTotal(itemData, size)), 1);
+                  }), 128)),
+                  createBaseVNode("td", _hoisted_28, toDisplayString($setup.getItemGrandTotal(itemData)), 1)
+                ])
+              ])
+            ])
+          ])) : (openBlock(), createElementBlock(Fragment, { key: 2 }, [
+            createCommentVNode(" Empty state for item "),
+            createBaseVNode("div", _hoisted_29, [
+              itemData.availableColours.length > 0 && itemData.colours.length === 0 ? (openBlock(), createElementBlock(Fragment, { key: 0 }, [
+                createTextVNode(" Select colours above to start entering quantities. ")
+              ], 64)) : (openBlock(), createElementBlock(Fragment, { key: 1 }, [
+                createTextVNode(" Loading colours and sizes from item master... ")
+              ], 64))
+            ])
+          ], 2112))
         ]);
       }), 128))
     ]);
@@ -8232,40 +8467,130 @@ Expected function or array of functions, received type ${typeof value}.`
 
   // sfc-script:/home/anas/frappe-15/apps/albion/albion/public/js/components/CapacityPlanning.vue?type=script
   var MIN_BATCH_SIZE = 1;
+  var COL_WIDTH = 120;
+  var BAR_HEIGHT = 68;
+  var BAR_GAP = 4;
+  var BAR_TOP_OFFSET = 22;
   var CapacityPlanning_default = {
     __name: "CapacityPlanning",
     emits: ["saveAllocations"],
     setup(__props, { expose: __expose, emit: __emit }) {
       const emit2 = __emit;
-      const orders = ref([]);
       const processes = ref([]);
       const machines = ref([]);
+      const selectedCustomer = ref("");
+      const selectedMachineGG = ref("");
       const selectedOrder = ref("");
       const selectedProcess = ref("");
       const viewType = ref("item_wise");
       const startDate = ref("");
       const endDate = ref("");
       const orderData = ref(null);
-      const shiftCalendars = ref([]);
-      const defaultShift = ref(null);
+      const workloadCollapsed = ref(false);
+      const customerFieldRef = ref(null);
+      const machineGGFieldRef = ref(null);
+      const orderFieldRef = ref(null);
+      const processFieldRef = ref(null);
+      const viewTypeFieldRef = ref(null);
+      const startDateFieldRef = ref(null);
+      const endDateFieldRef = ref(null);
+      let customerControl = null;
+      let machineGGControl = null;
+      let orderControl = null;
+      let processControl = null;
+      let viewTypeControl = null;
+      let startDateControl = null;
+      let endDateControl = null;
+      const shiftAllocations = ref([]);
+      const defaultAllocation = ref(null);
       const allocations = ref([]);
       const actionHistory = ref([]);
       const validationErrors = ref([]);
-      const showSplitModal = ref(false);
-      const showEditModal = ref(false);
-      const selectedAllocation = ref(null);
-      const splitQuantity = ref(0);
-      const editQuantity = ref(0);
       const showDropModal = ref(false);
       const dropQuantity = ref(0);
       const pendingDrop = ref(null);
       const showShiftModal = ref(false);
       const shiftModalData = ref(null);
+      const showBackfillModal = ref(false);
+      const backfillModalData = ref(null);
       const contextMenu = ref({ show: false, x: 0, y: 0 });
+      const tooltip = ref({ show: false, x: 0, y: 0, data: {} });
+      const selectedGroup = ref(null);
+      const splitMarkers = ref(/* @__PURE__ */ new Set());
+      const showEditGroupModal = ref(false);
+      const editGroupQuantity = ref(0);
+      const showSplitGroupModal = ref(false);
+      const splitGroupDate = ref("");
+      const draggingItem = ref(null);
+      const showShiftByDaysModal = ref(false);
+      const shiftByDaysCount = ref(0);
+      const shiftByDaysPreview = ref(null);
+      const showAlterationModal = ref(false);
+      const alterationSaving = ref(false);
+      const alterationForm = ref({
+        date: "",
+        machine: null,
+        alteration_type: "Add",
+        minutes: 60,
+        reason: ""
+      });
+      const showActionChoice = ref(false);
+      const actionChoiceContext = ref({ date: "", machine: null });
+      const showShiftUpdateModal = ref(false);
+      const shiftUpdateSaving = ref(false);
+      const shiftUpdateForm = ref({ date: "", shifts: [] });
+      const allShifts = ref([]);
       const today = new Date();
       startDate.value = today.toISOString().split("T")[0];
       const nextMonth = new Date(today.setMonth(today.getMonth() + 1));
       endDate.value = nextMonth.toISOString().split("T")[0];
+      const itemMachineGG = computed2(() => {
+        const map2 = /* @__PURE__ */ new Map();
+        if (orderData.value && orderData.value.items) {
+          orderData.value.items.forEach((item) => {
+            if (item.item_doc && item.item_doc.machine_gg) {
+              map2.set(item.item, item.item_doc.machine_gg);
+            }
+          });
+        }
+        return map2;
+      });
+      function isMachineCompatible(machineId) {
+        if (!draggingItem.value)
+          return true;
+        let itemGG = itemMachineGG.value.get(draggingItem.value.item);
+        if (!itemGG && draggingItem.value.sourceMachineId) {
+          const srcMachine = machines.value.find((m) => m.machine_id === draggingItem.value.sourceMachineId);
+          if (srcMachine && srcMachine.machine_gg)
+            itemGG = srcMachine.machine_gg;
+        }
+        if (!itemGG)
+          return true;
+        const machine = machines.value.find((m) => m.machine_id === machineId);
+        if (!machine || !machine.machine_gg)
+          return true;
+        return machine.machine_gg === itemGG;
+      }
+      function checkMachineGGCompat(itemCode, sourceMachineId, targetMachineId) {
+        if (sourceMachineId === targetMachineId)
+          return true;
+        let itemGG = itemMachineGG.value.get(itemCode);
+        if (!itemGG) {
+          const srcMachine = machines.value.find((m) => m.machine_id === sourceMachineId);
+          if (srcMachine && srcMachine.machine_gg)
+            itemGG = srcMachine.machine_gg;
+        }
+        if (!itemGG)
+          return true;
+        const targetMachine = machines.value.find((m) => m.machine_id === targetMachineId);
+        if (!targetMachine || !targetMachine.machine_gg)
+          return true;
+        if (targetMachine.machine_gg !== itemGG) {
+          frappe.show_alert({ message: __(`Cannot move: item requires Machine GG "${itemGG}" but target has "${targetMachine.machine_gg}"`), indicator: "red" });
+          return false;
+        }
+        return true;
+      }
       const dateRange = computed2(() => {
         const dates = [];
         const start = new Date(startDate.value);
@@ -8274,6 +8599,20 @@ Expected function or array of functions, received type ${typeof value}.`
           dates.push(d.toISOString().split("T")[0]);
         }
         return dates;
+      });
+      const ganttGridStyle = computed2(() => ({
+        gridTemplateColumns: `180px repeat(${dateRange.value.length}, ${COL_WIDTH}px)`
+      }));
+      const selectedShiftsTotalMinutes = computed2(() => {
+        return shiftUpdateForm.value.shifts.reduce((sum, name) => {
+          const s = allShifts.value.find((x) => x.name === name);
+          return sum + (s ? s.duration_minutes : 0);
+        }, 0);
+      });
+      const filteredMachines = computed2(() => {
+        if (!selectedMachineGG.value)
+          return machines.value;
+        return machines.value.filter((m) => m.machine_gg === selectedMachineGG.value);
       });
       const availableProcesses = computed2(() => {
         var _a;
@@ -8307,7 +8646,8 @@ Expected function or array of functions, received type ${typeof value}.`
               quantity: qty,
               minutes: processMinutes[item] || 0,
               colour: null,
-              size: null
+              size: null,
+              machine_gg: itemMachineGG.value.get(item) || null
             });
           });
         } else if (viewType.value === "colour_wise") {
@@ -8326,7 +8666,8 @@ Expected function or array of functions, received type ${typeof value}.`
               quantity: data.quantity,
               minutes: processMinutes[data.item] || 0,
               colour: data.colour,
-              size: null
+              size: null,
+              machine_gg: itemMachineGG.value.get(data.item) || null
             });
           });
         } else if (viewType.value === "size_wise") {
@@ -8345,18 +8686,89 @@ Expected function or array of functions, received type ${typeof value}.`
               quantity: data.quantity,
               minutes: processMinutes[data.item] || 0,
               colour: null,
-              size: data.size
+              size: data.size,
+              machine_gg: itemMachineGG.value.get(data.item) || null
             });
           });
         }
         return items;
       });
-      const fullyAllocatedCount = computed2(() => workloadItems.value.filter((item) => getAllocationStatus(item) === "full").length);
-      const partialAllocatedCount = computed2(() => workloadItems.value.filter((item) => getAllocationStatus(item) === "partial").length);
-      const pendingCount = computed2(() => workloadItems.value.filter((item) => getAllocationStatus(item) === "pending").length);
+      const groupedAllocations = computed2(() => {
+        const groups = [];
+        const groupMap = {};
+        allocations.value.forEach((alloc) => {
+          const key = `${alloc.machine_id}|${alloc.order}|${alloc.item}|${alloc.process}|${alloc.colour || ""}|${alloc.size || ""}`;
+          if (!groupMap[key])
+            groupMap[key] = [];
+          groupMap[key].push(alloc);
+        });
+        Object.entries(groupMap).forEach(([, allocs]) => {
+          allocs.sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+          let currentGroup = null;
+          allocs.forEach((alloc) => {
+            const shouldBreak = currentGroup && (!isNextDay(currentGroup.end_date, alloc.operation_date) || isGroupSplit(alloc.machine_id, currentGroup.end_date, alloc.operation_date));
+            if (!currentGroup || shouldBreak) {
+              if (currentGroup)
+                groups.push(currentGroup);
+              currentGroup = {
+                group_id: `grp-${alloc.key}`,
+                machine_id: alloc.machine_id,
+                start_date: alloc.operation_date,
+                end_date: alloc.operation_date,
+                allocs: [alloc],
+                alloc_keys: [alloc.key],
+                item: alloc.item,
+                process: alloc.process,
+                order: alloc.order,
+                colour: alloc.colour,
+                size: alloc.size,
+                total_quantity: alloc.quantity,
+                total_minutes: alloc.allocated_minutes
+              };
+            } else {
+              currentGroup.end_date = alloc.operation_date;
+              currentGroup.allocs.push(alloc);
+              currentGroup.alloc_keys.push(alloc.key);
+              currentGroup.total_quantity += alloc.quantity;
+              currentGroup.total_minutes += alloc.allocated_minutes;
+            }
+          });
+          if (currentGroup)
+            groups.push(currentGroup);
+        });
+        return groups;
+      });
+      const groupedAllocationsWithLanes = computed2(() => {
+        const byMachine = {};
+        groupedAllocations.value.forEach((g) => {
+          if (!byMachine[g.machine_id])
+            byMachine[g.machine_id] = [];
+          byMachine[g.machine_id].push(__spreadValues({}, g));
+        });
+        const result = [];
+        Object.entries(byMachine).forEach(([, groups]) => {
+          groups.sort((a, b) => a.start_date.localeCompare(b.start_date));
+          const lanes = [];
+          groups.forEach((g) => {
+            let assigned = false;
+            for (let i = 0; i < lanes.length; i++) {
+              if (lanes[i] < g.start_date) {
+                g.lane = i;
+                lanes[i] = g.end_date;
+                assigned = true;
+                break;
+              }
+            }
+            if (!assigned) {
+              g.lane = lanes.length;
+              lanes.push(g.end_date);
+            }
+            result.push(g);
+          });
+        });
+        return result;
+      });
       function loadData(data) {
-        if (data.orders)
-          orders.value = data.orders;
         if (data.processes)
           processes.value = data.processes;
         if (data.machines)
@@ -8388,25 +8800,90 @@ Expected function or array of functions, received type ${typeof value}.`
         const date = new Date(dateStr);
         return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
       }
-      function getShiftForDate(dateStr) {
-        const date = new Date(dateStr);
-        for (const cal of shiftCalendars.value) {
-          const start = new Date(cal.start_date);
-          const end = new Date(cal.end_date);
-          if (date >= start && date <= end) {
-            return cal.shift;
+      function getCalendarForDate(dateStr) {
+        let rangeMatch = null;
+        for (const cal of shiftAllocations.value) {
+          if (dateStr >= cal.start_date && dateStr <= cal.end_date) {
+            if (cal.start_date === dateStr && cal.end_date === dateStr) {
+              return cal;
+            }
+            if (!rangeMatch)
+              rangeMatch = cal;
           }
         }
-        return defaultShift.value;
+        return rangeMatch || defaultAllocation.value;
+      }
+      function getShiftForDate(dateStr) {
+        const cal = getCalendarForDate(dateStr);
+        if (cal && cal.shifts && cal.shifts.length > 0) {
+          return cal.shifts[0];
+        }
+        return null;
+      }
+      function getShiftNamesForDate(dateStr) {
+        const cal = getCalendarForDate(dateStr);
+        if (!cal || !cal.shifts || cal.shifts.length === 0)
+          return "No Shift";
+        return cal.shifts.map((s) => s.shift_name).join(", ");
       }
       function getShiftMinutes(dateStr) {
-        const shift = getShiftForDate(dateStr);
-        return shift ? shift.duration_minutes : 480;
+        if (isOffDay(dateStr))
+          return 0;
+        const cal = getCalendarForDate(dateStr);
+        return cal ? cal.total_duration_minutes || 480 : 480;
       }
-      function isWeekend(dateStr) {
-        const date = new Date(dateStr);
-        const day = date.getDay();
-        return day === 0 || day === 6;
+      function getEffectiveMinutes(dateStr, machineId = null) {
+        let base = getShiftMinutes(dateStr);
+        const cal = getCalendarForDate(dateStr);
+        if (!cal || !cal.alterations)
+          return base;
+        for (const alt of cal.alterations) {
+          if (alt.date !== dateStr)
+            continue;
+          if (!alt.machine) {
+            base += alt.alteration_type === "Add" ? alt.minutes : -alt.minutes;
+          }
+        }
+        if (machineId) {
+          for (const alt of cal.alterations) {
+            if (alt.date !== dateStr)
+              continue;
+            if (alt.machine === machineId) {
+              base += alt.alteration_type === "Add" ? alt.minutes : -alt.minutes;
+            }
+          }
+        }
+        return Math.max(0, base);
+      }
+      function getCellAlterationBadge(dateStr, machineId) {
+        const base = getShiftMinutes(dateStr);
+        const effective = getEffectiveMinutes(dateStr, machineId);
+        const delta = effective - base;
+        if (delta === 0)
+          return null;
+        return {
+          label: delta > 0 ? `+${delta}m` : `${delta}m`,
+          cls: delta > 0 ? "badge-add" : "badge-reduce"
+        };
+      }
+      function getDayAlterationDelta(dateStr) {
+        const base = getShiftMinutes(dateStr);
+        const effective = getEffectiveMinutes(dateStr);
+        const delta = effective - base;
+        if (delta === 0)
+          return null;
+        return {
+          label: delta > 0 ? `+${delta}m` : `${delta}m`,
+          cls: delta > 0 ? "badge-add" : "badge-reduce"
+        };
+      }
+      function isOffDay(dateStr) {
+        const cal = defaultAllocation.value;
+        if (!cal)
+          return false;
+        const dayIndex = new Date(dateStr).getDay();
+        const dayFields = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+        return !cal[dayFields[dayIndex]];
       }
       function isPastDate(dateStr) {
         const date = new Date(dateStr);
@@ -8417,8 +8894,8 @@ Expected function or array of functions, received type ${typeof value}.`
       function getDateHeaderClass(dateStr) {
         if (isPastDate(dateStr))
           return "past-date";
-        if (isWeekend(dateStr))
-          return "weekend";
+        if (isOffDay(dateStr))
+          return "weekly-off";
         return "";
       }
       function getAllocations(machineId, dateStr) {
@@ -8429,45 +8906,35 @@ Expected function or array of functions, received type ${typeof value}.`
       }
       function getCapacityPercentage(machineId, dateStr) {
         const used = getUsedMinutes(machineId, dateStr);
-        const total = getShiftMinutes(dateStr);
+        const total = getEffectiveMinutes(dateStr, machineId);
         return total > 0 ? used / total * 100 : 0;
       }
       function getCapacityBarClass(machineId, dateStr) {
         const pct = getCapacityPercentage(machineId, dateStr);
         if (pct >= 95)
-          return "bar-full";
-        if (pct >= 70)
+          return "bar-ok";
+        if (pct >= 40)
           return "bar-warning";
-        return "bar-ok";
+        return "bar-low";
       }
       function getCellClass(machineId, dateStr) {
         const used = getUsedMinutes(machineId, dateStr);
-        const total = getShiftMinutes(dateStr);
+        const total = getEffectiveMinutes(dateStr, machineId);
         const hasConflicts = getAllocations(machineId, dateStr).some((a) => hasConflict(a));
+        const classes = [];
         if (hasConflicts)
-          return "cell-conflict";
-        if (used >= total)
-          return "cell-full";
-        if (used > 0)
-          return "cell-allocated";
-        return "cell-available";
-      }
-      function getMachineUtilization(machineId) {
-        let totalUsed = 0;
-        let totalCapacity = 0;
-        dateRange.value.forEach((date) => {
-          totalUsed += getUsedMinutes(machineId, date);
-          totalCapacity += getShiftMinutes(date);
-        });
-        return totalCapacity > 0 ? Math.round(totalUsed / totalCapacity * 100) : 0;
-      }
-      function getUtilizationClass(machineId) {
-        const pct = getMachineUtilization(machineId);
-        if (pct >= 90)
-          return "util-high";
-        if (pct >= 50)
-          return "util-medium";
-        return "util-low";
+          classes.push("cell-conflict");
+        else if (used >= total)
+          classes.push("cell-full");
+        else if (used > 0)
+          classes.push("cell-allocated");
+        else
+          classes.push("cell-available");
+        const badge = getCellAlterationBadge(dateStr, machineId);
+        if (badge) {
+          classes.push(badge.cls === "badge-add" ? "cell-altered-add" : "cell-altered-reduce");
+        }
+        return classes.join(" ");
       }
       function hasConflict(alloc) {
         const item = workloadItems.value.find(
@@ -8481,35 +8948,25 @@ Expected function or array of functions, received type ${typeof value}.`
         }
         return false;
       }
+      const _colorPairs = [
+        { border: "#2563eb", bg: "#bfdbfe" },
+        { border: "#dc2626", bg: "#fecaca" },
+        { border: "#059669", bg: "#a7f3d0" },
+        { border: "#d97706", bg: "#fde68a" },
+        { border: "#7c3aed", bg: "#ddd6fe" },
+        { border: "#0891b2", bg: "#a5f3fc" },
+        { border: "#db2777", bg: "#fbcfe8" },
+        { border: "#4f46e5", bg: "#c7d2fe" },
+        { border: "#ca8a04", bg: "#fef08a" },
+        { border: "#0d9488", bg: "#99f6e4" }
+      ];
+      const _colorMap = /* @__PURE__ */ new Map();
       function getAllocationColor(alloc) {
-        const colors = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#06b6d4"];
-        let hash = 0;
-        for (let i = 0; i < alloc.item.length; i++) {
-          hash = alloc.item.charCodeAt(i) + ((hash << 5) - hash);
+        const key = `${alloc.order || ""}-${alloc.item || ""}-${alloc.process || ""}`;
+        if (!_colorMap.has(key)) {
+          _colorMap.set(key, _colorMap.size % _colorPairs.length);
         }
-        return colors[Math.abs(hash) % colors.length];
-      }
-      function getAllocationTooltip(alloc) {
-        let tooltip = `Process: ${alloc.process || "N/A"}
-`;
-        tooltip += `Item: ${alloc.item}
-`;
-        tooltip += `Quantity: ${alloc.quantity}
-`;
-        tooltip += `Minutes: ${alloc.allocated_minutes}m
-`;
-        if (alloc.colour) {
-          tooltip += `Colour: ${alloc.colour}
-`;
-        }
-        if (alloc.size) {
-          tooltip += `Size: ${alloc.size}
-`;
-        }
-        if (alloc.order) {
-          tooltip += `Order: ${alloc.order}`;
-        }
-        return tooltip;
+        return _colorPairs[_colorMap.get(key)];
       }
       function getAllocatedQuantity(item) {
         return allocations.value.filter(
@@ -8524,42 +8981,1556 @@ Expected function or array of functions, received type ${typeof value}.`
           return "partial";
         return "pending";
       }
-      function isItemAllocated(item) {
-        return allocations.value.some(
-          (a) => a.item === item.item && a.process === selectedProcess.value && a.colour === item.colour && a.size === item.size
-        );
+      function isNextDay(dateA, dateB) {
+        const fmt = (dt) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+        const [y, m, d] = dateA.split("-").map(Number);
+        let cursor = fmt(new Date(y, m - 1, d + 1));
+        while (cursor < dateB) {
+          if (!isOffDay(cursor))
+            return false;
+          const [cy, cm, cd] = cursor.split("-").map(Number);
+          cursor = fmt(new Date(cy, cm - 1, cd + 1));
+        }
+        return cursor === dateB;
       }
-      function getLockedViewType(itemCode) {
-        const itemAllocations = allocations.value.filter(
-          (a) => a.item === itemCode && a.process === selectedProcess.value && a.order === selectedOrder.value
-        );
-        if (itemAllocations.length === 0)
-          return null;
-        const sample = itemAllocations[0];
-        if (sample.colour && !sample.size)
-          return "colour_wise";
-        if (!sample.colour && sample.size)
-          return "size_wise";
-        if (!sample.colour && !sample.size)
-          return "item_wise";
-        return null;
+      function isGroupSplit(machineId, date1, date2) {
+        return splitMarkers.value.has(`${machineId}|${date1}|${date2}`);
       }
-      function isLockedToOtherView(item) {
-        const locked = getLockedViewType(item.item);
-        return locked !== null && locked !== viewType.value;
+      function addDaysToDate(dateStr, days) {
+        const [y, m, d] = dateStr.split("-").map(Number);
+        const date = new Date(y, m - 1, d + days);
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
       }
-      const VIEW_TYPE_LABELS = { item_wise: "Item Wise", colour_wise: "Colour Wise", size_wise: "Size Wise" };
-      function getLockedViewTypeLabel(item) {
-        const locked = getLockedViewType(item.item);
-        return locked ? VIEW_TYPE_LABELS[locked] : "";
-      }
-      function getDateAtOffset(dateStr, offset) {
+      function addWorkingDays(dateStr, count, machineId) {
         const dates = dateRange.value;
-        const idx = dates.indexOf(dateStr);
+        const startIdx = dates.indexOf(dateStr);
+        if (startIdx < 0)
+          return null;
+        const direction = count > 0 ? 1 : -1;
+        let remaining = Math.abs(count);
+        let idx = startIdx;
+        while (remaining > 0) {
+          idx += direction;
+          if (idx < 0 || idx >= dates.length)
+            return null;
+          if (getEffectiveMinutes(dates[idx], machineId) > 0) {
+            remaining--;
+          }
+        }
+        return dates[idx];
+      }
+      function getNextWorkingDay(dateStr, machineId) {
+        const dates = dateRange.value;
+        let idx = dates.indexOf(dateStr);
         if (idx < 0)
           return null;
-        const target = idx + offset;
-        return target >= 0 && target < dates.length ? dates[target] : null;
+        while (++idx < dates.length) {
+          if (getEffectiveMinutes(dates[idx], machineId) > 0)
+            return dates[idx];
+        }
+        return null;
+      }
+      function simulateGroupEnd(totalQty, minutesPerUnit, startDate2, machineId) {
+        if (totalQty <= 0 || minutesPerUnit <= 0)
+          return startDate2;
+        const dates = dateRange.value;
+        let remaining = totalQty;
+        let lastActiveDate = startDate2;
+        let workDate = startDate2;
+        if (getEffectiveMinutes(workDate, machineId) <= 0) {
+          workDate = getNextWorkingDay(addDaysToDate(workDate, -1), machineId);
+        }
+        if (!workDate)
+          return startDate2;
+        while (remaining > 0 && workDate && dates.includes(workDate)) {
+          const cap = getEffectiveMinutes(workDate, machineId);
+          const maxQty = Math.floor(cap / minutesPerUnit);
+          const allocQty = Math.min(remaining, Math.max(maxQty, 0));
+          if (allocQty > 0) {
+            lastActiveDate = workDate;
+            remaining -= allocQty;
+          }
+          if (remaining <= 0)
+            break;
+          workDate = getNextWorkingDay(workDate, machineId);
+        }
+        return lastActiveDate;
+      }
+      function getGroupsForMachine(machineId) {
+        return groupedAllocationsWithLanes.value.filter((g) => g.machine_id === machineId);
+      }
+      function getLaneCount(machineId) {
+        const groups = groupedAllocationsWithLanes.value.filter((g) => g.machine_id === machineId);
+        if (groups.length === 0)
+          return 0;
+        return Math.max(...groups.map((g) => g.lane)) + 1;
+      }
+      function getBarLayerHeight(machineId) {
+        const lanes = getLaneCount(machineId);
+        if (lanes === 0)
+          return 0;
+        return lanes * (BAR_HEIGHT + BAR_GAP) + BAR_TOP_OFFSET * 2;
+      }
+      function getBarStyle(group) {
+        const dates = dateRange.value;
+        const startIdx = dates.indexOf(group.start_date);
+        const endIdx = dates.indexOf(group.end_date);
+        if (startIdx < 0 || endIdx < 0)
+          return { display: "none" };
+        const left = startIdx * COL_WIDTH + BAR_GAP;
+        const width = (endIdx - startIdx + 1) * COL_WIDTH - BAR_GAP * 2;
+        const top = (group.lane || 0) * (BAR_HEIGHT + BAR_GAP) + BAR_TOP_OFFSET;
+        const colors = getAllocationColor(group);
+        return {
+          position: "absolute",
+          left: left + "px",
+          top: top + "px",
+          width: width + "px",
+          height: BAR_HEIGHT + "px",
+          backgroundColor: colors.bg,
+          borderLeft: `4px solid ${colors.border}`,
+          borderRadius: "4px",
+          pointerEvents: "auto"
+        };
+      }
+      let tooltipTimer = null;
+      function showTooltip(event, group) {
+        clearTimeout(tooltipTimer);
+        tooltipTimer = setTimeout(() => {
+          const rect = event.target.closest(".gantt-bar").getBoundingClientRect();
+          tooltip.value = {
+            show: true,
+            x: rect.left + rect.width / 2,
+            y: rect.top - 8,
+            data: {
+              item: group.item,
+              process: group.process,
+              order: group.order,
+              start_date: group.start_date,
+              end_date: group.end_date,
+              days: group.allocs.length,
+              total_quantity: group.total_quantity,
+              total_minutes: group.total_minutes,
+              colour: group.colour,
+              size: group.size
+            }
+          };
+        }, 350);
+      }
+      function hideTooltip() {
+        clearTimeout(tooltipTimer);
+        tooltip.value.show = false;
+      }
+      function validateMachineDaySlot(machineId, date, excludeKeys = []) {
+        return !allocations.value.some(
+          (a) => a.machine_id === machineId && a.operation_date === date && !excludeKeys.includes(a.key)
+        );
+      }
+      function selectGroup(group) {
+        selectedGroup.value = group;
+      }
+      function onGroupDragStart(event, group) {
+        event.dataTransfer.setData("application/gantt-group", JSON.stringify({
+          group_id: group.group_id,
+          machine_id: group.machine_id,
+          start_date: group.start_date,
+          end_date: group.end_date,
+          alloc_keys: group.alloc_keys,
+          item: group.item,
+          process: group.process,
+          order: group.order,
+          colour: group.colour,
+          size: group.size,
+          total_quantity: group.total_quantity,
+          total_minutes: group.total_minutes
+        }));
+        event.dataTransfer.effectAllowed = "move";
+        draggingItem.value = { item: group.item, sourceMachineId: group.machine_id };
+        hideTooltip();
+      }
+      function onBarContextMenu(event, group) {
+        selectedGroup.value = group;
+        contextMenu.value = {
+          show: true,
+          x: event.clientX,
+          y: event.clientY
+        };
+      }
+      function executeMoveGroup(groupData, targetDays, newMachineId) {
+        const totalQty = targetDays.reduce((s, { alloc }) => s + alloc.quantity, 0);
+        const totalMin = targetDays.reduce((s, { alloc }) => s + alloc.allocated_minutes, 0);
+        const minutesPerUnit = totalQty > 0 ? totalMin / totalQty : 0;
+        const undoData = targetDays.map(({ alloc }) => ({
+          key: alloc.key,
+          oldMachineId: alloc.machine_id,
+          oldDate: alloc.operation_date,
+          oldShift: alloc.shift,
+          oldQuantity: alloc.quantity,
+          oldAllocatedMinutes: alloc.allocated_minutes
+        }));
+        targetDays.forEach(({ alloc, newDate }) => {
+          var _a;
+          alloc.machine_id = newMachineId;
+          alloc.operation_date = newDate;
+          alloc.shift = ((_a = getShiftForDate(newDate)) == null ? void 0 : _a.name) || "";
+        });
+        let remaining = totalQty;
+        const removedSnapshots = [];
+        let lastPlacedDate = targetDays[0].newDate;
+        for (const { alloc, newDate } of targetDays) {
+          if (remaining <= 0 || minutesPerUnit <= 0) {
+            const ud = undoData.find((u) => u.key === alloc.key);
+            removedSnapshots.push({
+              key: alloc.key,
+              machine_id: ud.oldMachineId,
+              operation_date: ud.oldDate,
+              shift: ud.oldShift,
+              order: alloc.order,
+              item: alloc.item,
+              process: alloc.process,
+              colour: alloc.colour,
+              size: alloc.size,
+              quantity: ud.oldQuantity,
+              allocated_minutes: ud.oldAllocatedMinutes
+            });
+            const idx = allocations.value.findIndex((a) => a.key === alloc.key);
+            if (idx > -1)
+              allocations.value.splice(idx, 1);
+            continue;
+          }
+          const effectiveCap = getEffectiveMinutes(newDate, newMachineId);
+          const maxQty = Math.floor(effectiveCap / minutesPerUnit);
+          const allocQty = Math.min(remaining, maxQty);
+          if (allocQty <= 0) {
+            const ud = undoData.find((u) => u.key === alloc.key);
+            if (ud) {
+              removedSnapshots.push({
+                key: alloc.key,
+                machine_id: ud.oldMachineId,
+                operation_date: ud.oldDate,
+                shift: ud.oldShift,
+                order: alloc.order,
+                item: alloc.item,
+                process: alloc.process,
+                colour: alloc.colour,
+                size: alloc.size,
+                quantity: ud.oldQuantity,
+                allocated_minutes: ud.oldAllocatedMinutes
+              });
+            }
+            const idx = allocations.value.findIndex((a) => a.key === alloc.key);
+            if (idx > -1)
+              allocations.value.splice(idx, 1);
+            continue;
+          }
+          alloc.quantity = allocQty;
+          alloc.allocated_minutes = allocQty * minutesPerUnit;
+          remaining -= allocQty;
+          lastPlacedDate = newDate;
+        }
+        const overflowKeys = [];
+        if (remaining > 0 && minutesPerUnit > 0) {
+          const lastTargetDate = lastPlacedDate;
+          const allMovedKeys = targetDays.map(({ alloc }) => alloc.key);
+          let currentDate = getNextDate(lastTargetDate);
+          const refAlloc = targetDays[0].alloc;
+          while (remaining > 0 && currentDate) {
+            if (!isPastDate(currentDate) && validateMachineDaySlot(newMachineId, currentDate, allMovedKeys)) {
+              const effectiveCap = getEffectiveMinutes(currentDate, newMachineId);
+              const maxQty = Math.floor(effectiveCap / minutesPerUnit);
+              const allocQty = Math.min(remaining, maxQty);
+              if (allocQty > 0) {
+                const key = `${newMachineId}-${currentDate}-gmove-${Date.now()}-${overflowKeys.length}`;
+                const shift = getShiftForDate(currentDate);
+                allocations.value.push({
+                  key,
+                  machine_id: newMachineId,
+                  operation_date: currentDate,
+                  shift: (shift == null ? void 0 : shift.name) || "",
+                  order: refAlloc.order,
+                  item: refAlloc.item,
+                  process: refAlloc.process,
+                  colour: refAlloc.colour,
+                  size: refAlloc.size,
+                  quantity: allocQty,
+                  allocated_minutes: allocQty * minutesPerUnit
+                });
+                overflowKeys.push(key);
+                remaining -= allocQty;
+              }
+            }
+            currentDate = getNextDate(currentDate);
+          }
+          if (remaining > 0) {
+            frappe.show_alert({
+              message: __(`${remaining} units could not be placed (no available days)`),
+              indicator: "orange"
+            });
+          }
+        }
+        return { allocations: undoData, overflowKeys, removedSnapshots };
+      }
+      function moveGroup(groupData, newMachineId, newStartDate) {
+        const oldStart = new Date(groupData.start_date);
+        const newStart = new Date(newStartDate);
+        const dayOffset = Math.round((newStart - oldStart) / (1e3 * 60 * 60 * 24));
+        if (dayOffset === 0 && groupData.machine_id === newMachineId)
+          return;
+        if (!checkMachineGGCompat(groupData.item, groupData.machine_id, newMachineId))
+          return;
+        const groupAllocs = groupData.alloc_keys.map((key) => allocations.value.find((a) => a.key === key)).filter(Boolean);
+        if (groupAllocs.length === 0) {
+          frappe.show_alert({ message: __("Group allocations not found"), indicator: "red" });
+          return;
+        }
+        groupAllocs.sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+        const targetDays = [];
+        let _nextDate = newStartDate;
+        for (const alloc of groupAllocs) {
+          while (_nextDate && getEffectiveMinutes(_nextDate, newMachineId) <= 0) {
+            _nextDate = getNextDate(_nextDate);
+          }
+          if (!_nextDate) {
+            _nextDate = targetDays[targetDays.length - 1].newDate;
+          }
+          targetDays.push({ alloc, newDate: _nextDate });
+          _nextDate = getNextDate(_nextDate);
+        }
+        const dates = dateRange.value;
+        const newEndDate = targetDays[targetDays.length - 1].newDate;
+        for (const { newDate } of targetDays) {
+          if (!dates.includes(newDate)) {
+            frappe.show_alert({ message: __("Move would place days outside calendar range"), indicator: "red" });
+            return;
+          }
+          if (isPastDate(newDate)) {
+            frappe.show_alert({ message: __("Cannot move to past date"), indicator: "red" });
+            return;
+          }
+        }
+        const targetDateSet = new Set(targetDays.map((t) => t.newDate));
+        const conflicting = allocations.value.filter(
+          (a) => a.machine_id === newMachineId && targetDateSet.has(a.operation_date) && !groupData.alloc_keys.includes(a.key)
+        );
+        if (conflicting.length === 0) {
+          const result = executeMoveGroup(groupData, targetDays, newMachineId);
+          saveAction("move_group", { allocations: result.allocations, overflowKeys: result.overflowKeys, removedSnapshots: result.removedSnapshots });
+          frappe.show_alert({ message: __("Group moved successfully"), indicator: "green" });
+          return;
+        }
+        if (newMachineId === groupData.machine_id) {
+          const machineGroups2 = groupedAllocations.value.filter(
+            (g) => g.machine_id === newMachineId && g.group_id !== groupData.group_id
+          );
+          for (const otherGroup of machineGroups2) {
+            if (newStartDate > otherGroup.start_date && newStartDate <= otherGroup.end_date) {
+              frappe.show_alert({
+                message: __("Cannot drop in the middle of an existing group. Drop at the start of the group to cascade shift."),
+                indicator: "orange"
+              });
+              return;
+            }
+          }
+        }
+        const machineGroups = groupedAllocations.value.filter((g) => g.machine_id === newMachineId && g.group_id !== groupData.group_id).map((g) => __spreadProps(__spreadValues({}, g), {
+          allocObjs: g.alloc_keys.map((k) => allocations.value.find((a) => a.key === k)).filter(Boolean)
+        })).sort((a, b) => a.start_date.localeCompare(b.start_date));
+        const affected = [];
+        let outOfBounds = false;
+        const forwardPushGroups = [];
+        {
+          const primaryTotalQty = groupAllocs.reduce((s, a) => s + a.quantity, 0);
+          const primaryTotalMin = groupAllocs.reduce((s, a) => s + a.allocated_minutes, 0);
+          const primaryMPU = primaryTotalQty > 0 ? primaryTotalMin / primaryTotalQty : 0;
+          const simulatedPrimaryEnd = simulateGroupEnd(primaryTotalQty, primaryMPU, targetDays[0].newDate, newMachineId);
+          let currentEnd = simulatedPrimaryEnd;
+          for (const otherGroup of machineGroups) {
+            if (otherGroup.end_date < newStartDate)
+              continue;
+            if (otherGroup.start_date > currentEnd)
+              break;
+            const targetStart = addDaysToDate(currentEnd, 1);
+            let workDate = targetStart;
+            if (!dates.includes(workDate) || getEffectiveMinutes(workDate, newMachineId) <= 0) {
+              workDate = getNextWorkingDay(addDaysToDate(targetStart, -1), newMachineId);
+            }
+            if (!workDate) {
+              outOfBounds = true;
+              for (const alloc of otherGroup.allocObjs) {
+                affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+              }
+              forwardPushGroups.push({
+                alloc_keys: otherGroup.alloc_keys.slice(),
+                targetStartDate: targetStart
+              });
+              continue;
+            }
+            let lastWorkDate = null;
+            for (const alloc of otherGroup.allocObjs) {
+              if (!workDate || !dates.includes(workDate)) {
+                outOfBounds = true;
+                affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+              } else if (isPastDate(workDate)) {
+                outOfBounds = true;
+                affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+              } else {
+                affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: workDate });
+                lastWorkDate = workDate;
+                workDate = getNextWorkingDay(workDate, newMachineId);
+              }
+            }
+            if (lastWorkDate && !outOfBounds) {
+              const cgTotalQty = otherGroup.allocObjs.reduce((s, a) => s + a.quantity, 0);
+              const cgTotalMin = otherGroup.allocObjs.reduce((s, a) => s + a.allocated_minutes, 0);
+              const cgMPU = cgTotalQty > 0 ? cgTotalMin / cgTotalQty : 0;
+              const cgEntries = affected.filter((e) => otherGroup.alloc_keys.includes(e.allocation.key) && e.newDate);
+              const cgStart = cgEntries.length > 0 ? cgEntries[0].newDate : null;
+              if (cgStart && cgMPU > 0) {
+                currentEnd = simulateGroupEnd(cgTotalQty, cgMPU, cgStart, newMachineId);
+              } else {
+                currentEnd = lastWorkDate;
+              }
+            }
+            forwardPushGroups.push({
+              alloc_keys: otherGroup.alloc_keys.slice(),
+              targetStartDate: targetStart
+            });
+          }
+        }
+        if (outOfBounds) {
+          frappe.show_alert({
+            message: __("Cannot move: some groups would be pushed beyond the calendar date range. Extend end date first."),
+            indicator: "red"
+          });
+          return;
+        }
+        const affectedGroups = [];
+        const seenGroups = /* @__PURE__ */ new Set();
+        for (const entry of affected) {
+          const grp = machineGroups.find((g) => g.alloc_keys.includes(entry.allocation.key));
+          if (grp && !seenGroups.has(grp.group_id)) {
+            seenGroups.add(grp.group_id);
+            const grpEntries = affected.filter((e) => grp.alloc_keys.includes(e.allocation.key));
+            const newDates = grpEntries.map((e) => e.newDate).filter(Boolean).sort();
+            const pushDays = newDates.length > 0 ? Math.round((new Date(newDates[0]) - new Date(grp.start_date)) / (1e3 * 60 * 60 * 24)) : 0;
+            affectedGroups.push({
+              item: grp.item,
+              order: grp.order,
+              dayCount: grp.allocs.length,
+              oldStart: grp.start_date,
+              oldEnd: grp.end_date,
+              newStart: newDates[0] || null,
+              newEnd: newDates[newDates.length - 1] || null,
+              pushDays: Math.abs(pushDays)
+            });
+          }
+        }
+        shiftModalData.value = {
+          type: "move_group",
+          affectedAllocations: affected,
+          affectedGroups,
+          groupData,
+          targetDays,
+          targetMachineId: newMachineId,
+          forwardPushGroups
+        };
+        showShiftModal.value = true;
+      }
+      function closeEditGroupModal() {
+        showEditGroupModal.value = false;
+      }
+      function confirmEditGroup() {
+        if (!selectedGroup.value)
+          return;
+        const newTotal = editGroupQuantity.value;
+        const group = selectedGroup.value;
+        const oldTotal = group.total_quantity;
+        if (newTotal < 1) {
+          frappe.show_alert({ message: __("Quantity must be at least 1"), indicator: "red" });
+          return;
+        }
+        const item = workloadItems.value.find(
+          (i) => i.item === group.item && i.colour === group.colour && i.size === group.size
+        );
+        if (item) {
+          const currentAllocated = getAllocatedQuantity(item);
+          const adjustment = newTotal - oldTotal;
+          if (currentAllocated + adjustment > item.quantity) {
+            frappe.show_alert({ message: __("Cannot exceed order quantity"), indicator: "red" });
+            return;
+          }
+        }
+        const allocs = group.alloc_keys.map((key) => allocations.value.find((a) => a.key === key)).filter(Boolean);
+        const ratio = newTotal / oldTotal;
+        const undoData = allocs.map((a) => ({ key: a.key, oldQty: a.quantity, oldMinutes: a.allocated_minutes }));
+        let distributed = 0;
+        allocs.forEach((alloc, idx) => {
+          const minutesPerUnit = alloc.allocated_minutes / alloc.quantity;
+          if (idx === allocs.length - 1) {
+            alloc.quantity = newTotal - distributed;
+          } else {
+            alloc.quantity = Math.max(1, Math.round(alloc.quantity * ratio));
+            distributed += alloc.quantity;
+          }
+          alloc.allocated_minutes = alloc.quantity * minutesPerUnit;
+        });
+        saveAction("edit_group", { allocations: undoData });
+        frappe.show_alert({ message: __("Group quantity updated"), indicator: "green" });
+        closeEditGroupModal();
+      }
+      function closeSplitGroupModal() {
+        showSplitGroupModal.value = false;
+      }
+      function confirmSplitGroup() {
+        if (!selectedGroup.value || !splitGroupDate.value)
+          return;
+        const group = selectedGroup.value;
+        const splitDate = splitGroupDate.value;
+        const splitIdx = group.allocs.findIndex((a) => a.operation_date === splitDate);
+        if (splitIdx <= 0) {
+          frappe.show_alert({ message: __("Invalid split date"), indicator: "red" });
+          return;
+        }
+        const prevDate = group.allocs[splitIdx - 1].operation_date;
+        const markerKey = `${group.machine_id}|${prevDate}|${splitDate}`;
+        splitMarkers.value.add(markerKey);
+        saveAction("split_group", { markerKey });
+        frappe.show_alert({ message: __("Group split successfully"), indicator: "green" });
+        closeSplitGroupModal();
+      }
+      function openShiftGroupByDaysModal() {
+        if (!selectedGroup.value)
+          return;
+        shiftByDaysCount.value = 0;
+        shiftByDaysPreview.value = null;
+        showShiftByDaysModal.value = true;
+        closeContextMenu();
+      }
+      function closeShiftByDaysModal() {
+        showShiftByDaysModal.value = false;
+        shiftByDaysPreview.value = null;
+        shiftByDaysCount.value = 0;
+      }
+      function computeShiftByDaysPreview() {
+        const dayOffset = shiftByDaysCount.value;
+        if (!dayOffset || !selectedGroup.value) {
+          shiftByDaysPreview.value = null;
+          return;
+        }
+        const group = selectedGroup.value;
+        const machineId = group.machine_id;
+        const dates = dateRange.value;
+        const groupAllocs = group.alloc_keys.map((key) => allocations.value.find((a) => a.key === key)).filter(Boolean);
+        if (groupAllocs.length === 0) {
+          shiftByDaysPreview.value = { error: "Group allocations not found" };
+          return;
+        }
+        const sortedAllocs = [...groupAllocs].sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+        const firstNewDate = addWorkingDays(sortedAllocs[0].operation_date, dayOffset, machineId);
+        if (!firstNewDate) {
+          shiftByDaysPreview.value = { error: "Shift would place days outside calendar range. Extend the end date first." };
+          return;
+        }
+        const targetDays = [];
+        let currentWorkDate = firstNewDate;
+        for (const alloc of sortedAllocs) {
+          if (!currentWorkDate) {
+            shiftByDaysPreview.value = { error: "Not enough working days in calendar range." };
+            return;
+          }
+          if (!dates.includes(currentWorkDate)) {
+            shiftByDaysPreview.value = { error: "Shift would place days outside calendar range. Extend the end date first." };
+            return;
+          }
+          if (isPastDate(currentWorkDate)) {
+            shiftByDaysPreview.value = { error: "Cannot shift to past dates" };
+            return;
+          }
+          targetDays.push({ alloc, newDate: currentWorkDate });
+          if (alloc !== sortedAllocs[sortedAllocs.length - 1]) {
+            currentWorkDate = getNextWorkingDay(currentWorkDate, machineId);
+          }
+        }
+        const newStart = targetDays[0].newDate;
+        const totalQty = sortedAllocs.reduce((s, a) => s + a.quantity, 0);
+        const totalMin = sortedAllocs.reduce((s, a) => s + a.allocated_minutes, 0);
+        const minutesPerUnit = totalQty > 0 ? totalMin / totalQty : 0;
+        let simRemaining = totalQty;
+        let newEnd = newStart;
+        for (const { newDate } of targetDays) {
+          if (simRemaining <= 0)
+            break;
+          const cap = getEffectiveMinutes(newDate, machineId);
+          const maxQty = minutesPerUnit > 0 ? Math.floor(cap / minutesPerUnit) : 0;
+          const allocQty = Math.min(simRemaining, Math.max(maxQty, 0));
+          if (allocQty > 0)
+            newEnd = newDate;
+          simRemaining -= allocQty;
+        }
+        if (simRemaining > 0 && minutesPerUnit > 0) {
+          let extendDate = getNextWorkingDay(targetDays[targetDays.length - 1].newDate, machineId);
+          while (simRemaining > 0 && extendDate && dates.includes(extendDate)) {
+            const cap = getEffectiveMinutes(extendDate, machineId);
+            const maxQty = Math.floor(cap / minutesPerUnit);
+            const allocQty = Math.min(simRemaining, Math.max(maxQty, 0));
+            if (allocQty > 0)
+              newEnd = extendDate;
+            simRemaining -= allocQty;
+            extendDate = getNextWorkingDay(extendDate, machineId);
+          }
+        }
+        const machineGroups = groupedAllocations.value.filter((g) => g.machine_id === machineId && g.group_id !== group.group_id).map((g) => __spreadProps(__spreadValues({}, g), {
+          allocObjs: g.alloc_keys.map((k) => allocations.value.find((a) => a.key === k)).filter(Boolean)
+        })).sort((a, b) => a.start_date.localeCompare(b.start_date));
+        const affected = [];
+        let outOfBounds = false;
+        const groupShifts = /* @__PURE__ */ new Map();
+        const backwardPullGroups = [];
+        const forwardPushGroups = [];
+        {
+          let currentEnd = newEnd;
+          for (const otherGroup of machineGroups) {
+            if (otherGroup.end_date < newStart)
+              continue;
+            if (otherGroup.start_date > currentEnd)
+              break;
+            const targetStart = addDaysToDate(currentEnd, 1);
+            let workDate = targetStart;
+            if (!dates.includes(workDate) || getEffectiveMinutes(workDate, machineId) <= 0) {
+              workDate = getNextWorkingDay(addDaysToDate(targetStart, -1), machineId);
+            }
+            if (!workDate) {
+              outOfBounds = true;
+              for (const alloc of otherGroup.allocObjs) {
+                affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+              }
+              groupShifts.set(otherGroup.group_id, true);
+              forwardPushGroups.push({
+                alloc_keys: otherGroup.alloc_keys.slice(),
+                targetStartDate: targetStart
+              });
+              continue;
+            }
+            let lastWorkDate = null;
+            for (const alloc of otherGroup.allocObjs) {
+              if (!workDate || !dates.includes(workDate)) {
+                outOfBounds = true;
+                affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+              } else if (isPastDate(workDate)) {
+                outOfBounds = true;
+                affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+              } else {
+                affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: workDate });
+                lastWorkDate = workDate;
+                workDate = getNextWorkingDay(workDate, machineId);
+              }
+            }
+            if (lastWorkDate && !outOfBounds) {
+              const cgTotalQty = otherGroup.allocObjs.reduce((s, a) => s + a.quantity, 0);
+              const cgTotalMin = otherGroup.allocObjs.reduce((s, a) => s + a.allocated_minutes, 0);
+              const cgMPU = cgTotalQty > 0 ? cgTotalMin / cgTotalQty : 0;
+              const cgEntries = affected.filter((e) => otherGroup.alloc_keys.includes(e.allocation.key) && e.newDate);
+              const cgStart = cgEntries.length > 0 ? cgEntries[0].newDate : null;
+              if (cgStart && cgMPU > 0) {
+                currentEnd = simulateGroupEnd(cgTotalQty, cgMPU, cgStart, machineId);
+              } else {
+                currentEnd = lastWorkDate;
+              }
+            }
+            groupShifts.set(otherGroup.group_id, true);
+            forwardPushGroups.push({
+              alloc_keys: otherGroup.alloc_keys.slice(),
+              targetStartDate: targetStart
+            });
+          }
+          if (dayOffset < 0) {
+            for (const otherGroup of machineGroups) {
+              if (groupShifts.has(otherGroup.group_id))
+                continue;
+              if (otherGroup.start_date <= group.end_date)
+                continue;
+              const nextDayAfterEnd = addDaysToDate(currentEnd, 1);
+              const nextDayIdx = dates.indexOf(nextDayAfterEnd);
+              if (nextDayIdx < 0)
+                break;
+              const currentGroupIdx = dates.indexOf(otherGroup.start_date);
+              const pullDays = currentGroupIdx - nextDayIdx;
+              if (pullDays <= 0) {
+                currentEnd = otherGroup.end_date;
+                continue;
+              }
+              groupShifts.set(otherGroup.group_id, -pullDays);
+              backwardPullGroups.push({
+                alloc_keys: otherGroup.alloc_keys.slice(),
+                targetStartDate: nextDayAfterEnd
+              });
+              const pulledEnd = addDaysToDate(otherGroup.end_date, -pullDays);
+              if (!dates.includes(pulledEnd))
+                outOfBounds = true;
+              for (const alloc of otherGroup.allocObjs) {
+                const nd = addDaysToDate(alloc.operation_date, -pullDays);
+                if (!dates.includes(nd)) {
+                  outOfBounds = true;
+                  affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+                } else if (isPastDate(nd)) {
+                  outOfBounds = true;
+                  affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+                } else {
+                  affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: nd });
+                }
+              }
+              if (!outOfBounds) {
+                const pgTotalQty = otherGroup.allocObjs.reduce((s, a) => s + a.quantity, 0);
+                const pgTotalMin = otherGroup.allocObjs.reduce((s, a) => s + a.allocated_minutes, 0);
+                const pgMPU = pgTotalQty > 0 ? pgTotalMin / pgTotalQty : 0;
+                if (pgMPU > 0) {
+                  currentEnd = simulateGroupEnd(pgTotalQty, pgMPU, nextDayAfterEnd, machineId);
+                } else {
+                  currentEnd = pulledEnd;
+                }
+              }
+            }
+          }
+        }
+        const affectedGroups = [];
+        const seenGroups = /* @__PURE__ */ new Set();
+        for (const entry of affected) {
+          const grp = machineGroups.find((g) => g.alloc_keys.includes(entry.allocation.key));
+          if (grp && !seenGroups.has(grp.group_id)) {
+            seenGroups.add(grp.group_id);
+            const grpEntries = affected.filter((e) => grp.alloc_keys.includes(e.allocation.key));
+            const newDates = grpEntries.map((e) => e.newDate).filter(Boolean).sort();
+            const pushDays = newDates.length > 0 ? Math.round((new Date(newDates[0]) - new Date(grp.start_date)) / (1e3 * 60 * 60 * 24)) : 0;
+            affectedGroups.push({
+              item: grp.item,
+              order: grp.order,
+              dayCount: grp.allocs.length,
+              oldStart: grp.start_date,
+              oldEnd: grp.end_date,
+              newStart: newDates[0] || null,
+              newEnd: newDates[newDates.length - 1] || null,
+              pushDays: Math.abs(pushDays)
+            });
+          }
+        }
+        shiftByDaysPreview.value = { affected, affectedGroups, newStart, targetDays, outOfBounds, backwardPullGroups, forwardPushGroups };
+      }
+      function confirmShiftByDays() {
+        var _a, _b, _c, _d;
+        if (!selectedGroup.value || !shiftByDaysPreview.value || shiftByDaysPreview.value.error || shiftByDaysPreview.value.outOfBounds)
+          return;
+        const group = selectedGroup.value;
+        const preview = shiftByDaysPreview.value;
+        const machineId = group.machine_id;
+        const pushKeys = /* @__PURE__ */ new Set();
+        if ((_a = preview.forwardPushGroups) == null ? void 0 : _a.length) {
+          for (const pg of preview.forwardPushGroups) {
+            pg.alloc_keys.forEach((k) => pushKeys.add(k));
+          }
+        }
+        const pullKeys = /* @__PURE__ */ new Set();
+        if ((_b = preview.backwardPullGroups) == null ? void 0 : _b.length) {
+          for (const pg of preview.backwardPullGroups) {
+            pg.alloc_keys.forEach((k) => pullKeys.add(k));
+          }
+        }
+        const shiftedAllocations = [];
+        const shiftedAllocRefs = [];
+        if (preview.affected.length > 0) {
+          preview.affected.forEach(({ allocation, currentDate, newDate }) => {
+            if (pushKeys.has(allocation.key) || pullKeys.has(allocation.key))
+              return;
+            shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
+            allocation.operation_date = newDate;
+            const newShift = getShiftForDate(newDate);
+            allocation.shift = (newShift == null ? void 0 : newShift.name) || "";
+            shiftedAllocRefs.push(allocation);
+          });
+        }
+        const refitResult = refitShiftedAllocations(shiftedAllocRefs);
+        const groupData = {
+          alloc_keys: group.alloc_keys,
+          machine_id: machineId,
+          start_date: group.start_date,
+          end_date: group.end_date
+        };
+        const pushMoveResults = [];
+        if ((_c = preview.forwardPushGroups) == null ? void 0 : _c.length) {
+          const dates = dateRange.value;
+          for (const pg of preview.forwardPushGroups) {
+            const pushAllocs = pg.alloc_keys.map((k) => allocations.value.find((a) => a.key === k)).filter(Boolean).sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+            if (pushAllocs.length === 0)
+              continue;
+            let workDate = pg.targetStartDate;
+            if (!dates.includes(workDate) || getEffectiveMinutes(workDate, machineId) <= 0) {
+              workDate = getNextWorkingDay(addDaysToDate(pg.targetStartDate, -1), machineId);
+            }
+            if (!workDate)
+              continue;
+            const pgTargetDays = [];
+            for (const alloc of pushAllocs) {
+              if (!workDate || !dates.includes(workDate))
+                break;
+              pgTargetDays.push({ alloc, newDate: workDate });
+              workDate = getNextWorkingDay(workDate, machineId);
+            }
+            if (pgTargetDays.length === 0)
+              continue;
+            const pgData = {
+              alloc_keys: pg.alloc_keys,
+              machine_id: machineId,
+              start_date: pushAllocs[0].operation_date,
+              end_date: pushAllocs[pushAllocs.length - 1].operation_date
+            };
+            pushMoveResults.push(executeMoveGroup(pgData, pgTargetDays, machineId));
+          }
+        }
+        const moveResult = executeMoveGroup(groupData, preview.targetDays, machineId);
+        const pullMoveResults = [];
+        if ((_d = preview.backwardPullGroups) == null ? void 0 : _d.length) {
+          const dates = dateRange.value;
+          for (const pg of preview.backwardPullGroups) {
+            const pullAllocs = pg.alloc_keys.map((k) => allocations.value.find((a) => a.key === k)).filter(Boolean).sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+            if (pullAllocs.length === 0)
+              continue;
+            let workDate = pg.targetStartDate;
+            if (!dates.includes(workDate) || getEffectiveMinutes(workDate, machineId) <= 0) {
+              workDate = getNextWorkingDay(addDaysToDate(pg.targetStartDate, -1), machineId);
+            }
+            if (!workDate)
+              continue;
+            const pgTargetDays = [];
+            for (const alloc of pullAllocs) {
+              if (!workDate || !dates.includes(workDate))
+                break;
+              pgTargetDays.push({ alloc, newDate: workDate });
+              workDate = getNextWorkingDay(workDate, machineId);
+            }
+            if (pgTargetDays.length === 0)
+              continue;
+            const pgData = {
+              alloc_keys: pg.alloc_keys,
+              machine_id: machineId,
+              start_date: pullAllocs[0].operation_date,
+              end_date: pullAllocs[pullAllocs.length - 1].operation_date
+            };
+            pullMoveResults.push(executeMoveGroup(pgData, pgTargetDays, machineId));
+          }
+        }
+        if (shiftedAllocations.length > 0 || pushMoveResults.length > 0 || pullMoveResults.length > 0) {
+          saveAction("shift_and_move_group", {
+            moveAllocations: moveResult.allocations,
+            overflowKeys: moveResult.overflowKeys,
+            removedSnapshots: moveResult.removedSnapshots,
+            shiftedAllocations,
+            refitAddedKeys: refitResult.addedKeys,
+            refitRemovedSnapshots: refitResult.removedSnapshots,
+            pushAllocations: pushMoveResults.flatMap((r) => r.allocations),
+            pushOverflowKeys: pushMoveResults.flatMap((r) => r.overflowKeys),
+            pushRemovedSnapshots: pushMoveResults.flatMap((r) => r.removedSnapshots),
+            pullAllocations: pullMoveResults.flatMap((r) => r.allocations),
+            pullOverflowKeys: pullMoveResults.flatMap((r) => r.overflowKeys),
+            pullRemovedSnapshots: pullMoveResults.flatMap((r) => r.removedSnapshots)
+          });
+          const groupCount = new Set(preview.affected.map((a) => {
+            const g = groupedAllocations.value.find((grp) => grp.alloc_keys.includes(a.allocation.key));
+            return g == null ? void 0 : g.group_id;
+          })).size;
+          frappe.show_alert({ message: __(`Shifted ${groupCount} group(s) and moved group by ${shiftByDaysCount.value} day(s)`), indicator: "green" });
+        } else {
+          saveAction("move_group", { allocations: moveResult.allocations, overflowKeys: moveResult.overflowKeys, removedSnapshots: moveResult.removedSnapshots });
+          frappe.show_alert({ message: __(`Group shifted by ${shiftByDaysCount.value} day(s)`), indicator: "green" });
+        }
+        closeShiftByDaysModal();
+      }
+      function computeBackfillPlan(machineId, gapStartDate, deletedKeys) {
+        const dates = dateRange.value;
+        const gapStartIdx = dates.indexOf(gapStartDate);
+        if (gapStartIdx < 0)
+          return { affected: [] };
+        const subsequent = allocations.value.filter((a) => a.machine_id === machineId && a.operation_date >= gapStartDate && !deletedKeys.includes(a.key)).sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+        if (subsequent.length === 0)
+          return { affected: [] };
+        const subsequentKeys = new Set(subsequent.map((a) => a.key));
+        const occupiedDates = /* @__PURE__ */ new Set();
+        allocations.value.forEach((a) => {
+          if (a.machine_id === machineId && !subsequentKeys.has(a.key) && !deletedKeys.includes(a.key)) {
+            occupiedDates.add(a.operation_date);
+          }
+        });
+        const affected = [];
+        subsequent.forEach((alloc) => {
+          let placed = false;
+          for (let i = gapStartIdx; i < dates.length; i++) {
+            const d = dates[i];
+            if (!occupiedDates.has(d) && !isPastDate(d)) {
+              if (d !== alloc.operation_date) {
+                affected.push({
+                  allocation: alloc,
+                  currentDate: alloc.operation_date,
+                  newDate: d
+                });
+              }
+              occupiedDates.add(d);
+              placed = true;
+              break;
+            }
+          }
+          if (!placed) {
+            occupiedDates.add(alloc.operation_date);
+          }
+        });
+        return { affected };
+      }
+      function deleteGroup() {
+        if (!selectedGroup.value)
+          return;
+        closeContextMenu();
+        const group = selectedGroup.value;
+        const allocs = group.alloc_keys.map((key) => allocations.value.find((a) => a.key === key)).filter(Boolean);
+        const undoData = allocs.map((a) => __spreadValues({}, a));
+        const machineId = group.machine_id;
+        const gapStartDate = group.start_date;
+        const deletedKeys = group.alloc_keys;
+        allocs.forEach((alloc) => {
+          const idx = allocations.value.findIndex((a) => a.key === alloc.key);
+          if (idx > -1)
+            allocations.value.splice(idx, 1);
+        });
+        const { affected } = computeBackfillPlan(machineId, gapStartDate, deletedKeys);
+        if (affected.length > 0) {
+          backfillModalData.value = {
+            machineId,
+            deletedAllocations: undoData,
+            deletedKeys,
+            affectedAllocations: affected
+          };
+          showBackfillModal.value = true;
+        } else {
+          frappe.confirm(
+            __(`Delete group: ${group.allocs.length} day(s)?`),
+            () => {
+              saveAction("delete_group", { allocations: undoData });
+              frappe.show_alert({ message: __(`Deleted group: ${group.allocs.length} day(s)`), indicator: "green" });
+            },
+            () => {
+              undoData.forEach((a) => allocations.value.push(a));
+            }
+          );
+        }
+        selectedGroup.value = null;
+      }
+      function confirmBackfill() {
+        if (!backfillModalData.value)
+          return;
+        const bd = backfillModalData.value;
+        const shiftedAllocations = [];
+        const shiftedAllocRefs = [];
+        bd.affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
+          shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
+          allocation.operation_date = newDate;
+          const newShift = getShiftForDate(newDate);
+          allocation.shift = (newShift == null ? void 0 : newShift.name) || "";
+          shiftedAllocRefs.push(allocation);
+        });
+        const refitResult = refitShiftedAllocations(shiftedAllocRefs);
+        saveAction("delete_group_and_backfill", {
+          allocations: bd.deletedAllocations,
+          shiftedAllocations,
+          refitAddedKeys: refitResult.addedKeys,
+          refitRemovedSnapshots: refitResult.removedSnapshots
+        });
+        frappe.show_alert({ message: __(`Deleted group and shifted ${shiftedAllocations.length} allocation(s) backward`), indicator: "green" });
+        closeBackfillModal();
+      }
+      function declineBackfill() {
+        if (!backfillModalData.value)
+          return;
+        const bd = backfillModalData.value;
+        saveAction("delete_group", { allocations: bd.deletedAllocations });
+        frappe.show_alert({ message: __("Group deleted"), indicator: "green" });
+        closeBackfillModal();
+      }
+      function cancelDeleteGroup() {
+        if (backfillModalData.value) {
+          backfillModalData.value.deletedAllocations.forEach((a) => {
+            allocations.value.push(a);
+          });
+        }
+        closeBackfillModal();
+      }
+      function closeBackfillModal() {
+        showBackfillModal.value = false;
+        backfillModalData.value = null;
+      }
+      function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) {
+        const affectedMachines = machineId ? [machineId] : machines.value.map((m) => m.machine_id);
+        const allAdded = [];
+        const allRemoved = [];
+        const allModified = [];
+        let totalUnplaced = 0;
+        for (const mId of affectedMachines) {
+          const cellAllocs = getAllocations(mId, dateStr);
+          if (cellAllocs.length === 0) {
+            if (alterationType === "Add" && getShiftMinutes(dateStr) === 0 && getEffectiveMinutes(dateStr, mId) > 0) {
+              let searchDate = getNextDate(dateStr);
+              let refAlloc = null;
+              while (searchDate && !refAlloc) {
+                const sa = getAllocations(mId, searchDate);
+                if (sa.length > 0)
+                  refAlloc = sa[0];
+                else
+                  searchDate = getNextDate(searchDate);
+              }
+              if (refAlloc) {
+                const mpu = refAlloc.quantity > 0 ? refAlloc.allocated_minutes / refAlloc.quantity : 0;
+                if (mpu > 0) {
+                  const groupAllocs = allocations.value.filter(
+                    (a) => a.machine_id === mId && a.item === refAlloc.item && a.colour === refAlloc.colour && a.size === refAlloc.size && a.order === refAlloc.order && a.process === refAlloc.process
+                  );
+                  const oldEndDate = groupAllocs.reduce((latest, a) => !latest || a.operation_date > latest ? a.operation_date : latest, null);
+                  const result = compactAfterPull(
+                    mId,
+                    dateStr,
+                    refAlloc.item,
+                    refAlloc.colour,
+                    refAlloc.size,
+                    refAlloc.order,
+                    refAlloc.process,
+                    mpu
+                  );
+                  allAdded.push(...result.addedKeys);
+                  allRemoved.push(...result.removedKeys);
+                  allModified.push(...result.modified);
+                  const groupAllocsAfter = allocations.value.filter(
+                    (a) => a.machine_id === mId && a.item === refAlloc.item && a.colour === refAlloc.colour && a.size === refAlloc.size && a.order === refAlloc.order && a.process === refAlloc.process
+                  );
+                  const newEndDate = groupAllocsAfter.reduce((latest, a) => !latest || a.operation_date > latest ? a.operation_date : latest, null);
+                  if (newEndDate && oldEndDate > newEndDate) {
+                    const dates = dateRange.value;
+                    const freedDays = dates.indexOf(oldEndDate) - dates.indexOf(newEndDate);
+                    if (freedDays > 0) {
+                      const shiftResult = shiftSubsequentAllocsLeft(mId, newEndDate, freedDays);
+                      allModified.push(...shiftResult.modified);
+                      if (shiftResult.addedKeys)
+                        allAdded.push(...shiftResult.addedKeys);
+                      if (shiftResult.removedSnapshots)
+                        allRemoved.push(...shiftResult.removedSnapshots);
+                    }
+                  }
+                }
+              }
+            }
+            continue;
+          }
+          if (alterationType === "Reduce") {
+            const result = reflowForBreak(mId, dateStr);
+            allAdded.push(...result.addedKeys);
+            allRemoved.push(...result.removedKeys);
+            allModified.push(...result.modified);
+            totalUnplaced += result.unplaced;
+          } else {
+            const cellAllocs2 = getAllocations(mId, dateStr);
+            const refAlloc = cellAllocs2[0];
+            let oldEndDate = null;
+            if (refAlloc) {
+              const groupAllocs = allocations.value.filter(
+                (a) => a.machine_id === mId && a.item === refAlloc.item && a.colour === refAlloc.colour && a.size === refAlloc.size && a.order === refAlloc.order && a.process === refAlloc.process
+              );
+              oldEndDate = groupAllocs.reduce((latest, a) => {
+                return !latest || a.operation_date > latest ? a.operation_date : latest;
+              }, null);
+            }
+            const result = reflowForOvertime(mId, dateStr);
+            allAdded.push(...result.addedKeys);
+            allRemoved.push(...result.removedKeys);
+            allModified.push(...result.modified);
+            if (refAlloc && oldEndDate) {
+              const groupAllocsAfter = allocations.value.filter(
+                (a) => a.machine_id === mId && a.item === refAlloc.item && a.colour === refAlloc.colour && a.size === refAlloc.size && a.order === refAlloc.order && a.process === refAlloc.process
+              );
+              const newEndDate = groupAllocsAfter.reduce((latest, a) => {
+                return !latest || a.operation_date > latest ? a.operation_date : latest;
+              }, null);
+              if (newEndDate && oldEndDate > newEndDate) {
+                const dates = dateRange.value;
+                const freedDays = dates.indexOf(oldEndDate) - dates.indexOf(newEndDate);
+                if (freedDays > 0) {
+                  const shiftResult = shiftSubsequentAllocsLeft(mId, newEndDate, freedDays);
+                  allModified.push(...shiftResult.modified);
+                  if (shiftResult.addedKeys)
+                    allAdded.push(...shiftResult.addedKeys);
+                  if (shiftResult.removedSnapshots)
+                    allRemoved.push(...shiftResult.removedSnapshots);
+                }
+              }
+            }
+          }
+        }
+        if (allAdded.length || allRemoved.length || allModified.length) {
+          const seenMod = /* @__PURE__ */ new Set();
+          const dedupedModified = allModified.filter((m) => {
+            if (seenMod.has(m.key))
+              return false;
+            seenMod.add(m.key);
+            return true;
+          });
+          saveAction("alteration_reflow", {
+            addedKeys: [...new Set(allAdded)],
+            removedKeys: allRemoved,
+            modified: dedupedModified
+          });
+          const parts = [];
+          if (allAdded.length)
+            parts.push(`${allAdded.length} created`);
+          if (allRemoved.length)
+            parts.push(`${allRemoved.length} removed`);
+          if (allModified.length)
+            parts.push(`${allModified.length} adjusted`);
+          frappe.show_alert({
+            message: __("Reflow complete: " + parts.join(", ")),
+            indicator: totalUnplaced > 0 ? "orange" : "green"
+          });
+          if (totalUnplaced > 0) {
+            frappe.show_alert({
+              message: __(`Warning: ${totalUnplaced} qty could not be placed`),
+              indicator: "orange"
+            });
+          }
+        }
+      }
+      function reflowForBreak(machineId, dateStr) {
+        const addedKeys = [];
+        const removedKeys = [];
+        const modified = [];
+        let unplaced = 0;
+        const effectiveCap = getEffectiveMinutes(dateStr, machineId);
+        const cellAllocs = getAllocations(machineId, dateStr);
+        const usedMin = cellAllocs.reduce((s, a) => s + a.allocated_minutes, 0);
+        if (usedMin <= effectiveCap) {
+          return { addedKeys, removedKeys, modified, unplaced };
+        }
+        let excess = usedMin - effectiveCap;
+        const sorted = [...cellAllocs].sort((a, b) => b.key.localeCompare(a.key));
+        for (const alloc of sorted) {
+          if (excess <= 0)
+            break;
+          const minutesPerUnit = alloc.quantity > 0 ? alloc.allocated_minutes / alloc.quantity : 0;
+          if (minutesPerUnit <= 0)
+            continue;
+          if (alloc.allocated_minutes <= excess) {
+            excess -= alloc.allocated_minutes;
+            removedKeys.push(__spreadValues({}, alloc));
+            const idx = allocations.value.findIndex((a) => a.key === alloc.key);
+            if (idx > -1)
+              allocations.value.splice(idx, 1);
+            const spillResult = spillForward(
+              machineId,
+              dateStr,
+              alloc.quantity,
+              minutesPerUnit,
+              alloc.item,
+              alloc.colour,
+              alloc.size,
+              alloc.order,
+              alloc.process,
+              0
+            );
+            addedKeys.push(...spillResult.addedKeys);
+            removedKeys.push(...spillResult.cascadedRemoved);
+            modified.push(...spillResult.cascadedModified);
+            unplaced += spillResult.remaining;
+          } else {
+            const trimMinutes = excess;
+            const trimQty = Math.floor(trimMinutes / minutesPerUnit);
+            if (trimQty < 1)
+              continue;
+            const actualTrimMin = trimQty * minutesPerUnit;
+            modified.push({ key: alloc.key, oldQty: alloc.quantity, oldMinutes: alloc.allocated_minutes });
+            alloc.quantity -= trimQty;
+            alloc.allocated_minutes -= actualTrimMin;
+            excess -= actualTrimMin;
+            const spillResult = spillForward(
+              machineId,
+              dateStr,
+              trimQty,
+              minutesPerUnit,
+              alloc.item,
+              alloc.colour,
+              alloc.size,
+              alloc.order,
+              alloc.process,
+              0
+            );
+            addedKeys.push(...spillResult.addedKeys);
+            removedKeys.push(...spillResult.cascadedRemoved);
+            modified.push(...spillResult.cascadedModified);
+            unplaced += spillResult.remaining;
+          }
+        }
+        return { addedKeys, removedKeys, modified, unplaced };
+      }
+      function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour, size, order, process2, depth) {
+        const MAX_CASCADE = 50;
+        if (depth >= MAX_CASCADE || qty < MIN_BATCH_SIZE) {
+          return { addedKeys: [], cascadedRemoved: [], cascadedModified: [], remaining: qty };
+        }
+        const addedKeys = [];
+        const cascadedRemoved = [];
+        const cascadedModified = [];
+        let remaining = qty;
+        let currentDate = getNextDate(afterDateStr);
+        while (remaining >= MIN_BATCH_SIZE && currentDate) {
+          const cellAllocs = getAllocations(machineId, currentDate);
+          const effectiveCap = getEffectiveMinutes(currentDate, machineId);
+          const usedMin = getUsedMinutes(machineId, currentDate);
+          const availMin = effectiveCap - usedMin;
+          const sameGroup = cellAllocs.find(
+            (a) => a.item === item && a.colour === colour && a.size === size && a.order === order && a.process === process2
+          );
+          if (sameGroup) {
+            const canFitQty2 = Math.floor(availMin / minutesPerUnit);
+            const addQty = Math.min(remaining, canFitQty2);
+            if (addQty >= MIN_BATCH_SIZE) {
+              cascadedModified.push({ key: sameGroup.key, oldQty: sameGroup.quantity, oldMinutes: sameGroup.allocated_minutes });
+              sameGroup.quantity += addQty;
+              sameGroup.allocated_minutes += addQty * minutesPerUnit;
+              remaining -= addQty;
+            }
+            currentDate = getNextDate(currentDate);
+            continue;
+          }
+          if (cellAllocs.length === 0) {
+            const canFitQty2 = Math.floor(effectiveCap / minutesPerUnit);
+            const allocQty2 = Math.min(remaining, canFitQty2);
+            if (allocQty2 >= MIN_BATCH_SIZE) {
+              const shift = getShiftForDate(currentDate);
+              const key = `${machineId}-${currentDate}-reflow-${Date.now()}-${addedKeys.length}`;
+              allocations.value.push({
+                key,
+                machine_id: machineId,
+                operation_date: currentDate,
+                shift: (shift == null ? void 0 : shift.name) || "",
+                order,
+                item,
+                process: process2,
+                colour,
+                size,
+                quantity: allocQty2,
+                allocated_minutes: allocQty2 * minutesPerUnit
+              });
+              addedKeys.push(key);
+              remaining -= allocQty2;
+            }
+            currentDate = getNextDate(currentDate);
+            continue;
+          }
+          const occupant = cellAllocs[0];
+          const occMinPerUnit = occupant.quantity > 0 ? occupant.allocated_minutes / occupant.quantity : 0;
+          cascadedRemoved.push(__spreadValues({}, occupant));
+          const occQty = occupant.quantity;
+          const idx = allocations.value.findIndex((a) => a.key === occupant.key);
+          if (idx > -1)
+            allocations.value.splice(idx, 1);
+          const cascadeResult = spillForward(
+            machineId,
+            currentDate,
+            occQty,
+            occMinPerUnit,
+            occupant.item,
+            occupant.colour,
+            occupant.size,
+            occupant.order,
+            occupant.process,
+            depth + 1
+          );
+          addedKeys.push(...cascadeResult.addedKeys);
+          cascadedRemoved.push(...cascadeResult.cascadedRemoved);
+          cascadedModified.push(...cascadeResult.cascadedModified);
+          const canFitQty = Math.floor(effectiveCap / minutesPerUnit);
+          const allocQty = Math.min(remaining, canFitQty);
+          if (allocQty >= MIN_BATCH_SIZE) {
+            const shift = getShiftForDate(currentDate);
+            const key = `${machineId}-${currentDate}-reflow-${Date.now()}-${addedKeys.length}`;
+            allocations.value.push({
+              key,
+              machine_id: machineId,
+              operation_date: currentDate,
+              shift: (shift == null ? void 0 : shift.name) || "",
+              order,
+              item,
+              process: process2,
+              colour,
+              size,
+              quantity: allocQty,
+              allocated_minutes: allocQty * minutesPerUnit
+            });
+            addedKeys.push(key);
+            remaining -= allocQty;
+          }
+          if (cascadeResult.remaining > 0) {
+            remaining += cascadeResult.remaining;
+          }
+          currentDate = getNextDate(currentDate);
+        }
+        return { addedKeys, cascadedRemoved, cascadedModified, remaining };
+      }
+      function reflowForOvertime(machineId, dateStr) {
+        const addedKeys = [];
+        const removedKeys = [];
+        const modified = [];
+        const effectiveCap = getEffectiveMinutes(dateStr, machineId);
+        const usedMin = getUsedMinutes(machineId, dateStr);
+        const freeMin = effectiveCap - usedMin;
+        if (freeMin <= 0) {
+          return { addedKeys, removedKeys, modified };
+        }
+        const cellAllocs = getAllocations(machineId, dateStr);
+        if (cellAllocs.length === 0) {
+          return { addedKeys, removedKeys, modified };
+        }
+        const refAlloc = cellAllocs[0];
+        const groupItem = refAlloc.item;
+        const groupColour = refAlloc.colour;
+        const groupSize = refAlloc.size;
+        const groupOrder = refAlloc.order;
+        const groupProcess = refAlloc.process;
+        const minutesPerUnit = refAlloc.quantity > 0 ? refAlloc.allocated_minutes / refAlloc.quantity : 0;
+        if (minutesPerUnit <= 0) {
+          return { addedKeys, removedKeys, modified };
+        }
+        let freeCapacity = freeMin;
+        let nextDate = getNextDate(dateStr);
+        while (freeCapacity > 0 && nextDate) {
+          const nextAllocs = getAllocations(machineId, nextDate);
+          const sameGroup = nextAllocs.find(
+            (a) => a.item === groupItem && a.colour === groupColour && a.size === groupSize && a.order === groupOrder && a.process === groupProcess
+          );
+          if (!sameGroup) {
+            nextDate = getNextDate(nextDate);
+            continue;
+          }
+          const canPullQty = Math.floor(freeCapacity / minutesPerUnit);
+          if (canPullQty < MIN_BATCH_SIZE)
+            break;
+          const pullQty = Math.min(canPullQty, sameGroup.quantity);
+          const pullMin = pullQty * minutesPerUnit;
+          modified.push({ key: refAlloc.key, oldQty: refAlloc.quantity, oldMinutes: refAlloc.allocated_minutes });
+          refAlloc.quantity += pullQty;
+          refAlloc.allocated_minutes += pullMin;
+          freeCapacity -= pullMin;
+          if (pullQty >= sameGroup.quantity) {
+            removedKeys.push(__spreadValues({}, sameGroup));
+            const idx = allocations.value.findIndex((a) => a.key === sameGroup.key);
+            if (idx > -1)
+              allocations.value.splice(idx, 1);
+            const compactResult = compactAfterPull(
+              machineId,
+              nextDate,
+              groupItem,
+              groupColour,
+              groupSize,
+              groupOrder,
+              groupProcess,
+              minutesPerUnit
+            );
+            addedKeys.push(...compactResult.addedKeys);
+            removedKeys.push(...compactResult.removedKeys);
+            modified.push(...compactResult.modified);
+          } else {
+            modified.push({ key: sameGroup.key, oldQty: sameGroup.quantity, oldMinutes: sameGroup.allocated_minutes });
+            sameGroup.quantity -= pullQty;
+            sameGroup.allocated_minutes -= pullMin;
+            const compactResult = compactAfterPull(
+              machineId,
+              nextDate,
+              groupItem,
+              groupColour,
+              groupSize,
+              groupOrder,
+              groupProcess,
+              minutesPerUnit
+            );
+            addedKeys.push(...compactResult.addedKeys);
+            removedKeys.push(...compactResult.removedKeys);
+            modified.push(...compactResult.modified);
+          }
+          nextDate = getNextDate(nextDate);
+        }
+        return { addedKeys, removedKeys, modified };
+      }
+      function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit) {
+        const addedKeys = [];
+        const removedKeys = [];
+        const modified = [];
+        const effectiveCap = getEffectiveMinutes(freedDateStr, machineId);
+        let freeMin = effectiveCap - getUsedMinutes(machineId, freedDateStr);
+        if (freeMin <= 0)
+          return { addedKeys, removedKeys, modified };
+        let nextDate = getNextDate(freedDateStr);
+        while (freeMin > 0 && nextDate) {
+          const nextAllocs = getAllocations(machineId, nextDate);
+          const sameGroup = nextAllocs.find(
+            (a) => a.item === groupItem && a.colour === groupColour && a.size === groupSize && a.order === groupOrder && a.process === groupProcess
+          );
+          if (!sameGroup) {
+            nextDate = getNextDate(nextDate);
+            continue;
+          }
+          const canPullQty = Math.floor(freeMin / minutesPerUnit);
+          if (canPullQty < MIN_BATCH_SIZE)
+            break;
+          const pullQty = Math.min(canPullQty, sameGroup.quantity);
+          const pullMin = pullQty * minutesPerUnit;
+          const freedAllocs = getAllocations(machineId, freedDateStr);
+          const existingOnFreed = freedAllocs.find(
+            (a) => a.item === groupItem && a.colour === groupColour && a.size === groupSize && a.order === groupOrder && a.process === groupProcess
+          );
+          if (existingOnFreed) {
+            modified.push({ key: existingOnFreed.key, oldQty: existingOnFreed.quantity, oldMinutes: existingOnFreed.allocated_minutes });
+            existingOnFreed.quantity += pullQty;
+            existingOnFreed.allocated_minutes += pullMin;
+          } else {
+            const shift = getShiftForDate(freedDateStr);
+            const key = `${machineId}-${freedDateStr}-compact-${Date.now()}-${addedKeys.length}`;
+            allocations.value.push({
+              key,
+              machine_id: machineId,
+              operation_date: freedDateStr,
+              shift: (shift == null ? void 0 : shift.name) || "",
+              order: groupOrder,
+              item: groupItem,
+              process: groupProcess,
+              colour: groupColour,
+              size: groupSize,
+              quantity: pullQty,
+              allocated_minutes: pullMin
+            });
+            addedKeys.push(key);
+            freeMin -= pullMin;
+            if (pullQty >= sameGroup.quantity) {
+              removedKeys.push(__spreadValues({}, sameGroup));
+              const idx = allocations.value.findIndex((a) => a.key === sameGroup.key);
+              if (idx > -1)
+                allocations.value.splice(idx, 1);
+            } else {
+              modified.push({ key: sameGroup.key, oldQty: sameGroup.quantity, oldMinutes: sameGroup.allocated_minutes });
+              sameGroup.quantity -= pullQty;
+              sameGroup.allocated_minutes -= pullMin;
+            }
+            nextDate = getNextDate(nextDate);
+            continue;
+          }
+          freeMin -= pullMin;
+          if (pullQty >= sameGroup.quantity) {
+            removedKeys.push(__spreadValues({}, sameGroup));
+            const idx = allocations.value.findIndex((a) => a.key === sameGroup.key);
+            if (idx > -1)
+              allocations.value.splice(idx, 1);
+          } else {
+            modified.push({ key: sameGroup.key, oldQty: sameGroup.quantity, oldMinutes: sameGroup.allocated_minutes });
+            sameGroup.quantity -= pullQty;
+            sameGroup.allocated_minutes -= pullMin;
+          }
+          nextDate = getNextDate(nextDate);
+        }
+        return { addedKeys, removedKeys, modified };
+      }
+      function shiftSubsequentAllocsLeft(machineId, afterDate, dayOffset) {
+        const modified = [];
+        const dates = dateRange.value;
+        const afterIdx = dates.indexOf(afterDate);
+        if (afterIdx < 0 || dayOffset <= 0)
+          return { modified };
+        const subsequent = allocations.value.filter(
+          (a) => a.machine_id === machineId && dates.indexOf(a.operation_date) > afterIdx
+        );
+        subsequent.sort((a, b) => dates.indexOf(a.operation_date) - dates.indexOf(b.operation_date));
+        for (const alloc of subsequent) {
+          const currentIdx = dates.indexOf(alloc.operation_date);
+          const targetIdx = currentIdx - dayOffset;
+          if (targetIdx < 0 || targetIdx <= afterIdx)
+            continue;
+          const oldDate = alloc.operation_date;
+          const oldShift = alloc.shift;
+          const newDate = dates[targetIdx];
+          const newShift = getShiftForDate(newDate);
+          modified.push({
+            key: alloc.key,
+            oldQty: alloc.quantity,
+            oldMinutes: alloc.allocated_minutes,
+            oldDate,
+            oldShift
+          });
+          alloc.operation_date = newDate;
+          alloc.shift = (newShift == null ? void 0 : newShift.name) || "";
+        }
+        const refitResult = refitShiftedAllocations(subsequent);
+        return { modified, addedKeys: refitResult.addedKeys, removedSnapshots: refitResult.removedSnapshots };
+      }
+      function refitShiftedAllocations(movedAllocs) {
+        const addedKeys = [];
+        const removedSnapshots = [];
+        const groups = /* @__PURE__ */ new Map();
+        for (const alloc of movedAllocs) {
+          const gk = `${alloc.machine_id}|${alloc.item}|${alloc.colour}|${alloc.size}|${alloc.order}|${alloc.process}`;
+          if (!groups.has(gk))
+            groups.set(gk, []);
+          groups.get(gk).push(alloc);
+        }
+        for (const [, groupAllocs] of groups) {
+          groupAllocs.sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+          const totalQty = groupAllocs.reduce((s, a) => s + a.quantity, 0);
+          const totalMin = groupAllocs.reduce((s, a) => s + a.allocated_minutes, 0);
+          const mpu = totalQty > 0 ? totalMin / totalQty : 0;
+          if (mpu <= 0)
+            continue;
+          let remaining = totalQty;
+          const toRemove = [];
+          let lastKeptDate = null;
+          for (const alloc of groupAllocs) {
+            if (remaining < MIN_BATCH_SIZE) {
+              toRemove.push(alloc);
+              continue;
+            }
+            const cap = getEffectiveMinutes(alloc.operation_date, alloc.machine_id);
+            const fittingQty = Math.floor(cap / mpu);
+            const allocQty = Math.min(remaining, Math.max(fittingQty, 0));
+            if (allocQty >= MIN_BATCH_SIZE) {
+              alloc.quantity = allocQty;
+              alloc.allocated_minutes = allocQty * mpu;
+              remaining -= allocQty;
+              lastKeptDate = alloc.operation_date;
+            } else {
+              toRemove.push(alloc);
+            }
+          }
+          for (const alloc of toRemove) {
+            removedSnapshots.push(__spreadValues({}, alloc));
+            const idx = allocations.value.findIndex((a) => a.key === alloc.key);
+            if (idx > -1)
+              allocations.value.splice(idx, 1);
+          }
+          if (remaining >= MIN_BATCH_SIZE) {
+            const startDate2 = lastKeptDate ? getNextDate(lastKeptDate) : groupAllocs[0].operation_date;
+            if (startDate2) {
+              const ref2 = groupAllocs[0];
+              const result = executeAutoSplit(
+                ref2.machine_id,
+                startDate2,
+                remaining,
+                mpu,
+                ref2.item,
+                ref2.colour,
+                ref2.size,
+                ref2.order,
+                ref2.process
+              );
+              addedKeys.push(...result.allocationKeys);
+            }
+          }
+        }
+        return { addedKeys, removedSnapshots };
       }
       function simulateAutoSplit(machineId, startDateStr, totalQty, minutesPerUnit) {
         const plan = [];
@@ -8567,7 +10538,11 @@ Expected function or array of functions, received type ${typeof value}.`
         let currentDate = startDateStr;
         let isFirstDay = true;
         while (remaining >= MIN_BATCH_SIZE && currentDate) {
-          const totalMin = getShiftMinutes(currentDate);
+          if (!isFirstDay && !validateMachineDaySlot(machineId, currentDate)) {
+            currentDate = getNextDate(currentDate);
+            continue;
+          }
+          const totalMin = getEffectiveMinutes(currentDate, machineId);
           let availMin;
           if (isFirstDay) {
             const usedMin = getUsedMinutes(machineId, currentDate);
@@ -8592,6 +10567,69 @@ Expected function or array of functions, received type ${typeof value}.`
         }
         return plan;
       }
+      function simulateAutoSplitForced(machineId, startDateStr, totalQty, minutesPerUnit) {
+        const plan = [];
+        let remaining = totalQty;
+        let currentDate = startDateStr;
+        while (remaining >= MIN_BATCH_SIZE && currentDate) {
+          const totalMin = getEffectiveMinutes(currentDate, machineId);
+          if (totalMin > 0) {
+            const fitQty = Math.floor(totalMin / minutesPerUnit);
+            const allocQty = Math.min(remaining, fitQty);
+            if (allocQty >= MIN_BATCH_SIZE) {
+              plan.push({
+                dateStr: currentDate,
+                allocQty,
+                allocMinutes: allocQty * minutesPerUnit
+              });
+              remaining -= allocQty;
+            }
+          }
+          currentDate = getNextDate(currentDate);
+        }
+        return plan;
+      }
+      function computeShiftPlanForOverlap(machineId, forcedPlan) {
+        const dates = dateRange.value;
+        const forcedDates = new Set(forcedPlan.map((p2) => p2.dateStr));
+        const overlapping = allocations.value.filter((a) => a.machine_id === machineId && forcedDates.has(a.operation_date)).sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+        if (overlapping.length === 0)
+          return { affected: [], hasOverlap: false };
+        const lastPlanDate = forcedPlan[forcedPlan.length - 1].dateStr;
+        const lastPlanIdx = dates.indexOf(lastPlanDate);
+        const occupiedDates = /* @__PURE__ */ new Set();
+        forcedDates.forEach((d) => occupiedDates.add(d));
+        allocations.value.forEach((a) => {
+          if (a.machine_id === machineId && !overlapping.some((o) => o.key === a.key)) {
+            occupiedDates.add(a.operation_date);
+          }
+        });
+        const affected = [];
+        overlapping.forEach((alloc) => {
+          let placed = false;
+          for (let i = lastPlanIdx + 1; i < dates.length; i++) {
+            const d = dates[i];
+            if (!occupiedDates.has(d) && !isPastDate(d)) {
+              affected.push({
+                allocation: alloc,
+                currentDate: alloc.operation_date,
+                newDate: d
+              });
+              occupiedDates.add(d);
+              placed = true;
+              break;
+            }
+          }
+          if (!placed) {
+            affected.push({
+              allocation: alloc,
+              currentDate: alloc.operation_date,
+              newDate: null
+            });
+          }
+        });
+        return { affected, hasOverlap: true };
+      }
       function computeShiftPlan(machineId, dropDateStr, workloadPlan, excludeKey = null) {
         const remaining = {};
         const dates = dateRange.value;
@@ -8600,7 +10638,7 @@ Expected function or array of functions, received type ${typeof value}.`
           return { affected: [] };
         for (let i = dropIdx + 1; i < dates.length; i++) {
           const d = dates[i];
-          remaining[d] = getShiftMinutes(d);
+          remaining[d] = getEffectiveMinutes(d, machineId);
         }
         workloadPlan.forEach((p2) => {
           if (p2.dateStr !== dropDateStr && remaining[p2.dateStr] !== void 0) {
@@ -8651,9 +10689,13 @@ Expected function or array of functions, received type ${typeof value}.`
         let allocationsMade = 0;
         const allocationKeys = [];
         while (remainingQty >= MIN_BATCH_SIZE && currentDate) {
+          if (!validateMachineDaySlot(machineId, currentDate)) {
+            currentDate = getNextDate(currentDate);
+            continue;
+          }
           const shift = getShiftForDate(currentDate);
           const usedMin = getUsedMinutes(machineId, currentDate);
-          const totalMin = getShiftMinutes(currentDate);
+          const totalMin = getEffectiveMinutes(currentDate, machineId);
           const availMin = totalMin - usedMin;
           if (availMin <= 0) {
             currentDate = getNextDate(currentDate);
@@ -8691,6 +10733,7 @@ Expected function or array of functions, received type ${typeof value}.`
         }
       }
       function undoLastAction() {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
         if (actionHistory.value.length === 0)
           return;
         const action = actionHistory.value.pop();
@@ -8703,24 +10746,28 @@ Expected function or array of functions, received type ${typeof value}.`
             });
             break;
           case "move":
-            const alloc = allocations.value.find((a) => a.key === action.data.key);
-            if (alloc) {
-              alloc.machine_id = action.data.oldMachineId;
-              alloc.operation_date = action.data.oldDate;
+            {
+              const alloc = allocations.value.find((a) => a.key === action.data.key);
+              if (alloc) {
+                alloc.machine_id = action.data.oldMachineId;
+                alloc.operation_date = action.data.oldDate;
+              }
             }
             break;
           case "delete":
             allocations.value.push(action.data.allocation);
             break;
           case "partial_move":
-            const pmSrc = allocations.value.find((a) => a.key === action.data.sourceKey);
-            if (pmSrc) {
-              pmSrc.quantity += action.data.movedQty;
-              pmSrc.allocated_minutes += action.data.movedMinutes;
+            {
+              const pmSrc = allocations.value.find((a) => a.key === action.data.sourceKey);
+              if (pmSrc) {
+                pmSrc.quantity += action.data.movedQty;
+                pmSrc.allocated_minutes += action.data.movedMinutes;
+              }
+              const pmIdx = allocations.value.findIndex((a) => a.key === action.data.newKey);
+              if (pmIdx > -1)
+                allocations.value.splice(pmIdx, 1);
             }
-            const pmIdx = allocations.value.findIndex((a) => a.key === action.data.newKey);
-            if (pmIdx > -1)
-              allocations.value.splice(pmIdx, 1);
             break;
           case "shift_and_add":
             action.data.addedKeys.forEach((key) => {
@@ -8728,11 +10775,25 @@ Expected function or array of functions, received type ${typeof value}.`
               if (idx > -1)
                 allocations.value.splice(idx, 1);
             });
-            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
+            if (action.data.refitAddedKeys) {
+              action.data.refitAddedKeys.forEach((key) => {
+                const idx = allocations.value.findIndex((a) => a.key === key);
+                if (idx > -1)
+                  allocations.value.splice(idx, 1);
+              });
+            }
+            if (action.data.refitRemovedSnapshots) {
+              action.data.refitRemovedSnapshots.forEach((snap) => allocations.value.push(snap));
+            }
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
               const a = allocations.value.find((al) => al.key === key);
               if (a) {
                 a.operation_date = oldDate;
                 a.shift = oldShift || "";
+                if (oldQuantity !== void 0)
+                  a.quantity = oldQuantity;
+                if (oldAllocatedMinutes !== void 0)
+                  a.allocated_minutes = oldAllocatedMinutes;
               }
             });
             break;
@@ -8742,11 +10803,25 @@ Expected function or array of functions, received type ${typeof value}.`
               if (idx > -1)
                 allocations.value.splice(idx, 1);
             });
-            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift }) => {
+            if (action.data.refitAddedKeys) {
+              action.data.refitAddedKeys.forEach((key) => {
+                const idx = allocations.value.findIndex((a) => a.key === key);
+                if (idx > -1)
+                  allocations.value.splice(idx, 1);
+              });
+            }
+            if (action.data.refitRemovedSnapshots) {
+              action.data.refitRemovedSnapshots.forEach((snap) => allocations.value.push(snap));
+            }
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
               const a = allocations.value.find((al) => al.key === key);
               if (a) {
                 a.operation_date = oldDate;
                 a.shift = oldShift || "";
+                if (oldQuantity !== void 0)
+                  a.quantity = oldQuantity;
+                if (oldAllocatedMinutes !== void 0)
+                  a.allocated_minutes = oldAllocatedMinutes;
               }
             });
             if (action.data.sourceRemoved) {
@@ -8761,14 +10836,205 @@ Expected function or array of functions, received type ${typeof value}.`
               }
             }
             break;
+          case "move_group":
+            if ((_a = action.data.overflowKeys) == null ? void 0 : _a.length) {
+              action.data.overflowKeys.forEach((key) => {
+                const idx = allocations.value.findIndex((a) => a.key === key);
+                if (idx > -1)
+                  allocations.value.splice(idx, 1);
+              });
+            }
+            if ((_b = action.data.removedSnapshots) == null ? void 0 : _b.length) {
+              action.data.removedSnapshots.forEach((snap) => allocations.value.push(snap));
+            }
+            action.data.allocations.forEach(({ key, oldMachineId, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
+              const a = allocations.value.find((al) => al.key === key);
+              if (a) {
+                a.machine_id = oldMachineId;
+                a.operation_date = oldDate;
+                a.shift = oldShift || "";
+                if (oldQuantity !== void 0)
+                  a.quantity = oldQuantity;
+                if (oldAllocatedMinutes !== void 0)
+                  a.allocated_minutes = oldAllocatedMinutes;
+              }
+            });
+            break;
+          case "shift_and_move_group":
+            if ((_c = action.data.pullOverflowKeys) == null ? void 0 : _c.length) {
+              action.data.pullOverflowKeys.forEach((key) => {
+                const idx = allocations.value.findIndex((a) => a.key === key);
+                if (idx > -1)
+                  allocations.value.splice(idx, 1);
+              });
+            }
+            if ((_d = action.data.pullRemovedSnapshots) == null ? void 0 : _d.length) {
+              action.data.pullRemovedSnapshots.forEach((snap) => allocations.value.push(snap));
+            }
+            if ((_e = action.data.pullAllocations) == null ? void 0 : _e.length) {
+              action.data.pullAllocations.forEach(({ key, oldMachineId, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
+                const a = allocations.value.find((al) => al.key === key);
+                if (a) {
+                  a.machine_id = oldMachineId;
+                  a.operation_date = oldDate;
+                  a.shift = oldShift || "";
+                  if (oldQuantity !== void 0)
+                    a.quantity = oldQuantity;
+                  if (oldAllocatedMinutes !== void 0)
+                    a.allocated_minutes = oldAllocatedMinutes;
+                }
+              });
+            }
+            if ((_f = action.data.overflowKeys) == null ? void 0 : _f.length) {
+              action.data.overflowKeys.forEach((key) => {
+                const idx = allocations.value.findIndex((a) => a.key === key);
+                if (idx > -1)
+                  allocations.value.splice(idx, 1);
+              });
+            }
+            if ((_g = action.data.removedSnapshots) == null ? void 0 : _g.length) {
+              action.data.removedSnapshots.forEach((snap) => allocations.value.push(snap));
+            }
+            if ((_h = action.data.pushOverflowKeys) == null ? void 0 : _h.length) {
+              action.data.pushOverflowKeys.forEach((key) => {
+                const idx = allocations.value.findIndex((a) => a.key === key);
+                if (idx > -1)
+                  allocations.value.splice(idx, 1);
+              });
+            }
+            if ((_i = action.data.pushRemovedSnapshots) == null ? void 0 : _i.length) {
+              action.data.pushRemovedSnapshots.forEach((snap) => allocations.value.push(snap));
+            }
+            if ((_j = action.data.pushAllocations) == null ? void 0 : _j.length) {
+              action.data.pushAllocations.forEach(({ key, oldMachineId, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
+                const a = allocations.value.find((al) => al.key === key);
+                if (a) {
+                  a.machine_id = oldMachineId;
+                  a.operation_date = oldDate;
+                  a.shift = oldShift || "";
+                  if (oldQuantity !== void 0)
+                    a.quantity = oldQuantity;
+                  if (oldAllocatedMinutes !== void 0)
+                    a.allocated_minutes = oldAllocatedMinutes;
+                }
+              });
+            }
+            if (action.data.refitAddedKeys) {
+              action.data.refitAddedKeys.forEach((key) => {
+                const idx = allocations.value.findIndex((a) => a.key === key);
+                if (idx > -1)
+                  allocations.value.splice(idx, 1);
+              });
+            }
+            if (action.data.refitRemovedSnapshots) {
+              action.data.refitRemovedSnapshots.forEach((snap) => allocations.value.push(snap));
+            }
+            if ((_k = action.data.shiftedAllocations) == null ? void 0 : _k.length) {
+              action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
+                const a = allocations.value.find((al) => al.key === key);
+                if (a) {
+                  a.operation_date = oldDate;
+                  a.shift = oldShift || "";
+                  if (oldQuantity !== void 0)
+                    a.quantity = oldQuantity;
+                  if (oldAllocatedMinutes !== void 0)
+                    a.allocated_minutes = oldAllocatedMinutes;
+                }
+              });
+            }
+            action.data.moveAllocations.forEach(({ key, oldMachineId, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
+              const a = allocations.value.find((al) => al.key === key);
+              if (a) {
+                a.machine_id = oldMachineId;
+                a.operation_date = oldDate;
+                a.shift = oldShift || "";
+                if (oldQuantity !== void 0)
+                  a.quantity = oldQuantity;
+                if (oldAllocatedMinutes !== void 0)
+                  a.allocated_minutes = oldAllocatedMinutes;
+              }
+            });
+            break;
+          case "delete_group":
+            action.data.allocations.forEach((a) => {
+              allocations.value.push(a);
+            });
+            break;
+          case "delete_group_and_backfill":
+            if (action.data.refitAddedKeys) {
+              action.data.refitAddedKeys.forEach((key) => {
+                const idx = allocations.value.findIndex((a) => a.key === key);
+                if (idx > -1)
+                  allocations.value.splice(idx, 1);
+              });
+            }
+            if (action.data.refitRemovedSnapshots) {
+              action.data.refitRemovedSnapshots.forEach((snap) => allocations.value.push(snap));
+            }
+            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
+              const a = allocations.value.find((al) => al.key === key);
+              if (a) {
+                a.operation_date = oldDate;
+                a.shift = oldShift || "";
+                if (oldQuantity !== void 0)
+                  a.quantity = oldQuantity;
+                if (oldAllocatedMinutes !== void 0)
+                  a.allocated_minutes = oldAllocatedMinutes;
+              }
+            });
+            action.data.allocations.forEach((a) => {
+              allocations.value.push(a);
+            });
+            break;
+          case "edit_group":
+            action.data.allocations.forEach(({ key, oldQty, oldMinutes }) => {
+              const a = allocations.value.find((al) => al.key === key);
+              if (a) {
+                a.quantity = oldQty;
+                a.allocated_minutes = oldMinutes;
+              }
+            });
+            break;
+          case "split_group":
+            splitMarkers.value.delete(action.data.markerKey);
+            break;
+          case "alteration_reflow":
+            action.data.addedKeys.forEach((key) => {
+              const idx = allocations.value.findIndex((a) => a.key === key);
+              if (idx > -1)
+                allocations.value.splice(idx, 1);
+            });
+            action.data.removedKeys.forEach((snapshot) => {
+              allocations.value.push(snapshot);
+            });
+            action.data.modified.forEach(({ key, oldQty, oldMinutes, oldDate, oldShift }) => {
+              const a = allocations.value.find((al) => al.key === key);
+              if (a) {
+                if (oldQty !== void 0)
+                  a.quantity = oldQty;
+                if (oldMinutes !== void 0)
+                  a.allocated_minutes = oldMinutes;
+                if (oldDate !== void 0)
+                  a.operation_date = oldDate;
+                if (oldShift !== void 0)
+                  a.shift = oldShift;
+              }
+            });
+            break;
         }
         frappe.show_alert({ message: __("Action undone"), indicator: "blue" });
       }
+      function onCellDragOver(event, machineId) {
+        if (isMachineCompatible(machineId)) {
+          event.preventDefault();
+        }
+      }
       function onDragStart(event, item) {
         event.dataTransfer.setData("application/json", JSON.stringify(item));
+        draggingItem.value = item;
       }
-      function onAllocationDragStart(event, alloc) {
-        event.dataTransfer.setData("application/allocation", JSON.stringify(alloc));
+      function onDragEnd() {
+        draggingItem.value = null;
       }
       function getNextDate(currentDateStr) {
         const dates = dateRange.value;
@@ -8778,8 +11044,27 @@ Expected function or array of functions, received type ${typeof value}.`
         }
         return null;
       }
+      function onBarDrop(event, machineId) {
+        const barLayer = event.target.closest(".gantt-bar-layer");
+        if (!barLayer)
+          return;
+        const layerRect = barLayer.getBoundingClientRect();
+        const xInLayer = event.clientX - layerRect.left;
+        const dateIdx = Math.floor(xInLayer / COL_WIDTH);
+        const dates = dateRange.value;
+        if (dateIdx < 0 || dateIdx >= dates.length)
+          return;
+        const dateStr = dates[dateIdx];
+        onDrop(event, machineId, dateStr);
+      }
       function onDrop(event, machineId, dateStr) {
         var _a;
+        const groupData = event.dataTransfer.getData("application/gantt-group");
+        if (groupData) {
+          const group = JSON.parse(groupData);
+          moveGroup(group, machineId, dateStr);
+          return;
+        }
         const allocationData = event.dataTransfer.getData("application/allocation");
         if (allocationData) {
           const alloc = JSON.parse(allocationData);
@@ -8805,18 +11090,17 @@ Expected function or array of functions, received type ${typeof value}.`
         if (!isValidForProcess(item)) {
           errors.push("Process not defined for this item");
         }
+        const draggedItemGG = itemMachineGG.value.get(item.item);
+        if (draggedItemGG) {
+          const targetMachine = machines.value.find((m) => m.machine_id === machineId);
+          if (targetMachine && targetMachine.machine_gg && targetMachine.machine_gg !== draggedItemGG) {
+            errors.push(`Machine GG mismatch: item requires "${draggedItemGG}" but machine has "${targetMachine.machine_gg}"`);
+          }
+        }
         if (errors.length > 0) {
           validationErrors.value = errors;
           frappe.show_alert({
             message: __(errors[0]),
-            indicator: "red"
-          });
-          return;
-        }
-        const lockedView = getLockedViewType(item.item);
-        if (lockedView && lockedView !== viewType.value) {
-          frappe.show_alert({
-            message: __(`This item is already allocated in ${VIEW_TYPE_LABELS[lockedView]} view. Delete existing allocations first to use a different view type.`),
             indicator: "red"
           });
           return;
@@ -8851,14 +11135,14 @@ Expected function or array of functions, received type ${typeof value}.`
           });
           return;
         }
-        if (isWeekend(dateStr)) {
+        if (isOffDay(dateStr)) {
           frappe.show_alert({
-            message: __("Warning: Allocating to weekend"),
+            message: __("Warning: Allocating to a weekly off day"),
             indicator: "orange"
           });
         }
         const usedMinutes = getUsedMinutes(machineId, dateStr);
-        const totalMinutes = getShiftMinutes(dateStr);
+        const totalMinutes = getEffectiveMinutes(dateStr, machineId);
         const availableMinutes = totalMinutes - usedMinutes;
         const availableCapacityQty = minutesPerUnit > 0 ? Math.floor(availableMinutes / minutesPerUnit) : 0;
         pendingDrop.value = {
@@ -8889,9 +11173,15 @@ Expected function or array of functions, received type ${typeof value}.`
           frappe.show_alert({ message: __("Date outside calendar range"), indicator: "red" });
           return;
         }
+        if (!checkMachineGGCompat(actualAlloc.item, actualAlloc.machine_id, newMachineId))
+          return;
+        if (!validateMachineDaySlot(newMachineId, newDateStr, [actualAlloc.key])) {
+          frappe.show_alert({ message: __("This machine already has an allocation on this date"), indicator: "red" });
+          return;
+        }
         const isSameCell = actualAlloc.machine_id === newMachineId && actualAlloc.operation_date === newDateStr;
         const usedMinutes = getUsedMinutes(newMachineId, newDateStr) - (isSameCell ? actualAlloc.allocated_minutes : 0);
-        const totalMinutes = getShiftMinutes(newDateStr);
+        const totalMinutes = getEffectiveMinutes(newDateStr, newMachineId);
         const availableMinutes = totalMinutes - usedMinutes;
         const minutesPerUnit = actualAlloc.quantity > 0 ? actualAlloc.allocated_minutes / actualAlloc.quantity : 0;
         const availableCapacityQty = minutesPerUnit > 0 ? Math.floor(availableMinutes / minutesPerUnit) : 0;
@@ -8937,8 +11227,31 @@ Expected function or array of functions, received type ${typeof value}.`
           return;
         }
         if (pd.type === "workload") {
+          const forcedPlan = simulateAutoSplitForced(pd.machineId, pd.dateStr, qty, pd.minutesPerUnit);
+          if (forcedPlan.length > 0) {
+            const { affected: overlapAffected, hasOverlap } = computeShiftPlanForOverlap(pd.machineId, forcedPlan);
+            if (hasOverlap && overlapAffected.length > 0) {
+              const outOfBounds = overlapAffected.some((a) => a.newDate === null);
+              if (outOfBounds) {
+                frappe.show_alert({
+                  message: __("Cannot shift: some allocations would be pushed beyond the calendar date range. Extend end date first."),
+                  indicator: "red"
+                });
+                return;
+              }
+              shiftModalData.value = {
+                type: "workload",
+                affectedAllocations: overlapAffected,
+                newWorkloadPlan: forcedPlan,
+                pendingDropData: __spreadValues({}, pd),
+                dropQty: qty
+              };
+              showShiftModal.value = true;
+              return;
+            }
+          }
           const dropDayUsed = getUsedMinutes(pd.machineId, pd.dateStr);
-          const dropDayTotal = getShiftMinutes(pd.dateStr);
+          const dropDayTotal = getEffectiveMinutes(pd.dateStr, pd.machineId);
           const dropDayAvail = dropDayTotal - dropDayUsed;
           const dropDayFitQty = pd.minutesPerUnit > 0 ? Math.floor(dropDayAvail / pd.minutesPerUnit) : 0;
           if (qty > dropDayFitQty) {
@@ -9089,9 +11402,77 @@ Expected function or array of functions, received type ${typeof value}.`
         shiftModalData.value = null;
       }
       function confirmShift() {
+        var _a, _b;
         if (!shiftModalData.value)
           return;
         const sd = shiftModalData.value;
+        if (sd.type === "move_group") {
+          const pushKeys = /* @__PURE__ */ new Set();
+          if ((_a = sd.forwardPushGroups) == null ? void 0 : _a.length) {
+            for (const pg of sd.forwardPushGroups) {
+              pg.alloc_keys.forEach((k) => pushKeys.add(k));
+            }
+          }
+          const shiftedAllocations = [];
+          const shiftedAllocRefs = [];
+          sd.affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
+            if (pushKeys.has(allocation.key))
+              return;
+            shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
+            allocation.operation_date = newDate;
+            const newShift = getShiftForDate(newDate);
+            allocation.shift = (newShift == null ? void 0 : newShift.name) || "";
+            shiftedAllocRefs.push(allocation);
+          });
+          const refitResult = refitShiftedAllocations(shiftedAllocRefs);
+          const pushMoveResults = [];
+          if ((_b = sd.forwardPushGroups) == null ? void 0 : _b.length) {
+            const dates = dateRange.value;
+            const machineId = sd.targetMachineId;
+            for (const pg of sd.forwardPushGroups) {
+              const pushAllocs = pg.alloc_keys.map((k) => allocations.value.find((a) => a.key === k)).filter(Boolean).sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+              if (pushAllocs.length === 0)
+                continue;
+              let workDate = pg.targetStartDate;
+              if (!dates.includes(workDate) || getEffectiveMinutes(workDate, machineId) <= 0) {
+                workDate = getNextWorkingDay(addDaysToDate(pg.targetStartDate, -1), machineId);
+              }
+              if (!workDate)
+                continue;
+              const pgTargetDays = [];
+              for (const alloc of pushAllocs) {
+                if (!workDate || !dates.includes(workDate))
+                  break;
+                pgTargetDays.push({ alloc, newDate: workDate });
+                workDate = getNextWorkingDay(workDate, machineId);
+              }
+              if (pgTargetDays.length === 0)
+                continue;
+              const pgData = {
+                alloc_keys: pg.alloc_keys,
+                machine_id: machineId,
+                start_date: pushAllocs[0].operation_date,
+                end_date: pushAllocs[pushAllocs.length - 1].operation_date
+              };
+              pushMoveResults.push(executeMoveGroup(pgData, pgTargetDays, machineId));
+            }
+          }
+          const moveResult = executeMoveGroup(sd.groupData, sd.targetDays, sd.targetMachineId);
+          saveAction("shift_and_move_group", {
+            moveAllocations: moveResult.allocations,
+            overflowKeys: moveResult.overflowKeys,
+            removedSnapshots: moveResult.removedSnapshots,
+            shiftedAllocations,
+            refitAddedKeys: refitResult.addedKeys,
+            refitRemovedSnapshots: refitResult.removedSnapshots,
+            pushAllocations: pushMoveResults.flatMap((r) => r.allocations),
+            pushOverflowKeys: pushMoveResults.flatMap((r) => r.overflowKeys),
+            pushRemovedSnapshots: pushMoveResults.flatMap((r) => r.removedSnapshots)
+          });
+          frappe.show_alert({ message: __(`Shifted ${sd.affectedAllocations.length} allocation(s) and moved group successfully`), indicator: "green" });
+          closeShiftModal();
+          return;
+        }
         if (sd.type === "move") {
           const sourceAlloc = allocations.value.find((a) => a.key === sd.sourceKey);
           if (!sourceAlloc) {
@@ -9175,12 +11556,15 @@ Expected function or array of functions, received type ${typeof value}.`
       function executeShiftAndAllocate(shiftData, sourceResult) {
         const { affectedAllocations, pendingDropData: pd, dropQty, type } = shiftData;
         const shiftedAllocations = [];
+        const shiftedAllocRefs = [];
         affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
-          shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift });
+          shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
           allocation.operation_date = newDate;
           const newShift = getShiftForDate(newDate);
           allocation.shift = (newShift == null ? void 0 : newShift.name) || "";
+          shiftedAllocRefs.push(allocation);
         });
+        const refitResult = refitShiftedAllocations(shiftedAllocRefs);
         const orderForSplit = type === "move" ? pd.order : void 0;
         const processForSplit = type === "move" ? pd.process : void 0;
         const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
@@ -9199,6 +11583,8 @@ Expected function or array of functions, received type ${typeof value}.`
           saveAction("shift_and_move", {
             addedKeys: allocationKeys,
             shiftedAllocations,
+            refitAddedKeys: refitResult.addedKeys,
+            refitRemovedSnapshots: refitResult.removedSnapshots,
             sourceRemoved: sourceResult.sourceRemoved,
             sourceKey: shiftData.sourceKey,
             sourceSnapshot: sourceResult.sourceSnapshot || null,
@@ -9208,7 +11594,9 @@ Expected function or array of functions, received type ${typeof value}.`
         } else if (allocationsMade > 0 || shiftedAllocations.length > 0) {
           saveAction("shift_and_add", {
             addedKeys: allocationKeys,
-            shiftedAllocations
+            shiftedAllocations,
+            refitAddedKeys: refitResult.addedKeys,
+            refitRemovedSnapshots: refitResult.removedSnapshots
           });
         }
         if (allocationsMade > 0) {
@@ -9220,160 +11608,8 @@ Expected function or array of functions, received type ${typeof value}.`
           frappe.show_alert({ message: __("Shift completed but no new allocations could be made"), indicator: "orange" });
         }
       }
-      async function removeAllocation(alloc) {
-        var _a;
-        const idx = allocations.value.findIndex((a) => a.key === alloc.key);
-        if (idx > -1) {
-          if (alloc.name) {
-            try {
-              const response = await frappe.call({
-                method: "albion.albion.page.capacity_planning.capacity_planning.delete_allocation",
-                args: { allocation_name: alloc.name }
-              });
-              if (response.message && response.message.success) {
-                saveAction("delete", { allocation: __spreadValues({}, alloc) });
-                allocations.value.splice(idx, 1);
-                frappe.show_alert({ message: __("Allocation deleted"), indicator: "green" });
-              } else {
-                frappe.show_alert({ message: __("Failed to delete: ") + (((_a = response.message) == null ? void 0 : _a.message) || "Unknown error"), indicator: "red" });
-              }
-            } catch (e) {
-              console.error("Error deleting allocation:", e);
-              frappe.show_alert({ message: __("Error deleting allocation"), indicator: "red" });
-            }
-          } else {
-            saveAction("delete", { allocation: __spreadValues({}, alloc) });
-            allocations.value.splice(idx, 1);
-            frappe.show_alert({ message: __("Allocation removed"), indicator: "blue" });
-          }
-        }
-      }
-      function selectAllocation(alloc, event) {
-        selectedAllocation.value = alloc;
-        if (event) {
-          contextMenu.value = {
-            show: true,
-            x: event.clientX,
-            y: event.clientY
-          };
-        }
-      }
       function closeContextMenu() {
         contextMenu.value.show = false;
-      }
-      function openSplitModal() {
-        if (!selectedAllocation.value)
-          return;
-        splitQuantity.value = Math.floor(selectedAllocation.value.quantity / 2);
-        showSplitModal.value = true;
-        closeContextMenu();
-      }
-      function closeSplitModal() {
-        showSplitModal.value = false;
-        selectedAllocation.value = null;
-      }
-      function confirmSplit() {
-        if (!selectedAllocation.value)
-          return;
-        const originalQty = selectedAllocation.value.quantity;
-        const splitQty = splitQuantity.value;
-        if (splitQty < MIN_BATCH_SIZE || splitQty >= originalQty) {
-          frappe.show_alert({ message: __("Invalid split quantity"), indicator: "red" });
-          return;
-        }
-        const remainingQty = originalQty - splitQty;
-        const minutesPerUnit = selectedAllocation.value.allocated_minutes / originalQty;
-        selectedAllocation.value.quantity = remainingQty;
-        selectedAllocation.value.allocated_minutes = remainingQty * minutesPerUnit;
-        allocations.value.push({
-          key: `${selectedAllocation.value.machine_id}-${selectedAllocation.value.operation_date}-${Date.now()}-split`,
-          machine_id: selectedAllocation.value.machine_id,
-          operation_date: selectedAllocation.value.operation_date,
-          shift: selectedAllocation.value.shift,
-          order: selectedAllocation.value.order,
-          item: selectedAllocation.value.item,
-          process: selectedAllocation.value.process,
-          colour: selectedAllocation.value.colour,
-          size: selectedAllocation.value.size,
-          quantity: splitQty,
-          allocated_minutes: splitQty * minutesPerUnit
-        });
-        frappe.show_alert({ message: __("Quantity split successfully"), indicator: "green" });
-        closeSplitModal();
-      }
-      function openEditModal() {
-        if (!selectedAllocation.value)
-          return;
-        editQuantity.value = selectedAllocation.value.quantity;
-        showEditModal.value = true;
-        closeContextMenu();
-      }
-      function closeEditModal() {
-        showEditModal.value = false;
-        selectedAllocation.value = null;
-      }
-      function confirmEdit() {
-        if (!selectedAllocation.value)
-          return;
-        const newQty = editQuantity.value;
-        const originalQty = selectedAllocation.value.quantity;
-        if (newQty < MIN_BATCH_SIZE) {
-          frappe.show_alert({ message: __(`Minimum quantity is ${MIN_BATCH_SIZE}`), indicator: "red" });
-          return;
-        }
-        const minutesPerUnit = selectedAllocation.value.allocated_minutes / originalQty;
-        const newMinutes = newQty * minutesPerUnit;
-        const machineId = selectedAllocation.value.machine_id;
-        const dateStr = selectedAllocation.value.operation_date;
-        const currentUsed = getUsedMinutes(machineId, dateStr) - selectedAllocation.value.allocated_minutes;
-        const totalMinutes = getShiftMinutes(dateStr);
-        if (currentUsed + newMinutes > totalMinutes) {
-          frappe.show_alert({ message: __("New quantity exceeds capacity"), indicator: "red" });
-          return;
-        }
-        const item = workloadItems.value.find(
-          (i) => i.item === selectedAllocation.value.item && i.colour === selectedAllocation.value.colour && i.size === selectedAllocation.value.size
-        );
-        if (item) {
-          const currentAllocated = getAllocatedQuantity(item);
-          const adjustment = newQty - originalQty;
-          if (currentAllocated + adjustment > item.quantity) {
-            frappe.show_alert({ message: __("Cannot exceed order quantity"), indicator: "red" });
-            return;
-          }
-        }
-        selectedAllocation.value.quantity = newQty;
-        selectedAllocation.value.allocated_minutes = newMinutes;
-        frappe.show_alert({ message: __("Quantity updated"), indicator: "green" });
-        closeEditModal();
-      }
-      function mergeAllocations() {
-        if (!selectedAllocation.value)
-          return;
-        const alloc = selectedAllocation.value;
-        const mergeTargets = allocations.value.filter(
-          (a) => a.key !== alloc.key && a.machine_id === alloc.machine_id && a.item === alloc.item && a.process === alloc.process && a.colour === alloc.colour && a.size === alloc.size
-        );
-        if (mergeTargets.length === 0) {
-          frappe.show_alert({ message: __("No allocations to merge"), indicator: "orange" });
-          closeContextMenu();
-          return;
-        }
-        mergeTargets.forEach((target) => {
-          alloc.quantity += target.quantity;
-          alloc.allocated_minutes += target.allocated_minutes;
-          const idx = allocations.value.findIndex((a) => a.key === target.key);
-          if (idx > -1)
-            allocations.value.splice(idx, 1);
-        });
-        frappe.show_alert({ message: __("Allocations merged"), indicator: "green" });
-        closeContextMenu();
-      }
-      function deleteSelectedAllocation() {
-        if (selectedAllocation.value) {
-          removeAllocation(selectedAllocation.value);
-        }
-        closeContextMenu();
       }
       async function onOrderChange() {
         if (!selectedOrder.value) {
@@ -9396,21 +11632,21 @@ Expected function or array of functions, received type ${typeof value}.`
         actionHistory.value = [];
       }
       async function refreshCalendar() {
-        await loadShiftCalendars();
+        await loadShiftAllocations();
         await loadAllAllocations();
       }
-      async function loadShiftCalendars() {
+      async function loadShiftAllocations() {
         try {
           const response = await frappe.call({
-            method: "albion.albion.page.capacity_planning.capacity_planning.get_shift_calendars",
+            method: "albion.albion.page.capacity_planning.capacity_planning.get_shift_allocations",
             args: {
               start_date: startDate.value,
               end_date: endDate.value
             }
           });
           if (response.message) {
-            shiftCalendars.value = response.message.calendars;
-            defaultShift.value = response.message.default_shift;
+            shiftAllocations.value = response.message.calendars;
+            defaultAllocation.value = response.message.default_calendar;
           }
         } catch (e) {
           console.error("Error loading shifts:", e);
@@ -9418,7 +11654,6 @@ Expected function or array of functions, received type ${typeof value}.`
       }
       async function loadAllAllocations() {
         try {
-          console.log("Loading all allocations for:", startDate.value, "to", endDate.value);
           const response = await frappe.call({
             method: "albion.albion.page.capacity_planning.capacity_planning.get_all_allocations",
             args: {
@@ -9426,17 +11661,15 @@ Expected function or array of functions, received type ${typeof value}.`
               end_date: endDate.value
             }
           });
-          console.log("All allocations response:", response.message);
           if (response.message && response.message.length > 0) {
             allocations.value = response.message.map((a, idx) => __spreadValues({
               key: `existing-${idx}`
             }, a));
-            console.log("Loaded allocations:", allocations.value);
           } else {
             allocations.value = [];
-            console.log("No allocations found for date range");
           }
           actionHistory.value = [];
+          splitMarkers.value = /* @__PURE__ */ new Set();
         } catch (e) {
           console.error("Error loading allocations:", e);
           frappe.show_alert({ message: __("Error loading allocations"), indicator: "red" });
@@ -9470,7 +11703,11 @@ Expected function or array of functions, received type ${typeof value}.`
         try {
           const response = await frappe.call({
             method: "albion.albion.page.capacity_planning.capacity_planning.save_allocations",
-            args: { allocations: allocations.value }
+            args: {
+              allocations: allocations.value,
+              start_date: startDate.value,
+              end_date: endDate.value
+            }
           });
           if (response.message) {
             frappe.show_alert({ message: __("Allocations saved successfully"), indicator: "green" });
@@ -9483,24 +11720,328 @@ Expected function or array of functions, received type ${typeof value}.`
           frappe.show_alert({ message: __("Failed to save allocations"), indicator: "red" });
         }
       }
-      onMounted(() => {
-        loadShiftCalendars();
+      function openAlterationDialog(dateStr, machineId = null) {
+        alterationForm.value = {
+          date: dateStr,
+          machine: machineId,
+          alteration_type: "Add",
+          minutes: 60,
+          reason: ""
+        };
+        showAlterationModal.value = true;
+      }
+      function closeAlterationModal() {
+        showAlterationModal.value = false;
+        alterationSaving.value = false;
+      }
+      async function confirmAlteration() {
+        const form = alterationForm.value;
+        if (!form.minutes || form.minutes < 1) {
+          frappe.show_alert({ message: __("Minutes must be at least 1"), indicator: "red" });
+          return;
+        }
+        alterationSaving.value = true;
+        try {
+          await frappe.call({
+            method: "albion.albion.page.capacity_planning.capacity_planning.add_shift_alteration",
+            args: {
+              date: form.date,
+              alteration_type: form.alteration_type,
+              minutes: form.minutes,
+              machine: form.machine || null,
+              reason: form.reason || null
+            }
+          });
+          frappe.show_alert({ message: __("Shift alteration added"), indicator: "green" });
+          closeAlterationModal();
+          await loadShiftAllocations();
+          autoReflowAfterAlteration(form.date, form.machine || null, form.alteration_type, form.minutes);
+        } catch (e) {
+          console.error("Error adding alteration:", e);
+          frappe.show_alert({ message: __("Error adding alteration"), indicator: "red" });
+          alterationSaving.value = false;
+        }
+      }
+      function openActionChoice(dateStr, machineId = null) {
+        actionChoiceContext.value = { date: dateStr, machine: machineId };
+        showActionChoice.value = true;
+      }
+      function closeActionChoice() {
+        showActionChoice.value = false;
+      }
+      function chooseUpdateTime() {
+        const ctx = actionChoiceContext.value;
+        closeActionChoice();
+        openAlterationDialog(ctx.date, ctx.machine);
+      }
+      function chooseUpdateShift() {
+        const ctx = actionChoiceContext.value;
+        closeActionChoice();
+        openShiftUpdateModal(ctx.date);
+      }
+      function openShiftUpdateModal(dateStr) {
+        const cal = getCalendarForDate(dateStr);
+        const currentShifts = cal && cal.shifts ? cal.shifts.map((s) => s.shift) : [];
+        shiftUpdateForm.value = { date: dateStr, shifts: [...currentShifts] };
+        showShiftUpdateModal.value = true;
+      }
+      function closeShiftUpdateModal() {
+        showShiftUpdateModal.value = false;
+        shiftUpdateSaving.value = false;
+      }
+      async function confirmShiftUpdate() {
+        const form = shiftUpdateForm.value;
+        if (!form.shifts || form.shifts.length === 0) {
+          frappe.show_alert({ message: __("Please select at least one shift"), indicator: "red" });
+          return;
+        }
+        shiftUpdateSaving.value = true;
+        try {
+          const response = await frappe.call({
+            method: "albion.albion.page.capacity_planning.capacity_planning.update_date_shift",
+            args: {
+              date: form.date,
+              shifts: JSON.stringify(form.shifts)
+            }
+          });
+          frappe.show_alert({ message: __("Shift updated"), indicator: "green" });
+          closeShiftUpdateModal();
+          await loadShiftAllocations();
+          const result = response.message;
+          if (result) {
+            const delta = (result.new_minutes || 0) - (result.old_minutes || 0);
+            if (delta > 0) {
+              autoReflowAfterAlteration(form.date, null, "Add", delta);
+            } else if (delta < 0) {
+              autoReflowAfterAlteration(form.date, null, "Reduce", Math.abs(delta));
+            }
+          }
+        } catch (e) {
+          console.error("Error updating shift:", e);
+          frappe.show_alert({ message: __("Error updating shift"), indicator: "red" });
+          shiftUpdateSaving.value = false;
+        }
+      }
+      async function loadAllShifts() {
+        try {
+          const response = await frappe.call({
+            method: "albion.albion.page.capacity_planning.capacity_planning.get_all_shifts"
+          });
+          if (response.message) {
+            allShifts.value = response.message;
+          }
+        } catch (e) {
+          console.error("Error loading shifts:", e);
+        }
+      }
+      function initFrappeControls() {
+        customerControl = frappe.ui.form.make_control({
+          df: {
+            fieldtype: "Link",
+            fieldname: "customer",
+            label: "Customer",
+            options: "Customer",
+            placeholder: "Select Customer",
+            change() {
+              selectedCustomer.value = customerControl.get_value() || "";
+              if (orderControl) {
+                orderControl.df.get_query = () => {
+                  const filters = { docstatus: 1 };
+                  if (selectedCustomer.value)
+                    filters.customer = selectedCustomer.value;
+                  return { filters };
+                };
+                orderControl.set_value("");
+                selectedOrder.value = "";
+                orderData.value = null;
+              }
+            }
+          },
+          parent: customerFieldRef.value,
+          render_input: true,
+          only_input: true
+        });
+        customerControl.refresh();
+        orderControl = frappe.ui.form.make_control({
+          df: {
+            fieldtype: "Link",
+            fieldname: "order",
+            label: "Order",
+            options: "Order",
+            placeholder: "Select Order",
+            get_query() {
+              const filters = { docstatus: 1 };
+              if (selectedCustomer.value)
+                filters.customer = selectedCustomer.value;
+              return { filters };
+            },
+            change() {
+              selectedOrder.value = orderControl.get_value() || "";
+              onOrderChange();
+            }
+          },
+          parent: orderFieldRef.value,
+          render_input: true,
+          only_input: true
+        });
+        orderControl.refresh();
+        processControl = frappe.ui.form.make_control({
+          df: {
+            fieldtype: "Select",
+            fieldname: "process",
+            label: "Process",
+            options: [{ value: "", label: "Select Process" }],
+            change() {
+              selectedProcess.value = processControl.get_value() || "";
+              onProcessChange();
+            }
+          },
+          parent: processFieldRef.value,
+          render_input: true,
+          only_input: true
+        });
+        processControl.refresh();
+        viewTypeControl = frappe.ui.form.make_control({
+          df: {
+            fieldtype: "Select",
+            fieldname: "view_type",
+            label: "View Type",
+            options: [
+              { value: "item_wise", label: "Item Wise" },
+              { value: "colour_wise", label: "Colour Wise" },
+              { value: "size_wise", label: "Size Wise" }
+            ],
+            default: "item_wise",
+            change() {
+              viewType.value = viewTypeControl.get_value() || "item_wise";
+            }
+          },
+          parent: viewTypeFieldRef.value,
+          render_input: true,
+          only_input: true
+        });
+        viewTypeControl.set_value("item_wise");
+        viewTypeControl.refresh();
+        machineGGControl = frappe.ui.form.make_control({
+          df: {
+            fieldtype: "Link",
+            fieldname: "machine_gg",
+            label: "Machine GG",
+            options: "Machine GG",
+            placeholder: "Select Machine GG",
+            change() {
+              selectedMachineGG.value = machineGGControl.get_value() || "";
+            }
+          },
+          parent: machineGGFieldRef.value,
+          render_input: true,
+          only_input: true
+        });
+        machineGGControl.refresh();
+        startDateControl = frappe.ui.form.make_control({
+          df: {
+            fieldtype: "Date",
+            fieldname: "start_date",
+            label: "Start Date",
+            change() {
+              startDate.value = startDateControl.get_value() || "";
+            }
+          },
+          parent: startDateFieldRef.value,
+          render_input: true,
+          only_input: true
+        });
+        startDateControl.set_value(frappe.datetime.add_days(frappe.datetime.nowdate(), -7));
+        startDateControl.refresh();
+        endDateControl = frappe.ui.form.make_control({
+          df: {
+            fieldtype: "Date",
+            fieldname: "end_date",
+            label: "End Date",
+            change() {
+              endDate.value = endDateControl.get_value() || "";
+            }
+          },
+          parent: endDateFieldRef.value,
+          render_input: true,
+          only_input: true
+        });
+        endDateControl.set_value(frappe.datetime.add_months(frappe.datetime.nowdate(), 1));
+        endDateControl.refresh();
+      }
+      function updateProcessOptions() {
+        if (!processControl)
+          return;
+        const opts = [{ value: "", label: "Select Process" }];
+        for (const proc of availableProcesses.value) {
+          opts.push({ value: proc.name, label: proc.process_name });
+        }
+        processControl.df.options = opts;
+        processControl.refresh();
+      }
+      onMounted(async () => {
+        await nextTick();
+        initFrappeControls();
+        await loadShiftAllocations();
+        loadAllShifts();
         loadAllAllocations();
         document.addEventListener("click", closeContextMenu);
+        if (!defaultAllocation.value) {
+          frappe.msgprint({
+            title: __("No Default Shift Allocation"),
+            message: __("Please create a Shift Allocation and mark it as default for capacity planning to work correctly."),
+            indicator: "orange"
+          });
+        }
       });
       onUnmounted(() => {
         document.removeEventListener("click", closeContextMenu);
       });
       watch2([startDate, endDate], () => {
-        loadShiftCalendars();
+        loadShiftAllocations();
         loadAllAllocations();
+      });
+      watch2(availableProcesses, () => {
+        updateProcessOptions();
       });
       __expose({
         loadData,
         loadExistingAllocations,
         refreshCalendar
       });
-      const __returned__ = { emit: emit2, orders, processes, machines, selectedOrder, selectedProcess, viewType, startDate, endDate, orderData, shiftCalendars, defaultShift, allocations, actionHistory, validationErrors, showSplitModal, showEditModal, selectedAllocation, splitQuantity, editQuantity, showDropModal, dropQuantity, pendingDrop, showShiftModal, shiftModalData, contextMenu, today, nextMonth, MIN_BATCH_SIZE, dateRange, availableProcesses, workloadItems, fullyAllocatedCount, partialAllocatedCount, pendingCount, loadData, getProcessMinutes, isValidForProcess, formatDayName, formatDate, getShiftForDate, getShiftMinutes, isWeekend, isPastDate, getDateHeaderClass, getAllocations, getUsedMinutes, getCapacityPercentage, getCapacityBarClass, getCellClass, getMachineUtilization, getUtilizationClass, hasConflict, getAllocationColor, getAllocationTooltip, getAllocatedQuantity, getAllocationStatus, isItemAllocated, getLockedViewType, isLockedToOtherView, VIEW_TYPE_LABELS, getLockedViewTypeLabel, getDateAtOffset, simulateAutoSplit, computeShiftPlan, executeAutoSplit, saveAction, undoLastAction, onDragStart, onAllocationDragStart, getNextDate, onDrop, moveAllocation, handleMoveSource, confirmDrop, closeDropModal, closeShiftModal, confirmShift, allocateWithoutShift, executeShiftAndAllocate, removeAllocation, selectAllocation, closeContextMenu, openSplitModal, closeSplitModal, confirmSplit, openEditModal, closeEditModal, confirmEdit, mergeAllocations, deleteSelectedAllocation, onOrderChange, onProcessChange, refreshCalendar, loadShiftCalendars, loadAllAllocations, loadExistingAllocations, saveAllocations, ref, computed: computed2, onMounted, onUnmounted, watch: watch2 };
+      const __returned__ = { emit: emit2, processes, machines, selectedCustomer, selectedMachineGG, selectedOrder, selectedProcess, viewType, startDate, endDate, orderData, workloadCollapsed, customerFieldRef, machineGGFieldRef, orderFieldRef, processFieldRef, viewTypeFieldRef, startDateFieldRef, endDateFieldRef, get customerControl() {
+        return customerControl;
+      }, set customerControl(v) {
+        customerControl = v;
+      }, get machineGGControl() {
+        return machineGGControl;
+      }, set machineGGControl(v) {
+        machineGGControl = v;
+      }, get orderControl() {
+        return orderControl;
+      }, set orderControl(v) {
+        orderControl = v;
+      }, get processControl() {
+        return processControl;
+      }, set processControl(v) {
+        processControl = v;
+      }, get viewTypeControl() {
+        return viewTypeControl;
+      }, set viewTypeControl(v) {
+        viewTypeControl = v;
+      }, get startDateControl() {
+        return startDateControl;
+      }, set startDateControl(v) {
+        startDateControl = v;
+      }, get endDateControl() {
+        return endDateControl;
+      }, set endDateControl(v) {
+        endDateControl = v;
+      }, shiftAllocations, defaultAllocation, allocations, actionHistory, validationErrors, showDropModal, dropQuantity, pendingDrop, showShiftModal, shiftModalData, showBackfillModal, backfillModalData, contextMenu, tooltip, selectedGroup, splitMarkers, showEditGroupModal, editGroupQuantity, showSplitGroupModal, splitGroupDate, draggingItem, showShiftByDaysModal, shiftByDaysCount, shiftByDaysPreview, showAlterationModal, alterationSaving, alterationForm, showActionChoice, actionChoiceContext, showShiftUpdateModal, shiftUpdateSaving, shiftUpdateForm, allShifts, today, nextMonth, MIN_BATCH_SIZE, COL_WIDTH, BAR_HEIGHT, BAR_GAP, BAR_TOP_OFFSET, itemMachineGG, isMachineCompatible, checkMachineGGCompat, dateRange, ganttGridStyle, selectedShiftsTotalMinutes, filteredMachines, availableProcesses, workloadItems, groupedAllocations, groupedAllocationsWithLanes, loadData, getProcessMinutes, isValidForProcess, formatDayName, formatDate, getCalendarForDate, getShiftForDate, getShiftNamesForDate, getShiftMinutes, getEffectiveMinutes, getCellAlterationBadge, getDayAlterationDelta, isOffDay, isPastDate, getDateHeaderClass, getAllocations, getUsedMinutes, getCapacityPercentage, getCapacityBarClass, getCellClass, hasConflict, _colorPairs, _colorMap, getAllocationColor, getAllocatedQuantity, getAllocationStatus, isNextDay, isGroupSplit, addDaysToDate, addWorkingDays, getNextWorkingDay, simulateGroupEnd, getGroupsForMachine, getLaneCount, getBarLayerHeight, getBarStyle, get tooltipTimer() {
+        return tooltipTimer;
+      }, set tooltipTimer(v) {
+        tooltipTimer = v;
+      }, showTooltip, hideTooltip, validateMachineDaySlot, selectGroup, onGroupDragStart, onBarContextMenu, executeMoveGroup, moveGroup, closeEditGroupModal, confirmEditGroup, closeSplitGroupModal, confirmSplitGroup, openShiftGroupByDaysModal, closeShiftByDaysModal, computeShiftByDaysPreview, confirmShiftByDays, computeBackfillPlan, deleteGroup, confirmBackfill, declineBackfill, cancelDeleteGroup, closeBackfillModal, autoReflowAfterAlteration, reflowForBreak, spillForward, reflowForOvertime, compactAfterPull, shiftSubsequentAllocsLeft, refitShiftedAllocations, simulateAutoSplit, simulateAutoSplitForced, computeShiftPlanForOverlap, computeShiftPlan, executeAutoSplit, saveAction, undoLastAction, onCellDragOver, onDragStart, onDragEnd, getNextDate, onBarDrop, onDrop, moveAllocation, handleMoveSource, confirmDrop, closeDropModal, closeShiftModal, confirmShift, allocateWithoutShift, executeShiftAndAllocate, closeContextMenu, onOrderChange, onProcessChange, refreshCalendar, loadShiftAllocations, loadAllAllocations, loadExistingAllocations, saveAllocations, openAlterationDialog, closeAlterationModal, confirmAlteration, openActionChoice, closeActionChoice, chooseUpdateTime, chooseUpdateShift, openShiftUpdateModal, closeShiftUpdateModal, confirmShiftUpdate, loadAllShifts, initFrappeControls, updateProcessOptions, ref, computed: computed2, onMounted, onUnmounted, watch: watch2, nextTick };
       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
       return __returned__;
     }
@@ -9508,167 +12049,192 @@ Expected function or array of functions, received type ${typeof value}.`
 
   // sfc-template:/home/anas/frappe-15/apps/albion/albion/public/js/components/CapacityPlanning.vue?type=template
   var _withScopeId2 = (n) => (pushScopeId("data-v-662cf2e2"), n = n(), popScopeId(), n);
-  var _hoisted_14 = { class: "capacity-planning" };
-  var _hoisted_22 = { class: "cp-header" };
+  var _hoisted_110 = { class: "capacity-planning" };
+  var _hoisted_210 = { class: "cp-header" };
   var _hoisted_32 = { class: "cp-filters" };
-  var _hoisted_42 = { class: "filter-group" };
-  var _hoisted_52 = { class: "form-group" };
-  var _hoisted_62 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Order", -1));
-  var _hoisted_72 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("option", { value: "" }, "Select Order", -1));
-  var _hoisted_82 = ["value"];
-  var _hoisted_92 = { class: "form-group" };
-  var _hoisted_102 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Process", -1));
-  var _hoisted_112 = ["disabled"];
-  var _hoisted_122 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("option", { value: "" }, "Select Process", -1));
-  var _hoisted_132 = ["value"];
-  var _hoisted_142 = { class: "form-group" };
-  var _hoisted_15 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "View type", -1));
-  var _hoisted_16 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("option", { value: "item_wise" }, "Item Wise", -1));
-  var _hoisted_17 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("option", { value: "colour_wise" }, "Colour Wise", -1));
-  var _hoisted_18 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("option", { value: "size_wise" }, "Size Wise", -1));
-  var _hoisted_19 = [
-    _hoisted_16,
-    _hoisted_17,
-    _hoisted_18
-  ];
-  var _hoisted_20 = { class: "form-group" };
-  var _hoisted_21 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Start date", -1));
-  var _hoisted_222 = { class: "form-group" };
-  var _hoisted_23 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "End date", -1));
-  var _hoisted_24 = { class: "action-group" };
-  var _hoisted_25 = ["disabled"];
-  var _hoisted_26 = {
+  var _hoisted_4 = { class: "filter-rows" };
+  var _hoisted_52 = { class: "filter-row" };
+  var _hoisted_62 = { class: "filter-field" };
+  var _hoisted_72 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", { class: "filter-label" }, "Customer", -1));
+  var _hoisted_82 = {
+    class: "frappe-field",
+    ref: "customerFieldRef"
+  };
+  var _hoisted_92 = { class: "filter-field" };
+  var _hoisted_102 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", { class: "filter-label" }, "Order", -1));
+  var _hoisted_112 = {
+    class: "frappe-field",
+    ref: "orderFieldRef"
+  };
+  var _hoisted_122 = { class: "filter-field" };
+  var _hoisted_132 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", { class: "filter-label" }, "Start Date", -1));
+  var _hoisted_142 = {
+    class: "frappe-field",
+    ref: "startDateFieldRef"
+  };
+  var _hoisted_152 = { class: "filter-field" };
+  var _hoisted_162 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", { class: "filter-label" }, "End Date", -1));
+  var _hoisted_172 = {
+    class: "frappe-field",
+    ref: "endDateFieldRef"
+  };
+  var _hoisted_182 = { class: "filter-row" };
+  var _hoisted_192 = { class: "filter-field" };
+  var _hoisted_202 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", { class: "filter-label" }, "Process", -1));
+  var _hoisted_212 = {
+    class: "frappe-field",
+    ref: "processFieldRef"
+  };
+  var _hoisted_222 = { class: "filter-field" };
+  var _hoisted_232 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", { class: "filter-label" }, "View Type", -1));
+  var _hoisted_242 = {
+    class: "frappe-field",
+    ref: "viewTypeFieldRef"
+  };
+  var _hoisted_252 = { class: "filter-field" };
+  var _hoisted_262 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", { class: "filter-label" }, "Machine GG", -1));
+  var _hoisted_272 = {
+    class: "frappe-field",
+    ref: "machineGGFieldRef"
+  };
+  var _hoisted_282 = { class: "action-group" };
+  var _hoisted_292 = ["disabled"];
+  var _hoisted_30 = {
     key: 0,
     class: "validation-alerts"
   };
-  var _hoisted_27 = { class: "cp-body" };
-  var _hoisted_28 = { class: "cp-left-panel" };
-  var _hoisted_29 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("div", { class: "panel-header" }, [
-    /* @__PURE__ */ createBaseVNode("h4", null, "Workload"),
-    /* @__PURE__ */ createBaseVNode("span", { class: "panel-subtitle" }, "Drag items to calendar")
-  ], -1));
-  var _hoisted_30 = {
+  var _hoisted_31 = { class: "cp-body" };
+  var _hoisted_322 = { class: "panel-header-row" };
+  var _hoisted_33 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Workload", -1));
+  var _hoisted_34 = ["title"];
+  var _hoisted_35 = {
     key: 0,
-    class: "workload-summary"
+    class: "panel-subtitle"
   };
-  var _hoisted_31 = { class: "summary-item" };
-  var _hoisted_322 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "label" }, "Total Items", -1));
-  var _hoisted_33 = { class: "value" };
-  var _hoisted_34 = { class: "summary-item" };
-  var _hoisted_35 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "label" }, "Fully Allocated", -1));
-  var _hoisted_36 = { class: "value" };
-  var _hoisted_37 = { class: "summary-item" };
-  var _hoisted_38 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "label" }, "Partial", -1));
-  var _hoisted_39 = { class: "value" };
-  var _hoisted_40 = { class: "summary-item" };
-  var _hoisted_41 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "label" }, "Pending", -1));
-  var _hoisted_422 = { class: "value" };
-  var _hoisted_43 = { class: "workload-list" };
-  var _hoisted_44 = {
+  var _hoisted_36 = { class: "workload-list" };
+  var _hoisted_37 = {
     key: 0,
     class: "empty-state"
   };
-  var _hoisted_45 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("div", { class: "empty-icon" }, "\u2630", -1));
-  var _hoisted_46 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("div", { class: "empty-text" }, "Select order and process to view workload", -1));
-  var _hoisted_47 = [
-    _hoisted_45,
-    _hoisted_46
+  var _hoisted_38 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("div", { class: "empty-icon" }, "\u2630", -1));
+  var _hoisted_39 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("div", { class: "empty-text" }, "Select order and process to view workload", -1));
+  var _hoisted_40 = [
+    _hoisted_38,
+    _hoisted_39
   ];
-  var _hoisted_48 = ["draggable", "onDragstart"];
-  var _hoisted_49 = { class: "item-header" };
-  var _hoisted_50 = {
+  var _hoisted_41 = ["draggable", "onDragstart"];
+  var _hoisted_42 = { class: "item-header" };
+  var _hoisted_43 = {
     key: 0,
     class: "drag-handle"
   };
-  var _hoisted_51 = { class: "item-name" };
-  var _hoisted_522 = { class: "item-qty" };
-  var _hoisted_53 = {
+  var _hoisted_44 = { class: "item-name" };
+  var _hoisted_45 = { class: "item-qty" };
+  var _hoisted_46 = {
     key: 0,
-    class: "item-detail"
+    class: "item-gg"
   };
-  var _hoisted_54 = {
+  var _hoisted_47 = {
     key: 1,
     class: "item-detail"
   };
-  var _hoisted_55 = { class: "item-minutes" };
-  var _hoisted_56 = {
+  var _hoisted_48 = {
     key: 2,
+    class: "item-detail"
+  };
+  var _hoisted_49 = { class: "item-minutes" };
+  var _hoisted_50 = {
+    key: 3,
     class: "invalid-reason"
   };
-  var _hoisted_57 = {
-    key: 3,
-    class: "locked-reason"
-  };
-  var _hoisted_58 = {
+  var _hoisted_51 = {
     key: 5,
     class: "item-progress"
   };
-  var _hoisted_59 = { class: "cp-right-panel" };
-  var _hoisted_60 = /* @__PURE__ */ createStaticVNode('<div class="calendar-header" data-v-662cf2e2><h4 data-v-662cf2e2>Capacity Calendar</h4><div class="calendar-legend" data-v-662cf2e2><span class="legend-item" data-v-662cf2e2><span class="dot available" data-v-662cf2e2></span> Available</span><span class="legend-item" data-v-662cf2e2><span class="dot allocated" data-v-662cf2e2></span> Allocated</span><span class="legend-item" data-v-662cf2e2><span class="dot full" data-v-662cf2e2></span> Full</span><span class="legend-item" data-v-662cf2e2><span class="dot conflict" data-v-662cf2e2></span> Conflict</span></div></div>', 1);
-  var _hoisted_61 = { class: "calendar-wrapper" };
-  var _hoisted_622 = { class: "calendar-table" };
-  var _hoisted_63 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("th", { class: "machine-header" }, "Machine", -1));
-  var _hoisted_64 = { class: "date-cell" };
-  var _hoisted_65 = { class: "day-date" };
-  var _hoisted_66 = { class: "shift-info" };
-  var _hoisted_67 = { class: "machine-cell" };
-  var _hoisted_68 = { class: "machine-info" };
-  var _hoisted_69 = { class: "machine-title" };
-  var _hoisted_70 = { class: "machine-id" };
-  var _hoisted_71 = { class: "machine-name" };
-  var _hoisted_722 = ["onDrop"];
-  var _hoisted_73 = { class: "cell-content" };
-  var _hoisted_74 = ["onDragstart", "onClick", "title"];
-  var _hoisted_75 = { class: "alloc-header" };
-  var _hoisted_76 = { class: "alloc-item" };
-  var _hoisted_77 = { class: "alloc-qty" };
+  var _hoisted_522 = { class: "cp-right-panel" };
+  var _hoisted_53 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("div", { class: "calendar-header" }, [
+    /* @__PURE__ */ createBaseVNode("h4", null, "Capacity Calendar")
+  ], -1));
+  var _hoisted_54 = { class: "calendar-wrapper" };
+  var _hoisted_55 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("div", { class: "gantt-corner-cell" }, "Machine", -1));
+  var _hoisted_56 = ["onClick"];
+  var _hoisted_57 = { class: "date-cell" };
+  var _hoisted_58 = { class: "day-date" };
+  var _hoisted_59 = { class: "shift-info" };
+  var _hoisted_60 = { class: "machine-info" };
+  var _hoisted_61 = { class: "machine-title" };
+  var _hoisted_622 = { class: "machine-id" };
+  var _hoisted_63 = { class: "machine-gg-badge" };
+  var _hoisted_64 = { class: "machine-name" };
+  var _hoisted_65 = ["onDragover", "onDrop"];
+  var _hoisted_66 = { class: "cell-top-row" };
+  var _hoisted_67 = ["onClick"];
+  var _hoisted_68 = ["title"];
+  var _hoisted_69 = { class: "util-label" };
+  var _hoisted_70 = ["onDragstart", "onDragover", "onDrop", "onContextmenu", "onClick", "onMouseenter"];
+  var _hoisted_71 = { class: "bar-row-top" };
+  var _hoisted_722 = { class: "bar-item" };
+  var _hoisted_73 = { class: "bar-qty" };
+  var _hoisted_74 = { class: "bar-row-mid" };
+  var _hoisted_75 = { class: "bar-process" };
+  var _hoisted_76 = { class: "bar-minutes" };
+  var _hoisted_77 = { class: "bar-row-bot" };
   var _hoisted_78 = {
     key: 0,
-    class: "alloc-process"
+    class: "bar-tag order-tag"
   };
-  var _hoisted_79 = { class: "alloc-footer" };
-  var _hoisted_80 = { class: "alloc-mins" };
-  var _hoisted_81 = ["onClick"];
-  var _hoisted_822 = {
-    key: 0,
-    class: "cell-summary"
-  };
-  var _hoisted_83 = { class: "used-minutes" };
-  var _hoisted_84 = { class: "remaining-minutes" };
-  var _hoisted_85 = {
+  var _hoisted_79 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("b", null, "O:", -1));
+  var _hoisted_80 = {
     key: 1,
-    class: "capacity-bar"
+    class: "bar-tag colour-tag"
   };
-  var _hoisted_86 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Split Quantity", -1));
+  var _hoisted_81 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("b", null, "C:", -1));
+  var _hoisted_822 = {
+    key: 2,
+    class: "bar-tag size-tag"
+  };
+  var _hoisted_83 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("b", null, "S:", -1));
+  var _hoisted_84 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Allocate Quantity", -1));
+  var _hoisted_85 = { class: "form-group" };
+  var _hoisted_86 = { class: "form-group" };
   var _hoisted_87 = { class: "form-group" };
   var _hoisted_88 = { class: "form-group" };
-  var _hoisted_89 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Split Quantity", -1));
-  var _hoisted_90 = ["max"];
-  var _hoisted_91 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Edit Quantity", -1));
-  var _hoisted_922 = { class: "form-group" };
-  var _hoisted_93 = { class: "form-group" };
-  var _hoisted_94 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "New Quantity", -1));
-  var _hoisted_95 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Allocate Quantity", -1));
-  var _hoisted_96 = { class: "form-group" };
-  var _hoisted_97 = { class: "form-group" };
-  var _hoisted_98 = { class: "form-group" };
-  var _hoisted_99 = { class: "form-group" };
-  var _hoisted_100 = {
+  var _hoisted_89 = {
     key: 0,
     class: "form-group"
   };
-  var _hoisted_101 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", { class: "text-info" }, "Excess will be split across subsequent days", -1));
-  var _hoisted_1022 = [
-    _hoisted_101
+  var _hoisted_90 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", { class: "text-info" }, "Excess will be split across subsequent days", -1));
+  var _hoisted_91 = [
+    _hoisted_90
   ];
-  var _hoisted_103 = { class: "form-group" };
-  var _hoisted_104 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Quantity", -1));
-  var _hoisted_105 = ["max"];
-  var _hoisted_106 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Shift Allocations Forward", -1));
-  var _hoisted_107 = { class: "shift-explanation" };
-  var _hoisted_108 = { class: "shift-table-wrapper" };
-  var _hoisted_109 = { class: "shift-table" };
-  var _hoisted_110 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("thead", null, [
+  var _hoisted_922 = { class: "form-group" };
+  var _hoisted_93 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Quantity", -1));
+  var _hoisted_94 = ["max"];
+  var _hoisted_95 = { class: "shift-explanation" };
+  var _hoisted_96 = { key: 0 };
+  var _hoisted_97 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("p", null, "These allocations will be shifted forward to make room.", -1));
+  var _hoisted_98 = { class: "shift-table-wrapper" };
+  var _hoisted_99 = {
+    key: 0,
+    class: "shift-table"
+  };
+  var _hoisted_100 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("thead", null, [
+    /* @__PURE__ */ createBaseVNode("tr", null, [
+      /* @__PURE__ */ createBaseVNode("th", null, "Item"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Order"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Days"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Current Range"),
+      /* @__PURE__ */ createBaseVNode("th"),
+      /* @__PURE__ */ createBaseVNode("th", null, "New Range"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Shift")
+    ])
+  ], -1));
+  var _hoisted_101 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("td", null, "\u2192", -1));
+  var _hoisted_1022 = {
+    key: 1,
+    class: "shift-table"
+  };
+  var _hoisted_103 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("thead", null, [
     /* @__PURE__ */ createBaseVNode("tr", null, [
       /* @__PURE__ */ createBaseVNode("th", null, "Order"),
       /* @__PURE__ */ createBaseVNode("th", null, "Item"),
@@ -9679,86 +12245,179 @@ Expected function or array of functions, received type ${typeof value}.`
       /* @__PURE__ */ createBaseVNode("th", null, "New Date")
     ])
   ], -1));
-  var _hoisted_111 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("td", null, "\u2192", -1));
+  var _hoisted_104 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("td", null, "\u2192", -1));
+  var _hoisted_105 = { class: "modal-actions" };
+  var _hoisted_106 = {
+    key: 3,
+    class: "modal-overlay"
+  };
+  var _hoisted_107 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Fill Gap After Deletion", -1));
+  var _hoisted_108 = { class: "backfill-explanation" };
+  var _hoisted_109 = { class: "shift-table-wrapper" };
+  var _hoisted_1102 = { class: "shift-table" };
+  var _hoisted_111 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("thead", null, [
+    /* @__PURE__ */ createBaseVNode("tr", null, [
+      /* @__PURE__ */ createBaseVNode("th", null, "Order"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Item"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Process"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Qty"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Current Date"),
+      /* @__PURE__ */ createBaseVNode("th"),
+      /* @__PURE__ */ createBaseVNode("th", null, "New Date")
+    ])
+  ], -1));
+  var _hoisted_1122 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("td", null, "\u2190", -1));
+  var _hoisted_113 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Edit Group Quantity", -1));
+  var _hoisted_114 = { class: "form-group" };
+  var _hoisted_115 = { class: "form-group" };
+  var _hoisted_116 = { class: "form-group" };
+  var _hoisted_117 = { class: "form-group" };
+  var _hoisted_118 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "New Total Quantity", -1));
+  var _hoisted_119 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Split Group at Date", -1));
+  var _hoisted_120 = { class: "form-group" };
+  var _hoisted_121 = { class: "form-group" };
+  var _hoisted_1222 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Split before date", -1));
+  var _hoisted_123 = ["value"];
+  var _hoisted_124 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Shift Group by Days", -1));
+  var _hoisted_125 = { class: "form-group" };
+  var _hoisted_126 = { class: "form-group" };
+  var _hoisted_127 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Number of days to shift", -1));
+  var _hoisted_128 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("small", { class: "text-muted" }, "Positive = forward, Negative = backward", -1));
+  var _hoisted_129 = {
+    key: 0,
+    class: "shift-explanation"
+  };
+  var _hoisted_130 = { class: "text-danger" };
+  var _hoisted_131 = { class: "shift-explanation" };
+  var _hoisted_1322 = { key: 0 };
+  var _hoisted_133 = { key: 1 };
+  var _hoisted_134 = {
+    key: 0,
+    class: "shift-table-wrapper"
+  };
+  var _hoisted_135 = { class: "shift-table" };
+  var _hoisted_136 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("thead", null, [
+    /* @__PURE__ */ createBaseVNode("tr", null, [
+      /* @__PURE__ */ createBaseVNode("th", null, "Item"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Order"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Days"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Current Range"),
+      /* @__PURE__ */ createBaseVNode("th"),
+      /* @__PURE__ */ createBaseVNode("th", null, "New Range"),
+      /* @__PURE__ */ createBaseVNode("th", null, "Shift")
+    ])
+  ], -1));
+  var _hoisted_137 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("td", null, "\u2192", -1));
+  var _hoisted_138 = { class: "modal-actions" };
+  var _hoisted_139 = ["disabled"];
+  var _hoisted_140 = {
+    key: 1,
+    class: "modal-actions"
+  };
+  var _hoisted_141 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "What would you like to do?", -1));
+  var _hoisted_1422 = { class: "action-choice-date" };
+  var _hoisted_143 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "action-icon" }, "\u23F0", -1));
+  var _hoisted_144 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "action-icon" }, "\u270E", -1));
+  var _hoisted_145 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Update Shifts", -1));
+  var _hoisted_146 = { class: "form-group" };
+  var _hoisted_147 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Date", -1));
+  var _hoisted_148 = ["value"];
+  var _hoisted_149 = { class: "form-group" };
+  var _hoisted_150 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Shifts", -1));
+  var _hoisted_151 = { class: "shift-checkbox-list" };
+  var _hoisted_1522 = ["value"];
+  var _hoisted_153 = { class: "shift-checkbox-label" };
+  var _hoisted_154 = { class: "shift-checkbox-mins" };
+  var _hoisted_155 = {
+    key: 0,
+    class: "form-group"
+  };
+  var _hoisted_156 = { class: "text-muted" };
+  var _hoisted_157 = { class: "modal-actions" };
+  var _hoisted_158 = ["disabled"];
+  var _hoisted_159 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("h4", null, "Add Shift Alteration", -1));
+  var _hoisted_160 = { class: "form-group" };
+  var _hoisted_161 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Date", -1));
+  var _hoisted_1622 = ["value"];
+  var _hoisted_163 = { class: "form-group" };
+  var _hoisted_164 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Machine", -1));
+  var _hoisted_165 = ["value"];
+  var _hoisted_166 = { class: "form-group" };
+  var _hoisted_167 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Type", -1));
+  var _hoisted_168 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("option", { value: "Add" }, "Add Overtime", -1));
+  var _hoisted_169 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("option", { value: "Reduce" }, "Add Break / Reduce", -1));
+  var _hoisted_170 = [
+    _hoisted_168,
+    _hoisted_169
+  ];
+  var _hoisted_171 = { class: "form-group" };
+  var _hoisted_1722 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Minutes", -1));
+  var _hoisted_173 = { class: "form-group" };
+  var _hoisted_174 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("label", null, "Reason (optional)", -1));
+  var _hoisted_175 = { class: "modal-actions" };
+  var _hoisted_176 = ["disabled"];
+  var _hoisted_177 = { class: "tooltip-header" };
+  var _hoisted_178 = { class: "tooltip-grid" };
+  var _hoisted_179 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "tooltip-label" }, "Order", -1));
+  var _hoisted_180 = { class: "tooltip-value" };
+  var _hoisted_181 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "tooltip-label" }, "Process", -1));
+  var _hoisted_1822 = { class: "tooltip-value" };
+  var _hoisted_183 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "tooltip-label" }, "Dates", -1));
+  var _hoisted_184 = { class: "tooltip-value" };
+  var _hoisted_185 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "tooltip-label" }, "Days", -1));
+  var _hoisted_186 = { class: "tooltip-value" };
+  var _hoisted_187 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "tooltip-label" }, "Quantity", -1));
+  var _hoisted_188 = { class: "tooltip-value tooltip-qty" };
+  var _hoisted_189 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "tooltip-label" }, "Minutes", -1));
+  var _hoisted_190 = { class: "tooltip-value" };
+  var _hoisted_191 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "tooltip-label" }, "Colour", -1));
+  var _hoisted_1922 = { class: "tooltip-value" };
+  var _hoisted_193 = /* @__PURE__ */ _withScopeId2(() => /* @__PURE__ */ createBaseVNode("span", { class: "tooltip-label" }, "Size", -1));
+  var _hoisted_194 = { class: "tooltip-value" };
   function render2(_ctx, _cache, $props, $setup, $data, $options) {
-    var _a, _b, _c;
-    return openBlock(), createElementBlock("div", _hoisted_14, [
-      createBaseVNode("div", _hoisted_22, [
+    return openBlock(), createElementBlock("div", _hoisted_110, [
+      createBaseVNode("div", _hoisted_210, [
         createBaseVNode("div", _hoisted_32, [
-          createBaseVNode("div", _hoisted_42, [
+          createBaseVNode("div", _hoisted_4, [
             createBaseVNode("div", _hoisted_52, [
-              _hoisted_62,
-              withDirectives(createBaseVNode("select", {
-                "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => $setup.selectedOrder = $event),
-                onChange: $setup.onOrderChange,
-                class: "form-control"
-              }, [
+              createBaseVNode("div", _hoisted_62, [
                 _hoisted_72,
-                (openBlock(true), createElementBlock(Fragment, null, renderList($setup.orders, (order) => {
-                  return openBlock(), createElementBlock("option", {
-                    key: order.name,
-                    value: order.name
-                  }, toDisplayString(order.name), 9, _hoisted_82);
-                }), 128))
-              ], 544), [
-                [vModelSelect, $setup.selectedOrder]
+                createBaseVNode("div", _hoisted_82, null, 512)
+              ]),
+              createBaseVNode("div", _hoisted_92, [
+                _hoisted_102,
+                createBaseVNode("div", _hoisted_112, null, 512)
+              ]),
+              createBaseVNode("div", _hoisted_122, [
+                _hoisted_132,
+                createBaseVNode("div", _hoisted_142, null, 512)
+              ]),
+              createBaseVNode("div", _hoisted_152, [
+                _hoisted_162,
+                createBaseVNode("div", _hoisted_172, null, 512)
               ])
             ]),
-            createBaseVNode("div", _hoisted_92, [
-              _hoisted_102,
-              withDirectives(createBaseVNode("select", {
-                "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => $setup.selectedProcess = $event),
-                onChange: $setup.onProcessChange,
-                class: "form-control",
-                disabled: !$setup.orderData
-              }, [
-                _hoisted_122,
-                (openBlock(true), createElementBlock(Fragment, null, renderList($setup.availableProcesses, (proc) => {
-                  return openBlock(), createElementBlock("option", {
-                    key: proc.name,
-                    value: proc.name
-                  }, toDisplayString(proc.process_name), 9, _hoisted_132);
-                }), 128))
-              ], 40, _hoisted_112), [
-                [vModelSelect, $setup.selectedProcess]
-              ])
-            ]),
-            createBaseVNode("div", _hoisted_142, [
-              _hoisted_15,
-              withDirectives(createBaseVNode("select", {
-                "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => $setup.viewType = $event),
-                class: "form-control"
-              }, [..._hoisted_19], 512), [
-                [vModelSelect, $setup.viewType]
-              ])
-            ]),
-            createBaseVNode("div", _hoisted_20, [
-              _hoisted_21,
-              withDirectives(createBaseVNode("input", {
-                type: "date",
-                "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => $setup.startDate = $event),
-                class: "form-control"
-              }, null, 512), [
-                [vModelText, $setup.startDate]
-              ])
-            ]),
-            createBaseVNode("div", _hoisted_222, [
-              _hoisted_23,
-              withDirectives(createBaseVNode("input", {
-                type: "date",
-                "onUpdate:modelValue": _cache[4] || (_cache[4] = ($event) => $setup.endDate = $event),
-                class: "form-control"
-              }, null, 512), [
-                [vModelText, $setup.endDate]
+            createBaseVNode("div", _hoisted_182, [
+              createBaseVNode("div", _hoisted_192, [
+                _hoisted_202,
+                createBaseVNode("div", _hoisted_212, null, 512)
+              ]),
+              createBaseVNode("div", _hoisted_222, [
+                _hoisted_232,
+                createBaseVNode("div", _hoisted_242, null, 512)
+              ]),
+              createBaseVNode("div", _hoisted_252, [
+                _hoisted_262,
+                createBaseVNode("div", _hoisted_272, null, 512)
               ])
             ])
           ]),
-          createBaseVNode("div", _hoisted_24, [
+          createBaseVNode("div", _hoisted_282, [
             createBaseVNode("button", {
               class: "btn btn-default",
               onClick: $setup.undoLastAction,
               disabled: $setup.actionHistory.length === 0
-            }, "Undo", 8, _hoisted_25),
+            }, "Undo", 8, _hoisted_292),
             createBaseVNode("button", {
               class: "btn btn-default",
               onClick: $setup.refreshCalendar
@@ -9770,7 +12429,7 @@ Expected function or array of functions, received type ${typeof value}.`
           ])
         ])
       ]),
-      $setup.validationErrors.length > 0 ? (openBlock(), createElementBlock("div", _hoisted_26, [
+      $setup.validationErrors.length > 0 ? (openBlock(), createElementBlock("div", _hoisted_30, [
         (openBlock(true), createElementBlock(Fragment, null, renderList($setup.validationErrors, (error, idx) => {
           return openBlock(), createElementBlock("div", {
             key: idx,
@@ -9778,30 +12437,26 @@ Expected function or array of functions, received type ${typeof value}.`
           }, toDisplayString(error), 1);
         }), 128))
       ])) : createCommentVNode("v-if", true),
-      createBaseVNode("div", _hoisted_27, [
+      createBaseVNode("div", _hoisted_31, [
         createCommentVNode(" Left Panel - Workload List "),
-        createBaseVNode("div", _hoisted_28, [
-          _hoisted_29,
-          $setup.workloadItems.length > 0 ? (openBlock(), createElementBlock("div", _hoisted_30, [
-            createBaseVNode("div", _hoisted_31, [
-              _hoisted_322,
-              createBaseVNode("span", _hoisted_33, toDisplayString($setup.workloadItems.length), 1)
+        createBaseVNode("div", {
+          class: normalizeClass(["cp-left-panel", { "panel-collapsed": $setup.workloadCollapsed }])
+        }, [
+          createBaseVNode("div", {
+            class: "panel-header",
+            onClick: _cache[0] || (_cache[0] = ($event) => $setup.workloadCollapsed = !$setup.workloadCollapsed)
+          }, [
+            createBaseVNode("div", _hoisted_322, [
+              _hoisted_33,
+              createBaseVNode("button", {
+                class: "panel-toggle-btn",
+                title: $setup.workloadCollapsed ? "Expand" : "Collapse"
+              }, toDisplayString($setup.workloadCollapsed ? "\u25B6" : "\u25C0"), 9, _hoisted_34)
             ]),
-            createBaseVNode("div", _hoisted_34, [
-              _hoisted_35,
-              createBaseVNode("span", _hoisted_36, toDisplayString($setup.fullyAllocatedCount), 1)
-            ]),
-            createBaseVNode("div", _hoisted_37, [
-              _hoisted_38,
-              createBaseVNode("span", _hoisted_39, toDisplayString($setup.partialAllocatedCount), 1)
-            ]),
-            createBaseVNode("div", _hoisted_40, [
-              _hoisted_41,
-              createBaseVNode("span", _hoisted_422, toDisplayString($setup.pendingCount), 1)
-            ])
-          ])) : createCommentVNode("v-if", true),
-          createBaseVNode("div", _hoisted_43, [
-            $setup.workloadItems.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_44, [..._hoisted_47])) : createCommentVNode("v-if", true),
+            !$setup.workloadCollapsed ? (openBlock(), createElementBlock("span", _hoisted_35, "Drag items to calendar")) : createCommentVNode("v-if", true)
+          ]),
+          withDirectives(createBaseVNode("div", _hoisted_36, [
+            $setup.workloadItems.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_37, [..._hoisted_40])) : createCommentVNode("v-if", true),
             (openBlock(true), createElementBlock(Fragment, null, renderList($setup.workloadItems, (item) => {
               return openBlock(), createElementBlock("div", {
                 key: item.key,
@@ -9809,246 +12464,206 @@ Expected function or array of functions, received type ${typeof value}.`
                   "fully-allocated": $setup.getAllocationStatus(item) === "full",
                   "partial-allocated": $setup.getAllocationStatus(item) === "partial",
                   "pending": $setup.getAllocationStatus(item) === "pending",
-                  "invalid": !$setup.isValidForProcess(item),
-                  "locked": $setup.isLockedToOtherView(item)
+                  "invalid": !$setup.isValidForProcess(item)
                 }]),
-                draggable: $setup.isValidForProcess(item) && $setup.getAllocationStatus(item) !== "full" && !$setup.isLockedToOtherView(item),
-                onDragstart: ($event) => $setup.onDragStart($event, item)
+                draggable: $setup.isValidForProcess(item) && $setup.getAllocationStatus(item) !== "full",
+                onDragstart: ($event) => $setup.onDragStart($event, item),
+                onDragend: $setup.onDragEnd
               }, [
-                createBaseVNode("div", _hoisted_49, [
-                  $setup.isValidForProcess(item) && $setup.getAllocationStatus(item) !== "full" && !$setup.isLockedToOtherView(item) ? (openBlock(), createElementBlock("span", _hoisted_50, "\u22EE\u22EE")) : createCommentVNode("v-if", true),
-                  createBaseVNode("span", _hoisted_51, toDisplayString(item.item), 1),
-                  createBaseVNode("span", _hoisted_522, toDisplayString(item.quantity), 1)
+                createBaseVNode("div", _hoisted_42, [
+                  $setup.isValidForProcess(item) && $setup.getAllocationStatus(item) !== "full" ? (openBlock(), createElementBlock("span", _hoisted_43, "\u22EE\u22EE")) : createCommentVNode("v-if", true),
+                  createBaseVNode("span", _hoisted_44, toDisplayString(item.item), 1),
+                  createBaseVNode("span", _hoisted_45, toDisplayString(item.quantity), 1)
                 ]),
-                item.colour ? (openBlock(), createElementBlock("div", _hoisted_53, " Colour: " + toDisplayString(item.colour), 1)) : createCommentVNode("v-if", true),
-                item.size ? (openBlock(), createElementBlock("div", _hoisted_54, " Size: " + toDisplayString(item.size), 1)) : createCommentVNode("v-if", true),
-                createBaseVNode("div", _hoisted_55, toDisplayString(item.minutes) + " mins/unit ", 1),
-                !$setup.isValidForProcess(item) ? (openBlock(), createElementBlock("div", _hoisted_56, " Process not defined for this item ")) : $setup.isLockedToOtherView(item) ? (openBlock(), createElementBlock("div", _hoisted_57, " Allocated in " + toDisplayString($setup.getLockedViewTypeLabel(item)) + " view ", 1)) : $setup.getAllocatedQuantity(item) > 0 ? (openBlock(), createElementBlock("div", {
+                item.machine_gg ? (openBlock(), createElementBlock("div", _hoisted_46, toDisplayString(item.machine_gg), 1)) : createCommentVNode("v-if", true),
+                item.colour ? (openBlock(), createElementBlock("div", _hoisted_47, " Colour: " + toDisplayString(item.colour), 1)) : createCommentVNode("v-if", true),
+                item.size ? (openBlock(), createElementBlock("div", _hoisted_48, " Size: " + toDisplayString(item.size), 1)) : createCommentVNode("v-if", true),
+                createBaseVNode("div", _hoisted_49, toDisplayString(item.minutes) + " mins/unit ", 1),
+                !$setup.isValidForProcess(item) ? (openBlock(), createElementBlock("div", _hoisted_50, " Process not defined for this item ")) : $setup.getAllocatedQuantity(item) > 0 ? (openBlock(), createElementBlock("div", {
                   key: 4,
                   class: normalizeClass(["allocation-status", $setup.getAllocationStatus(item)])
                 }, " Allocated: " + toDisplayString($setup.getAllocatedQuantity(item)) + " / " + toDisplayString(item.quantity), 3)) : createCommentVNode("v-if", true),
-                $setup.getAllocatedQuantity(item) > 0 && !$setup.isLockedToOtherView(item) ? (openBlock(), createElementBlock("div", _hoisted_58, [
+                $setup.getAllocatedQuantity(item) > 0 ? (openBlock(), createElementBlock("div", _hoisted_51, [
                   createBaseVNode("div", {
                     class: normalizeClass(["item-progress-fill", $setup.getAllocationStatus(item)]),
                     style: normalizeStyle({ width: Math.min(100, $setup.getAllocatedQuantity(item) / item.quantity * 100) + "%" })
                   }, null, 6)
                 ])) : createCommentVNode("v-if", true)
-              ], 42, _hoisted_48);
+              ], 42, _hoisted_41);
             }), 128))
+          ], 512), [
+            [vShow, !$setup.workloadCollapsed]
           ])
-        ]),
-        createCommentVNode(" Right Panel - Calendar "),
-        createBaseVNode("div", _hoisted_59, [
-          _hoisted_60,
-          createBaseVNode("div", _hoisted_61, [
-            createBaseVNode("table", _hoisted_622, [
-              createBaseVNode("thead", null, [
-                createBaseVNode("tr", null, [
-                  _hoisted_63,
-                  (openBlock(true), createElementBlock(Fragment, null, renderList($setup.dateRange, (date) => {
-                    var _a2;
-                    return openBlock(), createElementBlock("th", {
-                      key: date,
-                      class: normalizeClass(["date-header", $setup.getDateHeaderClass(date)])
-                    }, [
-                      createBaseVNode("div", _hoisted_64, [
-                        createBaseVNode("span", _hoisted_65, toDisplayString($setup.formatDayName(date)) + ", " + toDisplayString($setup.formatDate(date)), 1),
-                        createBaseVNode("span", _hoisted_66, toDisplayString(((_a2 = $setup.getShiftForDate(date)) == null ? void 0 : _a2.shift_name) || "No Shift") + " \xB7 " + toDisplayString($setup.getShiftMinutes(date)) + "m", 1)
-                      ])
-                    ], 2);
-                  }), 128))
-                ])
-              ]),
-              createBaseVNode("tbody", null, [
-                (openBlock(true), createElementBlock(Fragment, null, renderList($setup.machines, (machine) => {
-                  return openBlock(), createElementBlock("tr", {
-                    key: machine.machine_id
+        ], 2),
+        createCommentVNode(" Right Panel - Gantt Calendar "),
+        createBaseVNode("div", _hoisted_522, [
+          _hoisted_53,
+          createBaseVNode("div", _hoisted_54, [
+            createBaseVNode("div", {
+              class: "gantt-grid",
+              style: normalizeStyle($setup.ganttGridStyle)
+            }, [
+              createCommentVNode(" Header row "),
+              _hoisted_55,
+              (openBlock(true), createElementBlock(Fragment, null, renderList($setup.dateRange, (date, dIdx) => {
+                return openBlock(), createElementBlock("div", {
+                  key: "hdr-" + date,
+                  class: normalizeClass(["gantt-date-header", $setup.getDateHeaderClass(date)]),
+                  style: normalizeStyle({ gridRow: 1, gridColumn: dIdx + 2 }),
+                  onClick: ($event) => $setup.openActionChoice(date)
+                }, [
+                  createBaseVNode("div", _hoisted_57, [
+                    createBaseVNode("span", _hoisted_58, toDisplayString($setup.formatDayName(date)) + ", " + toDisplayString($setup.formatDate(date)), 1),
+                    createBaseVNode("span", _hoisted_59, [
+                      createTextVNode(toDisplayString($setup.getShiftNamesForDate(date)) + " \xB7 " + toDisplayString($setup.getEffectiveMinutes(date)) + "m ", 1),
+                      $setup.getDayAlterationDelta(date) ? (openBlock(), createElementBlock("span", {
+                        key: 0,
+                        class: normalizeClass(["day-alteration-badge", $setup.getDayAlterationDelta(date).cls])
+                      }, toDisplayString($setup.getDayAlterationDelta(date).label), 3)) : createCommentVNode("v-if", true)
+                    ])
+                  ])
+                ], 14, _hoisted_56);
+              }), 128)),
+              createCommentVNode(" Machine rows "),
+              (openBlock(true), createElementBlock(Fragment, null, renderList($setup.filteredMachines, (machine, mIdx) => {
+                return openBlock(), createElementBlock(Fragment, {
+                  key: machine.machine_id
+                }, [
+                  createCommentVNode(" Machine label cell "),
+                  createBaseVNode("div", {
+                    class: normalizeClass(["gantt-machine-cell", { "machine-disabled": !$setup.isMachineCompatible(machine.machine_id) }]),
+                    style: normalizeStyle({ gridRow: mIdx + 2 })
                   }, [
-                    createBaseVNode("td", _hoisted_67, [
-                      createBaseVNode("div", _hoisted_68, [
-                        createBaseVNode("div", _hoisted_69, [
-                          createBaseVNode("span", _hoisted_70, toDisplayString(machine.machine_id), 1),
-                          createBaseVNode("span", {
-                            class: normalizeClass(["machine-utilization", $setup.getUtilizationClass(machine.machine_id)])
-                          }, toDisplayString($setup.getMachineUtilization(machine.machine_id)) + "% ", 3)
-                        ]),
-                        createBaseVNode("span", _hoisted_71, toDisplayString(machine.machine_name), 1)
-                      ])
-                    ]),
-                    (openBlock(true), createElementBlock(Fragment, null, renderList($setup.dateRange, (date) => {
-                      return openBlock(), createElementBlock("td", {
-                        key: date,
-                        class: normalizeClass(["calendar-cell", $setup.getCellClass(machine.machine_id, date)]),
-                        onDragover: _cache[5] || (_cache[5] = withModifiers(() => {
-                        }, ["prevent"])),
-                        onDrop: ($event) => $setup.onDrop($event, machine.machine_id, date)
+                    createBaseVNode("div", _hoisted_60, [
+                      createBaseVNode("div", _hoisted_61, [
+                        createBaseVNode("span", _hoisted_622, toDisplayString(machine.machine_id), 1),
+                        createBaseVNode("span", _hoisted_63, toDisplayString(machine.machine_gg), 1)
+                      ]),
+                      createBaseVNode("span", _hoisted_64, toDisplayString(machine.machine_name), 1)
+                    ])
+                  ], 6),
+                  createCommentVNode(" Date cells (drop targets) "),
+                  (openBlock(true), createElementBlock(Fragment, null, renderList($setup.dateRange, (date, dIdx) => {
+                    return openBlock(), createElementBlock("div", {
+                      key: machine.machine_id + "-" + date,
+                      class: normalizeClass(["gantt-date-cell", [$setup.getCellClass(machine.machine_id, date), { "machine-disabled": !$setup.isMachineCompatible(machine.machine_id) }]]),
+                      style: normalizeStyle({ gridRow: mIdx + 2, gridColumn: dIdx + 2 }),
+                      onDragover: ($event) => $setup.onCellDragOver($event, machine.machine_id),
+                      onDrop: ($event) => $setup.onDrop($event, machine.machine_id, date)
+                    }, [
+                      $setup.getCellAlterationBadge(date, machine.machine_id) ? (openBlock(), createElementBlock("span", {
+                        key: 0,
+                        class: normalizeClass(["alteration-badge", $setup.getCellAlterationBadge(date, machine.machine_id).cls])
+                      }, toDisplayString($setup.getCellAlterationBadge(date, machine.machine_id).label), 3)) : createCommentVNode("v-if", true),
+                      createBaseVNode("div", _hoisted_66, [
+                        createBaseVNode("button", {
+                          class: "cell-add-btn",
+                          onClick: withModifiers(($event) => $setup.openAlterationDialog(date, machine.machine_id), ["stop"]),
+                          title: "Add overtime/break"
+                        }, "+", 8, _hoisted_67)
+                      ]),
+                      $setup.getUsedMinutes(machine.machine_id, date) > 0 ? (openBlock(), createElementBlock("div", {
+                        key: 1,
+                        class: "cell-utilization",
+                        title: `${$setup.getUsedMinutes(machine.machine_id, date)}m / ${$setup.getEffectiveMinutes(date, machine.machine_id)}m`
                       }, [
-                        createBaseVNode("div", _hoisted_73, [
-                          (openBlock(true), createElementBlock(Fragment, null, renderList($setup.getAllocations(machine.machine_id, date), (alloc) => {
-                            return openBlock(), createElementBlock("div", {
-                              key: alloc.key,
-                              class: normalizeClass(["allocation-item", { "conflict": $setup.hasConflict(alloc) }]),
-                              style: normalizeStyle({ borderLeftColor: $setup.getAllocationColor(alloc) }),
-                              draggable: "true",
-                              onDragstart: ($event) => $setup.onAllocationDragStart($event, alloc),
-                              onClick: ($event) => $setup.selectAllocation(alloc),
-                              title: $setup.getAllocationTooltip(alloc)
-                            }, [
-                              createBaseVNode("div", _hoisted_75, [
-                                createBaseVNode("span", _hoisted_76, toDisplayString(alloc.item), 1),
-                                createBaseVNode("span", _hoisted_77, toDisplayString(alloc.quantity), 1)
-                              ]),
-                              alloc.process ? (openBlock(), createElementBlock("div", _hoisted_78, toDisplayString(alloc.process), 1)) : createCommentVNode("v-if", true),
-                              createBaseVNode("div", _hoisted_79, [
-                                createBaseVNode("span", _hoisted_80, toDisplayString(alloc.allocated_minutes) + "m", 1),
-                                createBaseVNode("button", {
-                                  class: "btn-remove",
-                                  onClick: withModifiers(($event) => $setup.removeAllocation(alloc), ["stop"])
-                                }, "\xD7", 8, _hoisted_81)
-                              ])
-                            ], 46, _hoisted_74);
-                          }), 128)),
-                          $setup.getUsedMinutes(machine.machine_id, date) > 0 ? (openBlock(), createElementBlock("div", _hoisted_822, [
-                            createBaseVNode("span", _hoisted_83, toDisplayString($setup.getUsedMinutes(machine.machine_id, date)) + "m", 1),
-                            createBaseVNode("span", _hoisted_84, "/ " + toDisplayString($setup.getShiftMinutes(date)) + "m", 1)
+                        createBaseVNode("div", {
+                          class: normalizeClass(["util-bar", $setup.getCapacityBarClass(machine.machine_id, date)])
+                        }, [
+                          createBaseVNode("div", {
+                            class: normalizeClass(["util-fill", $setup.getCapacityBarClass(machine.machine_id, date)]),
+                            style: normalizeStyle({ width: Math.min($setup.getCapacityPercentage(machine.machine_id, date), 100) + "%" })
+                          }, null, 6),
+                          createBaseVNode("span", _hoisted_69, toDisplayString($setup.getUsedMinutes(machine.machine_id, date)) + "m/" + toDisplayString($setup.getEffectiveMinutes(date, machine.machine_id)) + "m", 1)
+                        ], 2)
+                      ], 8, _hoisted_68)) : createCommentVNode("v-if", true)
+                    ], 46, _hoisted_65);
+                  }), 128)),
+                  createCommentVNode(" Gantt bar layer (overlays date cells in same row) "),
+                  createBaseVNode("div", {
+                    class: normalizeClass(["gantt-bar-layer", { "machine-disabled": !$setup.isMachineCompatible(machine.machine_id) }]),
+                    style: normalizeStyle({ gridRow: mIdx + 2, gridColumn: `2 / ${$setup.dateRange.length + 2}`, minHeight: $setup.getBarLayerHeight(machine.machine_id) + "px" })
+                  }, [
+                    (openBlock(true), createElementBlock(Fragment, null, renderList($setup.getGroupsForMachine(machine.machine_id), (group) => {
+                      return openBlock(), createElementBlock("div", {
+                        key: group.group_id,
+                        class: "gantt-bar",
+                        style: normalizeStyle($setup.getBarStyle(group)),
+                        draggable: "true",
+                        onDragstart: ($event) => $setup.onGroupDragStart($event, group),
+                        onDragend: $setup.onDragEnd,
+                        onDragover: ($event) => $setup.onCellDragOver($event, machine.machine_id),
+                        onDrop: ($event) => $setup.onBarDrop($event, machine.machine_id),
+                        onContextmenu: withModifiers(($event) => $setup.onBarContextMenu($event, group), ["prevent"]),
+                        onClick: withModifiers(($event) => $setup.selectGroup(group), ["stop"]),
+                        onMouseenter: ($event) => $setup.showTooltip($event, group),
+                        onMouseleave: $setup.hideTooltip
+                      }, [
+                        createBaseVNode("div", _hoisted_71, [
+                          createBaseVNode("span", _hoisted_722, toDisplayString(group.item), 1),
+                          createBaseVNode("span", _hoisted_73, toDisplayString(group.total_quantity), 1)
+                        ]),
+                        createBaseVNode("div", _hoisted_74, [
+                          createBaseVNode("span", _hoisted_75, toDisplayString(group.process), 1),
+                          createBaseVNode("span", _hoisted_76, toDisplayString(group.total_minutes) + "m", 1)
+                        ]),
+                        createBaseVNode("div", _hoisted_77, [
+                          group.order ? (openBlock(), createElementBlock("span", _hoisted_78, [
+                            _hoisted_79,
+                            createTextVNode(" " + toDisplayString(group.order), 1)
                           ])) : createCommentVNode("v-if", true),
-                          $setup.getUsedMinutes(machine.machine_id, date) > 0 ? (openBlock(), createElementBlock("div", _hoisted_85, [
-                            createBaseVNode("div", {
-                              class: normalizeClass(["capacity-fill", $setup.getCapacityBarClass(machine.machine_id, date)]),
-                              style: normalizeStyle({ width: $setup.getCapacityPercentage(machine.machine_id, date) + "%" })
-                            }, null, 6)
+                          group.colour ? (openBlock(), createElementBlock("span", _hoisted_80, [
+                            _hoisted_81,
+                            createTextVNode(" " + toDisplayString(group.colour), 1)
+                          ])) : createCommentVNode("v-if", true),
+                          group.size ? (openBlock(), createElementBlock("span", _hoisted_822, [
+                            _hoisted_83,
+                            createTextVNode(" " + toDisplayString(group.size), 1)
                           ])) : createCommentVNode("v-if", true)
                         ])
-                      ], 42, _hoisted_722);
+                      ], 44, _hoisted_70);
                     }), 128))
-                  ]);
-                }), 128))
-              ])
-            ])
+                  ], 6)
+                ], 64);
+              }), 128))
+            ], 4)
           ])
         ])
       ]),
-      createCommentVNode(" Split Quantity Modal "),
-      $setup.showSplitModal ? (openBlock(), createElementBlock("div", {
-        key: 1,
-        class: "modal-overlay",
-        onClick: $setup.closeSplitModal
-      }, [
-        createBaseVNode("div", {
-          class: "modal-content",
-          onClick: _cache[7] || (_cache[7] = withModifiers(() => {
-          }, ["stop"]))
-        }, [
-          _hoisted_86,
-          createBaseVNode("div", _hoisted_87, [
-            createBaseVNode("label", null, "Original Quantity: " + toDisplayString((_a = $setup.selectedAllocation) == null ? void 0 : _a.quantity), 1)
-          ]),
-          createBaseVNode("div", _hoisted_88, [
-            _hoisted_89,
-            withDirectives(createBaseVNode("input", {
-              type: "number",
-              "onUpdate:modelValue": _cache[6] || (_cache[6] = ($event) => $setup.splitQuantity = $event),
-              class: "form-control",
-              min: "1",
-              max: (((_b = $setup.selectedAllocation) == null ? void 0 : _b.quantity) || 1) - 1
-            }, null, 8, _hoisted_90), [
-              [
-                vModelText,
-                $setup.splitQuantity,
-                void 0,
-                { number: true }
-              ]
-            ])
-          ]),
-          createBaseVNode("div", { class: "modal-actions" }, [
-            createBaseVNode("button", {
-              class: "btn btn-primary",
-              onClick: $setup.confirmSplit
-            }, "Split"),
-            createBaseVNode("button", {
-              class: "btn btn-secondary",
-              onClick: $setup.closeSplitModal
-            }, "Cancel")
-          ])
-        ])
-      ])) : createCommentVNode("v-if", true),
-      createCommentVNode(" Edit Quantity Modal "),
-      $setup.showEditModal ? (openBlock(), createElementBlock("div", {
-        key: 2,
-        class: "modal-overlay",
-        onClick: $setup.closeEditModal
-      }, [
-        createBaseVNode("div", {
-          class: "modal-content",
-          onClick: _cache[9] || (_cache[9] = withModifiers(() => {
-          }, ["stop"]))
-        }, [
-          _hoisted_91,
-          createBaseVNode("div", _hoisted_922, [
-            createBaseVNode("label", null, "Current Quantity: " + toDisplayString((_c = $setup.selectedAllocation) == null ? void 0 : _c.quantity), 1)
-          ]),
-          createBaseVNode("div", _hoisted_93, [
-            _hoisted_94,
-            withDirectives(createBaseVNode("input", {
-              type: "number",
-              "onUpdate:modelValue": _cache[8] || (_cache[8] = ($event) => $setup.editQuantity = $event),
-              class: "form-control",
-              min: "1"
-            }, null, 512), [
-              [
-                vModelText,
-                $setup.editQuantity,
-                void 0,
-                { number: true }
-              ]
-            ])
-          ]),
-          createBaseVNode("div", { class: "modal-actions" }, [
-            createBaseVNode("button", {
-              class: "btn btn-primary",
-              onClick: $setup.confirmEdit
-            }, "Update"),
-            createBaseVNode("button", {
-              class: "btn btn-secondary",
-              onClick: $setup.closeEditModal
-            }, "Cancel")
-          ])
-        ])
-      ])) : createCommentVNode("v-if", true),
       createCommentVNode(" Allocate Quantity Modal "),
       $setup.showDropModal && $setup.pendingDrop ? (openBlock(), createElementBlock("div", {
-        key: 3,
+        key: 1,
         class: "modal-overlay",
         onClick: $setup.closeDropModal
       }, [
         createBaseVNode("div", {
           class: "modal-content",
-          onClick: _cache[11] || (_cache[11] = withModifiers(() => {
+          onClick: _cache[2] || (_cache[2] = withModifiers(() => {
           }, ["stop"]))
         }, [
-          _hoisted_95,
-          createBaseVNode("div", _hoisted_96, [
+          _hoisted_84,
+          createBaseVNode("div", _hoisted_85, [
             createBaseVNode("label", null, "Item: " + toDisplayString($setup.pendingDrop.item), 1)
           ]),
-          createBaseVNode("div", _hoisted_97, [
+          createBaseVNode("div", _hoisted_86, [
             createBaseVNode("label", null, "Target: " + toDisplayString($setup.pendingDrop.machineId) + " \xB7 " + toDisplayString($setup.pendingDrop.dateStr), 1)
           ]),
-          createBaseVNode("div", _hoisted_98, [
+          createBaseVNode("div", _hoisted_87, [
             createBaseVNode("label", null, "Available on this day: " + toDisplayString($setup.pendingDrop.availableCapacityQty) + " units", 1)
           ]),
-          createBaseVNode("div", _hoisted_99, [
+          createBaseVNode("div", _hoisted_88, [
             createBaseVNode("label", null, "Remaining (max): " + toDisplayString($setup.pendingDrop.maxQty) + " units", 1)
           ]),
-          $setup.dropQuantity > $setup.pendingDrop.availableCapacityQty ? (openBlock(), createElementBlock("div", _hoisted_100, [..._hoisted_1022])) : createCommentVNode("v-if", true),
-          createBaseVNode("div", _hoisted_103, [
-            _hoisted_104,
+          $setup.dropQuantity > $setup.pendingDrop.availableCapacityQty ? (openBlock(), createElementBlock("div", _hoisted_89, [..._hoisted_91])) : createCommentVNode("v-if", true),
+          createBaseVNode("div", _hoisted_922, [
+            _hoisted_93,
             withDirectives(createBaseVNode("input", {
               type: "number",
-              "onUpdate:modelValue": _cache[10] || (_cache[10] = ($event) => $setup.dropQuantity = $event),
+              "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => $setup.dropQuantity = $event),
               class: "form-control",
               min: "1",
               max: $setup.pendingDrop.maxQty
-            }, null, 8, _hoisted_105), [
+            }, null, 8, _hoisted_94), [
               [
                 vModelText,
                 $setup.dropQuantity,
@@ -10071,32 +12686,64 @@ Expected function or array of functions, received type ${typeof value}.`
       ])) : createCommentVNode("v-if", true),
       createCommentVNode(" Shift Confirmation Modal "),
       $setup.showShiftModal && $setup.shiftModalData ? (openBlock(), createElementBlock("div", {
-        key: 4,
+        key: 2,
         class: "modal-overlay",
         onClick: $setup.closeShiftModal
       }, [
         createBaseVNode("div", {
           class: "shift-modal",
-          onClick: _cache[12] || (_cache[12] = withModifiers(() => {
+          onClick: _cache[3] || (_cache[3] = withModifiers(() => {
           }, ["stop"]))
         }, [
-          _hoisted_106,
-          createBaseVNode("div", _hoisted_107, [
-            createBaseVNode("p", null, [
-              createTextVNode("The new workload needs "),
-              createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.newWorkloadPlan.length), 1),
-              createTextVNode(" day(s) on "),
-              createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.pendingDropData.machineId), 1),
-              createTextVNode(".")
-            ]),
-            createBaseVNode("p", null, [
-              createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.affectedAllocations.length), 1),
-              createTextVNode(" existing allocation(s) will be shifted forward to make room.")
-            ])
+          createBaseVNode("h4", null, toDisplayString($setup.shiftModalData.type === "move_group" ? "Cascade Shift Groups" : "Shift Allocations Forward"), 1),
+          createBaseVNode("div", _hoisted_95, [
+            $setup.shiftModalData.type === "move_group" && $setup.shiftModalData.affectedGroups ? (openBlock(), createElementBlock("p", _hoisted_96, [
+              createTextVNode("Moving group to "),
+              createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.targetMachineId), 1),
+              createTextVNode(" will cascade "),
+              createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.affectedGroups.length), 1),
+              createTextVNode(" subsequent group(s) forward.")
+            ])) : $setup.shiftModalData.type === "move_group" ? (openBlock(), createElementBlock(Fragment, { key: 1 }, [
+              createBaseVNode("p", null, [
+                createTextVNode("Moving group to "),
+                createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.targetMachineId), 1),
+                createTextVNode(" conflicts with "),
+                createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.affectedAllocations.length), 1),
+                createTextVNode(" existing allocation(s).")
+              ]),
+              _hoisted_97
+            ], 64)) : (openBlock(), createElementBlock(Fragment, { key: 2 }, [
+              createBaseVNode("p", null, [
+                createTextVNode("The new workload needs "),
+                createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.newWorkloadPlan.length), 1),
+                createTextVNode(" day(s) on "),
+                createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.pendingDropData.machineId), 1),
+                createTextVNode(".")
+              ]),
+              createBaseVNode("p", null, [
+                createBaseVNode("strong", null, toDisplayString($setup.shiftModalData.affectedAllocations.length), 1),
+                createTextVNode(" existing allocation(s) will be shifted forward to make room.")
+              ])
+            ], 64))
           ]),
-          createBaseVNode("div", _hoisted_108, [
-            createBaseVNode("table", _hoisted_109, [
-              _hoisted_110,
+          createBaseVNode("div", _hoisted_98, [
+            $setup.shiftModalData.affectedGroups && $setup.shiftModalData.affectedGroups.length > 0 ? (openBlock(), createElementBlock("table", _hoisted_99, [
+              _hoisted_100,
+              createBaseVNode("tbody", null, [
+                (openBlock(true), createElementBlock(Fragment, null, renderList($setup.shiftModalData.affectedGroups, (grp, idx) => {
+                  return openBlock(), createElementBlock("tr", { key: idx }, [
+                    createBaseVNode("td", null, toDisplayString(grp.item), 1),
+                    createBaseVNode("td", null, toDisplayString(grp.order), 1),
+                    createBaseVNode("td", null, toDisplayString(grp.dayCount), 1),
+                    createBaseVNode("td", null, toDisplayString(grp.oldStart) + " to " + toDisplayString(grp.oldEnd), 1),
+                    _hoisted_101,
+                    createBaseVNode("td", null, toDisplayString(grp.newStart && grp.newEnd ? `${grp.newStart} to ${grp.newEnd}` : "Out of range"), 1),
+                    createBaseVNode("td", null, "+" + toDisplayString(grp.pushDays) + "d", 1)
+                  ]);
+                }), 128))
+              ])
+            ])) : (openBlock(), createElementBlock("table", _hoisted_1022, [
+              _hoisted_103,
               createBaseVNode("tbody", null, [
                 (openBlock(true), createElementBlock(Fragment, null, renderList($setup.shiftModalData.affectedAllocations, (entry, idx) => {
                   return openBlock(), createElementBlock("tr", { key: idx }, [
@@ -10105,7 +12752,58 @@ Expected function or array of functions, received type ${typeof value}.`
                     createBaseVNode("td", null, toDisplayString(entry.allocation.process), 1),
                     createBaseVNode("td", null, toDisplayString(entry.allocation.quantity), 1),
                     createBaseVNode("td", null, toDisplayString(entry.currentDate), 1),
-                    _hoisted_111,
+                    _hoisted_104,
+                    createBaseVNode("td", null, toDisplayString(entry.newDate), 1)
+                  ]);
+                }), 128))
+              ])
+            ]))
+          ]),
+          createBaseVNode("div", _hoisted_105, [
+            createBaseVNode("button", {
+              class: "btn btn-primary",
+              onClick: $setup.confirmShift
+            }, toDisplayString($setup.shiftModalData.type === "move_group" ? "Shift & Move" : "Shift & Allocate"), 1),
+            $setup.shiftModalData.type !== "move_group" ? (openBlock(), createElementBlock("button", {
+              key: 0,
+              class: "btn btn-default",
+              onClick: $setup.allocateWithoutShift
+            }, "Allocate Without Shifting")) : createCommentVNode("v-if", true),
+            createBaseVNode("button", {
+              class: "btn btn-secondary",
+              onClick: $setup.closeShiftModal
+            }, "Cancel")
+          ])
+        ])
+      ])) : createCommentVNode("v-if", true),
+      createCommentVNode(" Backfill Confirmation Modal "),
+      $setup.showBackfillModal && $setup.backfillModalData ? (openBlock(), createElementBlock("div", _hoisted_106, [
+        createBaseVNode("div", {
+          class: "shift-modal",
+          onClick: _cache[4] || (_cache[4] = withModifiers(() => {
+          }, ["stop"]))
+        }, [
+          _hoisted_107,
+          createBaseVNode("div", _hoisted_108, [
+            createBaseVNode("p", null, [
+              createBaseVNode("strong", null, toDisplayString($setup.backfillModalData.affectedAllocations.length), 1),
+              createTextVNode(" subsequent allocation(s) on "),
+              createBaseVNode("strong", null, toDisplayString($setup.backfillModalData.machineId), 1),
+              createTextVNode(" can be shifted backward to fill the gap.")
+            ])
+          ]),
+          createBaseVNode("div", _hoisted_109, [
+            createBaseVNode("table", _hoisted_1102, [
+              _hoisted_111,
+              createBaseVNode("tbody", null, [
+                (openBlock(true), createElementBlock(Fragment, null, renderList($setup.backfillModalData.affectedAllocations, (entry, idx) => {
+                  return openBlock(), createElementBlock("tr", { key: idx }, [
+                    createBaseVNode("td", null, toDisplayString(entry.allocation.order), 1),
+                    createBaseVNode("td", null, toDisplayString(entry.allocation.item), 1),
+                    createBaseVNode("td", null, toDisplayString(entry.allocation.process), 1),
+                    createBaseVNode("td", null, toDisplayString(entry.allocation.quantity), 1),
+                    createBaseVNode("td", null, toDisplayString(entry.currentDate), 1),
+                    _hoisted_1122,
                     createBaseVNode("td", null, toDisplayString(entry.newDate), 1)
                   ]);
                 }), 128))
@@ -10115,41 +12813,419 @@ Expected function or array of functions, received type ${typeof value}.`
           createBaseVNode("div", { class: "modal-actions" }, [
             createBaseVNode("button", {
               class: "btn btn-primary",
-              onClick: $setup.confirmShift
-            }, "Shift & Allocate"),
+              onClick: $setup.confirmBackfill
+            }, "Shift Backward"),
             createBaseVNode("button", {
               class: "btn btn-default",
-              onClick: $setup.allocateWithoutShift
-            }, "Allocate Without Shifting"),
+              onClick: $setup.declineBackfill
+            }, "Just Delete"),
             createBaseVNode("button", {
               class: "btn btn-secondary",
-              onClick: $setup.closeShiftModal
+              onClick: $setup.cancelDeleteGroup
             }, "Cancel")
           ])
         ])
       ])) : createCommentVNode("v-if", true),
+      createCommentVNode(" Edit Group Quantity Modal "),
+      $setup.showEditGroupModal && $setup.selectedGroup ? (openBlock(), createElementBlock("div", {
+        key: 4,
+        class: "modal-overlay",
+        onClick: $setup.closeEditGroupModal
+      }, [
+        createBaseVNode("div", {
+          class: "modal-content",
+          onClick: _cache[6] || (_cache[6] = withModifiers(() => {
+          }, ["stop"]))
+        }, [
+          _hoisted_113,
+          createBaseVNode("div", _hoisted_114, [
+            createBaseVNode("label", null, "Item: " + toDisplayString($setup.selectedGroup.item), 1)
+          ]),
+          createBaseVNode("div", _hoisted_115, [
+            createBaseVNode("label", null, "Dates: " + toDisplayString($setup.selectedGroup.start_date) + " to " + toDisplayString($setup.selectedGroup.end_date) + " (" + toDisplayString($setup.selectedGroup.allocs.length) + " days)", 1)
+          ]),
+          createBaseVNode("div", _hoisted_116, [
+            createBaseVNode("label", null, "Current Total: " + toDisplayString($setup.selectedGroup.total_quantity), 1)
+          ]),
+          createBaseVNode("div", _hoisted_117, [
+            _hoisted_118,
+            withDirectives(createBaseVNode("input", {
+              type: "number",
+              "onUpdate:modelValue": _cache[5] || (_cache[5] = ($event) => $setup.editGroupQuantity = $event),
+              class: "form-control",
+              min: "1"
+            }, null, 512), [
+              [
+                vModelText,
+                $setup.editGroupQuantity,
+                void 0,
+                { number: true }
+              ]
+            ])
+          ]),
+          createBaseVNode("div", { class: "modal-actions" }, [
+            createBaseVNode("button", {
+              class: "btn btn-primary",
+              onClick: $setup.confirmEditGroup
+            }, "Update"),
+            createBaseVNode("button", {
+              class: "btn btn-secondary",
+              onClick: $setup.closeEditGroupModal
+            }, "Cancel")
+          ])
+        ])
+      ])) : createCommentVNode("v-if", true),
+      createCommentVNode(" Split Group at Date Modal "),
+      $setup.showSplitGroupModal && $setup.selectedGroup ? (openBlock(), createElementBlock("div", {
+        key: 5,
+        class: "modal-overlay",
+        onClick: $setup.closeSplitGroupModal
+      }, [
+        createBaseVNode("div", {
+          class: "modal-content",
+          onClick: _cache[8] || (_cache[8] = withModifiers(() => {
+          }, ["stop"]))
+        }, [
+          _hoisted_119,
+          createBaseVNode("div", _hoisted_120, [
+            createBaseVNode("label", null, "Item: " + toDisplayString($setup.selectedGroup.item) + " (" + toDisplayString($setup.selectedGroup.allocs.length) + " days)", 1)
+          ]),
+          createBaseVNode("div", _hoisted_121, [
+            _hoisted_1222,
+            withDirectives(createBaseVNode("select", {
+              "onUpdate:modelValue": _cache[7] || (_cache[7] = ($event) => $setup.splitGroupDate = $event),
+              class: "form-control"
+            }, [
+              (openBlock(true), createElementBlock(Fragment, null, renderList($setup.selectedGroup.allocs.slice(1), (alloc) => {
+                return openBlock(), createElementBlock("option", {
+                  key: alloc.operation_date,
+                  value: alloc.operation_date
+                }, toDisplayString(alloc.operation_date), 9, _hoisted_123);
+              }), 128))
+            ], 512), [
+              [vModelSelect, $setup.splitGroupDate]
+            ])
+          ]),
+          createBaseVNode("div", { class: "modal-actions" }, [
+            createBaseVNode("button", {
+              class: "btn btn-primary",
+              onClick: $setup.confirmSplitGroup
+            }, "Split"),
+            createBaseVNode("button", {
+              class: "btn btn-secondary",
+              onClick: $setup.closeSplitGroupModal
+            }, "Cancel")
+          ])
+        ])
+      ])) : createCommentVNode("v-if", true),
+      createCommentVNode(" Shift Group by Days Modal "),
+      $setup.showShiftByDaysModal && $setup.selectedGroup ? (openBlock(), createElementBlock("div", {
+        key: 6,
+        class: "modal-overlay",
+        onClick: $setup.closeShiftByDaysModal
+      }, [
+        createBaseVNode("div", {
+          class: "shift-modal",
+          onClick: _cache[10] || (_cache[10] = withModifiers(() => {
+          }, ["stop"]))
+        }, [
+          _hoisted_124,
+          createBaseVNode("div", _hoisted_125, [
+            createBaseVNode("label", null, toDisplayString($setup.selectedGroup.item) + " \u2014 " + toDisplayString($setup.selectedGroup.start_date) + " to " + toDisplayString($setup.selectedGroup.end_date) + " (" + toDisplayString($setup.selectedGroup.allocs.length) + " days)", 1)
+          ]),
+          createBaseVNode("div", _hoisted_126, [
+            _hoisted_127,
+            withDirectives(createBaseVNode("input", {
+              type: "number",
+              "onUpdate:modelValue": _cache[9] || (_cache[9] = ($event) => $setup.shiftByDaysCount = $event),
+              class: "form-control",
+              onInput: $setup.computeShiftByDaysPreview
+            }, null, 544), [
+              [
+                vModelText,
+                $setup.shiftByDaysCount,
+                void 0,
+                { number: true }
+              ]
+            ]),
+            _hoisted_128
+          ]),
+          $setup.shiftByDaysCount !== 0 && $setup.shiftByDaysPreview ? (openBlock(), createElementBlock(Fragment, { key: 0 }, [
+            $setup.shiftByDaysPreview.error ? (openBlock(), createElementBlock("div", _hoisted_129, [
+              createBaseVNode("p", _hoisted_130, [
+                createBaseVNode("strong", null, toDisplayString($setup.shiftByDaysPreview.error), 1)
+              ])
+            ])) : (openBlock(), createElementBlock(Fragment, { key: 1 }, [
+              createBaseVNode("div", _hoisted_131, [
+                createBaseVNode("p", null, [
+                  createTextVNode("Group moves from "),
+                  createBaseVNode("strong", null, toDisplayString($setup.selectedGroup.start_date), 1),
+                  createTextVNode(" \u2192 "),
+                  createBaseVNode("strong", null, toDisplayString($setup.shiftByDaysPreview.newStart), 1)
+                ]),
+                $setup.shiftByDaysPreview.affectedGroups && $setup.shiftByDaysPreview.affectedGroups.length > 0 ? (openBlock(), createElementBlock("p", _hoisted_1322, [
+                  createBaseVNode("strong", null, toDisplayString($setup.shiftByDaysPreview.affectedGroups.length), 1),
+                  createTextVNode(" subsequent group(s) will cascade forward. ")
+                ])) : (openBlock(), createElementBlock("p", _hoisted_133, "No conflicts \u2014 group can shift directly."))
+              ]),
+              $setup.shiftByDaysPreview.affectedGroups && $setup.shiftByDaysPreview.affectedGroups.length > 0 ? (openBlock(), createElementBlock("div", _hoisted_134, [
+                createBaseVNode("table", _hoisted_135, [
+                  _hoisted_136,
+                  createBaseVNode("tbody", null, [
+                    (openBlock(true), createElementBlock(Fragment, null, renderList($setup.shiftByDaysPreview.affectedGroups, (grp, idx) => {
+                      return openBlock(), createElementBlock("tr", { key: idx }, [
+                        createBaseVNode("td", null, toDisplayString(grp.item), 1),
+                        createBaseVNode("td", null, toDisplayString(grp.order), 1),
+                        createBaseVNode("td", null, toDisplayString(grp.dayCount), 1),
+                        createBaseVNode("td", null, toDisplayString(grp.oldStart) + " to " + toDisplayString(grp.oldEnd), 1),
+                        _hoisted_137,
+                        createBaseVNode("td", null, toDisplayString(grp.newStart && grp.newEnd ? `${grp.newStart} to ${grp.newEnd}` : "Out of range"), 1),
+                        createBaseVNode("td", null, "+" + toDisplayString(grp.pushDays) + "d", 1)
+                      ]);
+                    }), 128))
+                  ])
+                ])
+              ])) : createCommentVNode("v-if", true),
+              createBaseVNode("div", _hoisted_138, [
+                createBaseVNode("button", {
+                  class: "btn btn-primary",
+                  onClick: $setup.confirmShiftByDays,
+                  disabled: $setup.shiftByDaysPreview.outOfBounds
+                }, toDisplayString($setup.shiftByDaysPreview.affected.length > 0 ? "Shift & Move" : "Shift Group"), 9, _hoisted_139),
+                createBaseVNode("button", {
+                  class: "btn btn-secondary",
+                  onClick: $setup.closeShiftByDaysModal
+                }, "Cancel")
+              ])
+            ], 64))
+          ], 64)) : (openBlock(), createElementBlock("div", _hoisted_140, [
+            createBaseVNode("button", {
+              class: "btn btn-secondary",
+              onClick: $setup.closeShiftByDaysModal
+            }, "Cancel")
+          ]))
+        ])
+      ])) : createCommentVNode("v-if", true),
       createCommentVNode(" Right-click Context Menu "),
       $setup.contextMenu.show ? (openBlock(), createElementBlock("div", {
-        key: 5,
+        key: 7,
         class: "context-menu",
         style: normalizeStyle({ top: $setup.contextMenu.y + "px", left: $setup.contextMenu.x + "px" })
       }, [
+        $setup.selectedGroup ? (openBlock(), createElementBlock(Fragment, { key: 0 }, [
+          createBaseVNode("div", {
+            class: "menu-item",
+            onClick: $setup.openShiftGroupByDaysModal
+          }, "Shift Group by Days"),
+          createBaseVNode("div", {
+            class: "menu-item text-danger",
+            onClick: $setup.deleteGroup
+          }, "Delete Group")
+        ], 64)) : createCommentVNode("v-if", true)
+      ], 4)) : createCommentVNode("v-if", true),
+      createCommentVNode(" Action Choice Dialog "),
+      $setup.showActionChoice ? (openBlock(), createElementBlock("div", {
+        key: 8,
+        class: "modal-overlay",
+        onClick: $setup.closeActionChoice
+      }, [
         createBaseVNode("div", {
-          class: "menu-item",
-          onClick: $setup.openSplitModal
-        }, "Split Quantity"),
+          class: "modal-content action-choice-modal",
+          onClick: _cache[11] || (_cache[11] = withModifiers(() => {
+          }, ["stop"]))
+        }, [
+          _hoisted_141,
+          createBaseVNode("p", _hoisted_1422, toDisplayString($setup.actionChoiceContext.date) + " " + toDisplayString($setup.actionChoiceContext.machine ? "(" + $setup.actionChoiceContext.machine + ")" : "(All Machines)"), 1),
+          createBaseVNode("div", { class: "action-choice-buttons" }, [
+            createBaseVNode("button", {
+              class: "btn btn-primary action-choice-btn",
+              onClick: $setup.chooseUpdateShift
+            }, [
+              _hoisted_143,
+              createTextVNode(" Update Shift ")
+            ]),
+            createBaseVNode("button", {
+              class: "btn btn-default action-choice-btn",
+              onClick: $setup.chooseUpdateTime
+            }, [
+              _hoisted_144,
+              createTextVNode(" Update Time ")
+            ])
+          ]),
+          createBaseVNode("div", { class: "modal-actions" }, [
+            createBaseVNode("button", {
+              class: "btn btn-secondary",
+              onClick: $setup.closeActionChoice
+            }, "Cancel")
+          ])
+        ])
+      ])) : createCommentVNode("v-if", true),
+      createCommentVNode(" Shift Update Modal "),
+      $setup.showShiftUpdateModal ? (openBlock(), createElementBlock("div", {
+        key: 9,
+        class: "modal-overlay",
+        onClick: $setup.closeShiftUpdateModal
+      }, [
         createBaseVNode("div", {
-          class: "menu-item",
-          onClick: $setup.openEditModal
-        }, "Edit Quantity"),
+          class: "modal-content",
+          onClick: _cache[13] || (_cache[13] = withModifiers(() => {
+          }, ["stop"]))
+        }, [
+          _hoisted_145,
+          createBaseVNode("div", _hoisted_146, [
+            _hoisted_147,
+            createBaseVNode("input", {
+              type: "text",
+              class: "form-control",
+              value: $setup.shiftUpdateForm.date,
+              disabled: ""
+            }, null, 8, _hoisted_148)
+          ]),
+          createBaseVNode("div", _hoisted_149, [
+            _hoisted_150,
+            createBaseVNode("div", _hoisted_151, [
+              (openBlock(true), createElementBlock(Fragment, null, renderList($setup.allShifts, (s) => {
+                return openBlock(), createElementBlock("label", {
+                  key: s.name,
+                  class: "shift-checkbox-item"
+                }, [
+                  withDirectives(createBaseVNode("input", {
+                    type: "checkbox",
+                    value: s.name,
+                    "onUpdate:modelValue": _cache[12] || (_cache[12] = ($event) => $setup.shiftUpdateForm.shifts = $event)
+                  }, null, 8, _hoisted_1522), [
+                    [vModelCheckbox, $setup.shiftUpdateForm.shifts]
+                  ]),
+                  createBaseVNode("span", _hoisted_153, toDisplayString(s.shift_name), 1),
+                  createBaseVNode("span", _hoisted_154, toDisplayString(s.duration_minutes) + "m", 1)
+                ]);
+              }), 128))
+            ])
+          ]),
+          $setup.shiftUpdateForm.shifts.length > 0 ? (openBlock(), createElementBlock("div", _hoisted_155, [
+            createBaseVNode("label", _hoisted_156, "Total: " + toDisplayString($setup.selectedShiftsTotalMinutes) + "m", 1)
+          ])) : createCommentVNode("v-if", true),
+          createBaseVNode("div", _hoisted_157, [
+            createBaseVNode("button", {
+              class: "btn btn-primary",
+              onClick: $setup.confirmShiftUpdate,
+              disabled: $setup.shiftUpdateSaving || $setup.shiftUpdateForm.shifts.length === 0
+            }, toDisplayString($setup.shiftUpdateSaving ? "Saving..." : "Update"), 9, _hoisted_158),
+            createBaseVNode("button", {
+              class: "btn btn-secondary",
+              onClick: $setup.closeShiftUpdateModal
+            }, "Cancel")
+          ])
+        ])
+      ])) : createCommentVNode("v-if", true),
+      createCommentVNode(" Shift Alteration Modal "),
+      $setup.showAlterationModal ? (openBlock(), createElementBlock("div", {
+        key: 10,
+        class: "modal-overlay",
+        onClick: $setup.closeAlterationModal
+      }, [
         createBaseVNode("div", {
-          class: "menu-item",
-          onClick: $setup.mergeAllocations
-        }, "Merge with Same"),
-        createBaseVNode("div", {
-          class: "menu-item text-danger",
-          onClick: $setup.deleteSelectedAllocation
-        }, "Delete")
+          class: "modal-content",
+          onClick: _cache[17] || (_cache[17] = withModifiers(() => {
+          }, ["stop"]))
+        }, [
+          _hoisted_159,
+          createBaseVNode("div", _hoisted_160, [
+            _hoisted_161,
+            createBaseVNode("input", {
+              type: "text",
+              class: "form-control",
+              value: $setup.alterationForm.date,
+              disabled: ""
+            }, null, 8, _hoisted_1622)
+          ]),
+          createBaseVNode("div", _hoisted_163, [
+            _hoisted_164,
+            createBaseVNode("input", {
+              type: "text",
+              class: "form-control",
+              value: $setup.alterationForm.machine || "All Machines",
+              disabled: ""
+            }, null, 8, _hoisted_165)
+          ]),
+          createBaseVNode("div", _hoisted_166, [
+            _hoisted_167,
+            withDirectives(createBaseVNode("select", {
+              "onUpdate:modelValue": _cache[14] || (_cache[14] = ($event) => $setup.alterationForm.alteration_type = $event),
+              class: "form-control"
+            }, [..._hoisted_170], 512), [
+              [vModelSelect, $setup.alterationForm.alteration_type]
+            ])
+          ]),
+          createBaseVNode("div", _hoisted_171, [
+            _hoisted_1722,
+            withDirectives(createBaseVNode("input", {
+              type: "number",
+              "onUpdate:modelValue": _cache[15] || (_cache[15] = ($event) => $setup.alterationForm.minutes = $event),
+              class: "form-control",
+              min: "1"
+            }, null, 512), [
+              [
+                vModelText,
+                $setup.alterationForm.minutes,
+                void 0,
+                { number: true }
+              ]
+            ])
+          ]),
+          createBaseVNode("div", _hoisted_173, [
+            _hoisted_174,
+            withDirectives(createBaseVNode("input", {
+              type: "text",
+              "onUpdate:modelValue": _cache[16] || (_cache[16] = ($event) => $setup.alterationForm.reason = $event),
+              class: "form-control",
+              placeholder: "e.g., Overtime, Break"
+            }, null, 512), [
+              [vModelText, $setup.alterationForm.reason]
+            ])
+          ]),
+          createBaseVNode("div", _hoisted_175, [
+            createBaseVNode("button", {
+              class: "btn btn-primary",
+              onClick: $setup.confirmAlteration,
+              disabled: $setup.alterationSaving
+            }, toDisplayString($setup.alterationSaving ? "Saving..." : "Add Alteration"), 9, _hoisted_176),
+            createBaseVNode("button", {
+              class: "btn btn-secondary",
+              onClick: $setup.closeAlterationModal
+            }, "Cancel")
+          ])
+        ])
+      ])) : createCommentVNode("v-if", true),
+      createCommentVNode(" Custom Tooltip "),
+      $setup.tooltip.show ? (openBlock(), createElementBlock("div", {
+        key: 11,
+        class: "gantt-tooltip",
+        style: normalizeStyle({ top: $setup.tooltip.y + "px", left: $setup.tooltip.x + "px" })
+      }, [
+        createBaseVNode("div", _hoisted_177, toDisplayString($setup.tooltip.data.item), 1),
+        createBaseVNode("div", _hoisted_178, [
+          _hoisted_179,
+          createBaseVNode("span", _hoisted_180, toDisplayString($setup.tooltip.data.order), 1),
+          _hoisted_181,
+          createBaseVNode("span", _hoisted_1822, toDisplayString($setup.tooltip.data.process), 1),
+          _hoisted_183,
+          createBaseVNode("span", _hoisted_184, toDisplayString($setup.tooltip.data.start_date) + " \u2192 " + toDisplayString($setup.tooltip.data.end_date), 1),
+          _hoisted_185,
+          createBaseVNode("span", _hoisted_186, toDisplayString($setup.tooltip.data.days), 1),
+          _hoisted_187,
+          createBaseVNode("span", _hoisted_188, toDisplayString($setup.tooltip.data.total_quantity), 1),
+          _hoisted_189,
+          createBaseVNode("span", _hoisted_190, toDisplayString($setup.tooltip.data.total_minutes) + "m", 1),
+          $setup.tooltip.data.colour ? (openBlock(), createElementBlock(Fragment, { key: 0 }, [
+            _hoisted_191,
+            createBaseVNode("span", _hoisted_1922, toDisplayString($setup.tooltip.data.colour), 1)
+          ], 64)) : createCommentVNode("v-if", true),
+          $setup.tooltip.data.size ? (openBlock(), createElementBlock(Fragment, { key: 1 }, [
+            _hoisted_193,
+            createBaseVNode("span", _hoisted_194, toDisplayString($setup.tooltip.data.size), 1)
+          ], 64)) : createCommentVNode("v-if", true)
+        ])
       ], 4)) : createCommentVNode("v-if", true)
     ]);
   }
@@ -10190,10 +13266,14 @@ Expected function or array of functions, received type ${typeof value}.`
       }
       return [];
     }
-    updateWrapper(wrapper) {
-      this.$wrapper = $(wrapper);
-      if (this.vue && this.vue.$el) {
-        $(this.vue.$el).appendTo(this.$wrapper);
+    destroy() {
+      if (this.app) {
+        this.app.unmount();
+        this.app = null;
+        this.vue = null;
+      }
+      if (this.$wrapper) {
+        this.$wrapper.html("");
       }
     }
   };
@@ -10250,4 +13330,4 @@ Expected function or array of functions, received type ${typeof value}.`
 * (c) 2018-present Yuxi (Evan) You and Vue contributors
 * @license MIT
 **/
-//# sourceMappingURL=albion.bundle.FBQ2EXPP.js.map
+//# sourceMappingURL=albion.bundle.ZX5QLWKN.js.map
