@@ -11,17 +11,11 @@
   "total_duration_minutes",
   "working_days_section",
   "sunday",
-  "cb_mon",
   "monday",
-  "cb_tue",
   "tuesday",
-  "cb_wed",
   "wednesday",
-  "sb_working2",
   "thursday",
-  "cb_fri",
   "friday",
-  "cb_sat",
   "saturday",
   "shifts_section",
   "shifts",
@@ -68,18 +62,10 @@
    "label": "Sunday"
   },
   {
-   "fieldname": "cb_mon",
-   "fieldtype": "Column Break"
-  },
-  {
    "default": "1",
    "fieldname": "monday",
    "fieldtype": "Check",
    "label": "Monday"
-  },
-  {
-   "fieldname": "cb_tue",
-   "fieldtype": "Column Break"
   },
   {
    "default": "1",
@@ -88,19 +74,10 @@
    "label": "Tuesday"
   },
   {
-   "fieldname": "cb_wed",
-   "fieldtype": "Column Break"
-  },
-  {
    "default": "1",
    "fieldname": "wednesday",
    "fieldtype": "Check",
    "label": "Wednesday"
-  },
-  {
-   "depends_on": "eval: doc.is_default",
-   "fieldname": "sb_working2",
-   "fieldtype": "Section Break"
   },
   {
    "default": "1",
@@ -109,18 +86,10 @@
    "label": "Thursday"
   },
   {
-   "fieldname": "cb_fri",
-   "fieldtype": "Column Break"
-  },
-  {
    "default": "1",
    "fieldname": "friday",
    "fieldtype": "Check",
    "label": "Friday"
-  },
-  {
-   "fieldname": "cb_sat",
-   "fieldtype": "Column Break"
   },
   {
    "default": "0",
@@ -155,7 +124,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-12 15:42:37.696247",
+ "modified": "2026-02-16 10:34:40.085185",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Shift Calendar",
