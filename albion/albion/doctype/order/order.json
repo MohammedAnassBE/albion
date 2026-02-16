@@ -1,17 +1,63 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:ORD-{YYYY}-{#####}",
  "creation": "2026-02-09 17:02:51.789401",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "section_break_qvpn",
+  "customer",
+  "order_date",
+  "delivery_date",
+  "items",
+  "section_break_matrix",
+  "order_matrix_html",
+  "order_details",
   "amended_from"
  ],
  "fields": [
   {
-   "fieldname": "section_break_qvpn",
-   "fieldtype": "Section Break"
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "order_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Order Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "delivery_date",
+   "fieldtype": "Date",
+   "label": "Delivery Date"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Order Item"
+  },
+  {
+   "fieldname": "section_break_matrix",
+   "fieldtype": "Section Break",
+   "label": "Order Matrix"
+  },
+  {
+   "fieldname": "order_matrix_html",
+   "fieldtype": "HTML",
+   "label": "Order Matrix"
+  },
+  {
+   "fieldname": "order_details",
+   "fieldtype": "Table",
+   "hidden": 1,
+   "label": "Order Details",
+   "options": "Order Detail"
   },
   {
    "fieldname": "amended_from",
@@ -28,7 +74,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-09 17:02:51.789401",
+ "modified": "2026-02-10 09:53:35.543694",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Order",
@@ -44,7 +90,6 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
-   "submit": 1,
    "write": 1
   }
  ],

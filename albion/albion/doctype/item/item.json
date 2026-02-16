@@ -1,26 +1,94 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:item_code",
  "creation": "2026-02-09 17:12:06.125264",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "item_code"
+  "item_code",
+  "item_name",
+  "machine_gg",
+  "size_range",
+  "section_break_colours",
+  "colours",
+  "section_break_sizes",
+  "sizes",
+  "section_break_processes",
+  "processes"
  ],
  "fields": [
   {
    "fieldname": "item_code",
    "fieldtype": "Data",
-   "label": "Item Code"
+   "in_list_view": 1,
+   "label": "Item Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "machine_gg",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Machine GG",
+   "options": "Machine GG",
+   "reqd": 1
+  },
+  {
+   "fieldname": "size_range",
+   "fieldtype": "Link",
+   "label": "Size Range",
+   "options": "Size Range"
+  },
+  {
+   "fieldname": "section_break_colours",
+   "fieldtype": "Section Break",
+   "label": "Colours"
+  },
+  {
+   "fieldname": "colours",
+   "fieldtype": "Table",
+   "label": "Colours",
+   "options": "Item Colour"
+  },
+  {
+   "fieldname": "section_break_sizes",
+   "fieldtype": "Section Break",
+   "label": "Sizes"
+  },
+  {
+   "fieldname": "sizes",
+   "fieldtype": "Table",
+   "label": "Sizes",
+   "options": "Item Size"
+  },
+  {
+   "fieldname": "section_break_processes",
+   "fieldtype": "Section Break",
+   "label": "Processes"
+  },
+  {
+   "fieldname": "processes",
+   "fieldtype": "Table",
+   "label": "Processes",
+   "options": "Item Process"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-09 17:12:12.067424",
+ "modified": "2026-02-13 14:17:24.451256",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Item",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
