@@ -17,7 +17,7 @@
   "thursday",
   "friday",
   "saturday",
-  "shifts_section",
+  "column_break_zvqs",
   "shifts",
   "alterations_section",
   "alterations"
@@ -98,15 +98,10 @@
    "label": "Saturday"
   },
   {
-   "fieldname": "shifts_section",
-   "fieldtype": "Section Break",
-   "label": "Shifts"
-  },
-  {
    "fieldname": "shifts",
    "fieldtype": "Table",
    "label": "Shifts",
-   "options": "Shift Calendar Item",
+   "options": "Shift Allocation Item",
    "reqd": 1
   },
   {
@@ -119,15 +114,19 @@
    "fieldtype": "Table",
    "label": "Alterations",
    "options": "Shift Alteration"
+  },
+  {
+   "fieldname": "column_break_zvqs",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-16 10:34:40.085185",
+ "modified": "2026-02-16 11:57:23.850822",
  "modified_by": "Administrator",
  "module": "Albion",
- "name": "Shift Calendar",
+ "name": "Shift Allocation",
  "owner": "Administrator",
  "permissions": [
   {

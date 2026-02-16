@@ -7,7 +7,7 @@ from frappe.model.document import Document
 from frappe.utils import getdate
 
 
-class ShiftCalendar(Document):
+class ShiftAllocation(Document):
     def validate(self):
         self.validate_dates()
         self.validate_is_default_unique()
@@ -21,13 +21,13 @@ class ShiftCalendar(Document):
     def validate_is_default_unique(self):
         if self.is_default:
             existing = frappe.db.get_value(
-                "Shift Calendar",
+                "Shift Allocation",
                 {"is_default": 1, "name": ["!=", self.name]},
                 "name"
             )
             if existing:
                 frappe.throw(
-                    _("Shift Calendar {0} is already set as default. Only one default calendar is allowed.").format(existing)
+                    _("Shift Allocation {0} is already set as default. Only one default calendar is allowed.").format(existing)
                 )
 
     def validate_alteration_dates(self):

@@ -4,5 +4,5 @@
 from frappe.model.document import Document
 
 
-class ShiftCalendarItem(Document):
+class ShiftAllocationItem(Document):
     pass

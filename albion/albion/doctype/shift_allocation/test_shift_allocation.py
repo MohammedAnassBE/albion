@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestShiftCalendar(FrappeTestCase):
+class TestShiftAllocation(FrappeTestCase):
 	pass

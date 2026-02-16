@@ -508,7 +508,6 @@
 </template>
 
 <script setup>
-import './CapacityPlanning.css';
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 
 const emit = defineEmits(['saveAllocations']);
@@ -543,8 +542,8 @@ let processControl = null;
 let viewTypeControl = null;
 let startDateControl = null;
 let endDateControl = null;
-const shiftCalendars = ref([]);
-const defaultCalendar = ref(null);
+const shiftAllocations = ref([]);
+const defaultAllocation = ref(null);
 const allocations = ref([]);
 const actionHistory = ref([]);
 const validationErrors = ref([]);
@@ -847,12 +846,12 @@ function formatDate(dateStr) {
 }
 
 function getCalendarForDate(dateStr) {
-    for (const cal of shiftCalendars.value) {
+    for (const cal of shiftAllocations.value) {
         if (dateStr >= cal.start_date && dateStr <= cal.end_date) {
             return cal;
         }
     }
-    return defaultCalendar.value;
+    return defaultAllocation.value;
 }
 
 function getShiftForDate(dateStr) {
@@ -923,7 +922,7 @@ function getDayAlterationDelta(dateStr) {
 }
 
 function isOffDay(dateStr) {
-    const cal = defaultCalendar.value;
+    const cal = defaultAllocation.value;
     if (!cal) return false;
     const dayIndex = new Date(dateStr).getDay(); // 0=Sun..6=Sat
     const dayFields = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -1093,6 +1092,27 @@ function getNextWorkingDay(dateStr, machineId) {
         if (getEffectiveMinutes(dates[idx], machineId) > 0) return dates[idx];
     }
     return null;
+}
+
+function simulateGroupEnd(totalQty, minutesPerUnit, startDate, machineId) {
+    if (totalQty <= 0 || minutesPerUnit <= 0) return startDate;
+    const dates = dateRange.value;
+    let remaining = totalQty;
+    let lastActiveDate = startDate;
+    let workDate = startDate;
+    if (getEffectiveMinutes(workDate, machineId) <= 0) {
+        workDate = getNextWorkingDay(addDaysToDate(workDate, -1), machineId);
+    }
+    if (!workDate) return startDate;
+    while (remaining > 0 && workDate && dates.includes(workDate)) {
+        const cap = getEffectiveMinutes(workDate, machineId);
+        const maxQty = Math.floor(cap / minutesPerUnit);
+        const allocQty = Math.min(remaining, Math.max(maxQty, 0));
+        if (allocQty > 0) { lastActiveDate = workDate; remaining -= allocQty; }
+        if (remaining <= 0) break;
+        workDate = getNextWorkingDay(workDate, machineId);
+    }
+    return lastActiveDate;
 }
 
 function getGroupsForMachine(machineId) {
@@ -1409,32 +1429,70 @@ function moveGroup(groupData, newMachineId, newStartDate) {
 
     const affected = [];
     let outOfBounds = false;
+    const forwardPushGroups = [];
 
     // Always cascade forward — push conflicting groups toward the future
+    // Uses consecutive working-day mapping to avoid splits from non-working day gaps
     {
-        let currentEnd = newEndDate;
+        const primaryTotalQty = groupAllocs.reduce((s, a) => s + a.quantity, 0);
+        const primaryTotalMin = groupAllocs.reduce((s, a) => s + a.allocated_minutes, 0);
+        const primaryMPU = primaryTotalQty > 0 ? primaryTotalMin / primaryTotalQty : 0;
+        const simulatedPrimaryEnd = simulateGroupEnd(primaryTotalQty, primaryMPU, targetDays[0].newDate, newMachineId);
+        let currentEnd = simulatedPrimaryEnd;
         for (const otherGroup of machineGroups) {
             if (otherGroup.end_date < newStartDate) continue;
             if (otherGroup.start_date > currentEnd) break;
 
-            const nextFree = addDaysToDate(currentEnd, 1);
-            const pushDays = dates.indexOf(nextFree) - dates.indexOf(otherGroup.start_date);
-            if (pushDays <= 0) continue;
+            const targetStart = addDaysToDate(currentEnd, 1);
+            let workDate = targetStart;
+            // Find first working day at or after targetStart
+            if (!dates.includes(workDate) || getEffectiveMinutes(workDate, newMachineId) <= 0) {
+                workDate = getNextWorkingDay(addDaysToDate(targetStart, -1), newMachineId);
+            }
+            if (!workDate) {
+                outOfBounds = true;
+                for (const alloc of otherGroup.allocObjs) {
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+                }
+                forwardPushGroups.push({
+                    alloc_keys: otherGroup.alloc_keys.slice(),
+                    targetStartDate: targetStart
+                });
+                continue;
+            }
 
-            const pushedEnd = addDaysToDate(otherGroup.end_date, pushDays);
-            if (!dates.includes(pushedEnd)) outOfBounds = true;
-
+            let lastWorkDate = null;
             for (const alloc of otherGroup.allocObjs) {
-                const nd = addDaysToDate(alloc.operation_date, pushDays);
-                if (!dates.includes(nd) || isPastDate(nd)) {
+                if (!workDate || !dates.includes(workDate)) {
+                    outOfBounds = true;
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+                } else if (isPastDate(workDate)) {
                     outOfBounds = true;
                     affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
                 } else {
-                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: nd });
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: workDate });
+                    lastWorkDate = workDate;
+                    workDate = getNextWorkingDay(workDate, newMachineId);
                 }
             }
 
-            currentEnd = outOfBounds ? currentEnd : pushedEnd;
+            if (lastWorkDate && !outOfBounds) {
+                const cgTotalQty = otherGroup.allocObjs.reduce((s, a) => s + a.quantity, 0);
+                const cgTotalMin = otherGroup.allocObjs.reduce((s, a) => s + a.allocated_minutes, 0);
+                const cgMPU = cgTotalQty > 0 ? cgTotalMin / cgTotalQty : 0;
+                const cgEntries = affected.filter(e => otherGroup.alloc_keys.includes(e.allocation.key) && e.newDate);
+                const cgStart = cgEntries.length > 0 ? cgEntries[0].newDate : null;
+                if (cgStart && cgMPU > 0) {
+                    currentEnd = simulateGroupEnd(cgTotalQty, cgMPU, cgStart, newMachineId);
+                } else {
+                    currentEnd = lastWorkDate;
+                }
+            }
+
+            forwardPushGroups.push({
+                alloc_keys: otherGroup.alloc_keys.slice(),
+                targetStartDate: targetStart
+            });
         }
     }
 
@@ -1478,7 +1536,8 @@ function moveGroup(groupData, newMachineId, newStartDate) {
         affectedGroups,
         groupData,
         targetDays,
-        targetMachineId: newMachineId
+        targetMachineId: newMachineId,
+        forwardPushGroups
     };
     showShiftModal.value = true;
 }
@@ -1629,7 +1688,37 @@ function computeShiftByDaysPreview() {
     }
 
     const newStart = targetDays[0].newDate;
-    const newEnd = targetDays[targetDays.length - 1].newDate;
+
+    // Simulate executeMoveGroup's capacity redistribution to find actual newEnd
+    const totalQty = sortedAllocs.reduce((s, a) => s + a.quantity, 0);
+    const totalMin = sortedAllocs.reduce((s, a) => s + a.allocated_minutes, 0);
+    const minutesPerUnit = totalQty > 0 ? totalMin / totalQty : 0;
+
+    let simRemaining = totalQty;
+    let newEnd = newStart;
+
+    // Phase 1: fill targetDays (mirrors executeMoveGroup main loop)
+    for (const { newDate } of targetDays) {
+        if (simRemaining <= 0) break;
+        const cap = getEffectiveMinutes(newDate, machineId);
+        const maxQty = minutesPerUnit > 0 ? Math.floor(cap / minutesPerUnit) : 0;
+        const allocQty = Math.min(simRemaining, Math.max(maxQty, 0));
+        if (allocQty > 0) newEnd = newDate;
+        simRemaining -= allocQty;
+    }
+
+    // Phase 2: overflow onto subsequent working days (mirrors executeMoveGroup overflow loop)
+    if (simRemaining > 0 && minutesPerUnit > 0) {
+        let extendDate = getNextWorkingDay(targetDays[targetDays.length - 1].newDate, machineId);
+        while (simRemaining > 0 && extendDate && dates.includes(extendDate)) {
+            const cap = getEffectiveMinutes(extendDate, machineId);
+            const maxQty = Math.floor(cap / minutesPerUnit);
+            const allocQty = Math.min(simRemaining, Math.max(maxQty, 0));
+            if (allocQty > 0) newEnd = extendDate;
+            simRemaining -= allocQty;
+            extendDate = getNextWorkingDay(extendDate, machineId);
+        }
+    }
 
     // Get all groups on this machine (from the computed groupedAllocations)
     const machineGroups = groupedAllocations.value
@@ -1641,16 +1730,14 @@ function computeShiftByDaysPreview() {
         .sort((a, b) => a.start_date.localeCompare(b.start_date));
 
     // Cascading push: simulate all group positions after the shift
-    // Start with the primary group's new end date, then push any overlapping groups
+    // Uses consecutive working-day mapping to avoid splits from non-working day gaps
     const affected = [];
     let outOfBounds = false;
 
-    // Build a schedule of "occupied ranges" — start with the shifted primary group
-    // Then iterate through other groups in date order, pushing each one if it overlaps
-    const groupShifts = new Map(); // group_id -> dayOffset for that group
+    const groupShifts = new Map(); // group_id -> true (just tracking which were shifted)
+    const backwardPullGroups = []; // groups pulled forward to fill gap (backward shift)
+    const forwardPushGroups = []; // groups pushed forward via working-day mapping
 
-    // For cascading: track the "occupied end" as we push groups forward/backward
-    // We process groups in the direction of the shift
     // Always cascade forward — push conflicting groups toward the future
     {
         let currentEnd = newEnd;
@@ -1659,39 +1746,112 @@ function computeShiftByDaysPreview() {
             if (otherGroup.end_date < newStart) continue;
             if (otherGroup.start_date > currentEnd) break;
 
-            const nextDayIdx = dates.indexOf(addDaysToDate(currentEnd, 1));
-            if (nextDayIdx < 0) {
-                // At calendar boundary — can't push overlapping group
+            const targetStart = addDaysToDate(currentEnd, 1);
+            let workDate = targetStart;
+            // Find first working day at or after targetStart
+            if (!dates.includes(workDate) || getEffectiveMinutes(workDate, machineId) <= 0) {
+                workDate = getNextWorkingDay(addDaysToDate(targetStart, -1), machineId);
+            }
+            if (!workDate) {
                 outOfBounds = true;
                 for (const alloc of otherGroup.allocObjs) {
                     affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
                 }
+                groupShifts.set(otherGroup.group_id, true);
+                forwardPushGroups.push({
+                    alloc_keys: otherGroup.alloc_keys.slice(),
+                    targetStartDate: targetStart
+                });
                 continue;
             }
-            const pushDays = nextDayIdx - dates.indexOf(otherGroup.start_date);
-            if (pushDays <= 0) continue;
 
-            groupShifts.set(otherGroup.group_id, pushDays);
-
-            const pushedEnd = addDaysToDate(otherGroup.end_date, pushDays);
-            if (!dates.includes(pushedEnd)) {
-                outOfBounds = true;
-            }
-
+            let lastWorkDate = null;
             for (const alloc of otherGroup.allocObjs) {
-                const nd = addDaysToDate(alloc.operation_date, pushDays);
-                if (!dates.includes(nd)) {
+                if (!workDate || !dates.includes(workDate)) {
                     outOfBounds = true;
                     affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
-                } else if (isPastDate(nd)) {
+                } else if (isPastDate(workDate)) {
                     outOfBounds = true;
                     affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
                 } else {
-                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: nd });
+                    affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: workDate });
+                    lastWorkDate = workDate;
+                    workDate = getNextWorkingDay(workDate, machineId);
                 }
             }
 
-            currentEnd = outOfBounds ? currentEnd : pushedEnd;
+            if (lastWorkDate && !outOfBounds) {
+                const cgTotalQty = otherGroup.allocObjs.reduce((s, a) => s + a.quantity, 0);
+                const cgTotalMin = otherGroup.allocObjs.reduce((s, a) => s + a.allocated_minutes, 0);
+                const cgMPU = cgTotalQty > 0 ? cgTotalMin / cgTotalQty : 0;
+                const cgEntries = affected.filter(e => otherGroup.alloc_keys.includes(e.allocation.key) && e.newDate);
+                const cgStart = cgEntries.length > 0 ? cgEntries[0].newDate : null;
+                if (cgStart && cgMPU > 0) {
+                    currentEnd = simulateGroupEnd(cgTotalQty, cgMPU, cgStart, machineId);
+                } else {
+                    currentEnd = lastWorkDate;
+                }
+            }
+
+            groupShifts.set(otherGroup.group_id, true);
+            forwardPushGroups.push({
+                alloc_keys: otherGroup.alloc_keys.slice(),
+                targetStartDate: targetStart
+            });
+        }
+
+        // For backward shifts: pull subsequent groups forward to fill the gap
+        if (dayOffset < 0) {
+            for (const otherGroup of machineGroups) {
+                if (groupShifts.has(otherGroup.group_id)) continue;
+                if (otherGroup.start_date <= group.end_date) continue;
+
+                const nextDayAfterEnd = addDaysToDate(currentEnd, 1);
+                const nextDayIdx = dates.indexOf(nextDayAfterEnd);
+                if (nextDayIdx < 0) break;
+
+                const currentGroupIdx = dates.indexOf(otherGroup.start_date);
+                const pullDays = currentGroupIdx - nextDayIdx;
+                if (pullDays <= 0) {
+                    currentEnd = otherGroup.end_date;
+                    continue;
+                }
+
+                groupShifts.set(otherGroup.group_id, -pullDays);
+
+                // Track for executeMoveGroup in confirmShiftByDays
+                backwardPullGroups.push({
+                    alloc_keys: otherGroup.alloc_keys.slice(),
+                    targetStartDate: nextDayAfterEnd
+                });
+
+                const pulledEnd = addDaysToDate(otherGroup.end_date, -pullDays);
+                if (!dates.includes(pulledEnd)) outOfBounds = true;
+
+                for (const alloc of otherGroup.allocObjs) {
+                    const nd = addDaysToDate(alloc.operation_date, -pullDays);
+                    if (!dates.includes(nd)) {
+                        outOfBounds = true;
+                        affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+                    } else if (isPastDate(nd)) {
+                        outOfBounds = true;
+                        affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
+                    } else {
+                        affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: nd });
+                    }
+                }
+
+                if (!outOfBounds) {
+                    const pgTotalQty = otherGroup.allocObjs.reduce((s, a) => s + a.quantity, 0);
+                    const pgTotalMin = otherGroup.allocObjs.reduce((s, a) => s + a.allocated_minutes, 0);
+                    const pgMPU = pgTotalQty > 0 ? pgTotalMin / pgTotalQty : 0;
+                    if (pgMPU > 0) {
+                        currentEnd = simulateGroupEnd(pgTotalQty, pgMPU, nextDayAfterEnd, machineId);
+                    } else {
+                        currentEnd = pulledEnd;
+                    }
+                }
+            }
         }
     }
 
@@ -1720,7 +1880,7 @@ function computeShiftByDaysPreview() {
         }
     }
 
-    shiftByDaysPreview.value = { affected, affectedGroups, newStart, targetDays, outOfBounds };
+    shiftByDaysPreview.value = { affected, affectedGroups, newStart, targetDays, outOfBounds, backwardPullGroups, forwardPushGroups };
 }
 
 function confirmShiftByDays() {
@@ -1730,11 +1890,26 @@ function confirmShiftByDays() {
     const preview = shiftByDaysPreview.value;
     const machineId = group.machine_id;
 
-    // Shift cascading allocations first (before moving the primary group)
+    // Collect forward-push and backward-pull keys — handled via executeMoveGroup, not simple shift
+    const pushKeys = new Set();
+    if (preview.forwardPushGroups?.length) {
+        for (const pg of preview.forwardPushGroups) {
+            pg.alloc_keys.forEach(k => pushKeys.add(k));
+        }
+    }
+    const pullKeys = new Set();
+    if (preview.backwardPullGroups?.length) {
+        for (const pg of preview.backwardPullGroups) {
+            pg.alloc_keys.forEach(k => pullKeys.add(k));
+        }
+    }
+
+    // Shift only non-push/non-pull cascade allocs (if any remain)
     const shiftedAllocations = [];
     const shiftedAllocRefs = [];
     if (preview.affected.length > 0) {
         preview.affected.forEach(({ allocation, currentDate, newDate }) => {
+            if (pushKeys.has(allocation.key) || pullKeys.has(allocation.key)) return; // handled by executeMoveGroup below
             shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
             allocation.operation_date = newDate;
             const newShift = getShiftForDate(newDate);
@@ -1753,17 +1928,97 @@ function confirmShiftByDays() {
         end_date: group.end_date
     };
 
-    // Execute the primary group move
+    // Process forward-push groups with executeMoveGroup BEFORE primary move
+    // (they vacate the area the primary group is moving into)
+    const pushMoveResults = [];
+    if (preview.forwardPushGroups?.length) {
+        const dates = dateRange.value;
+        for (const pg of preview.forwardPushGroups) {
+            const pushAllocs = pg.alloc_keys
+                .map(k => allocations.value.find(a => a.key === k))
+                .filter(Boolean)
+                .sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+            if (pushAllocs.length === 0) continue;
+
+            let workDate = pg.targetStartDate;
+            if (!dates.includes(workDate) || getEffectiveMinutes(workDate, machineId) <= 0) {
+                workDate = getNextWorkingDay(addDaysToDate(pg.targetStartDate, -1), machineId);
+            }
+            if (!workDate) continue;
+
+            const pgTargetDays = [];
+            for (const alloc of pushAllocs) {
+                if (!workDate || !dates.includes(workDate)) break;
+                pgTargetDays.push({ alloc, newDate: workDate });
+                workDate = getNextWorkingDay(workDate, machineId);
+            }
+            if (pgTargetDays.length === 0) continue;
+
+            const pgData = {
+                alloc_keys: pg.alloc_keys,
+                machine_id: machineId,
+                start_date: pushAllocs[0].operation_date,
+                end_date: pushAllocs[pushAllocs.length - 1].operation_date
+            };
+            pushMoveResults.push(executeMoveGroup(pgData, pgTargetDays, machineId));
+        }
+    }
+
+    // Execute the primary group move (after forward-push groups vacated, before backward-pull)
     const moveResult = executeMoveGroup(groupData, preview.targetDays, machineId);
 
-    if (shiftedAllocations.length > 0) {
+    // Process backward-pull groups with executeMoveGroup (after primary group vacated its dates)
+    const pullMoveResults = [];
+    if (preview.backwardPullGroups?.length) {
+        const dates = dateRange.value;
+        for (const pg of preview.backwardPullGroups) {
+            const pullAllocs = pg.alloc_keys
+                .map(k => allocations.value.find(a => a.key === k))
+                .filter(Boolean)
+                .sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+            if (pullAllocs.length === 0) continue;
+
+            // Find first working day at or after targetStartDate
+            let workDate = pg.targetStartDate;
+            if (!dates.includes(workDate) || getEffectiveMinutes(workDate, machineId) <= 0) {
+                workDate = getNextWorkingDay(addDaysToDate(pg.targetStartDate, -1), machineId);
+            }
+            if (!workDate) continue;
+
+            // Build targetDays on consecutive working days
+            const pgTargetDays = [];
+            for (const alloc of pullAllocs) {
+                if (!workDate || !dates.includes(workDate)) break;
+                pgTargetDays.push({ alloc, newDate: workDate });
+                workDate = getNextWorkingDay(workDate, machineId);
+            }
+            if (pgTargetDays.length === 0) continue;
+
+            const pgData = {
+                alloc_keys: pg.alloc_keys,
+                machine_id: machineId,
+                start_date: pullAllocs[0].operation_date,
+                end_date: pullAllocs[pullAllocs.length - 1].operation_date
+            };
+
+            pullMoveResults.push(executeMoveGroup(pgData, pgTargetDays, machineId));
+        }
+    }
+
+    if (shiftedAllocations.length > 0 || pushMoveResults.length > 0 || pullMoveResults.length > 0) {
         saveAction('shift_and_move_group', {
             moveAllocations: moveResult.allocations,
             overflowKeys: moveResult.overflowKeys,
             removedSnapshots: moveResult.removedSnapshots,
             shiftedAllocations,
             refitAddedKeys: refitResult.addedKeys,
-            refitRemovedSnapshots: refitResult.removedSnapshots
+            refitRemovedSnapshots: refitResult.removedSnapshots,
+            pushAllocations: pushMoveResults.flatMap(r => r.allocations),
+            pushOverflowKeys: pushMoveResults.flatMap(r => r.overflowKeys),
+            pushRemovedSnapshots: pushMoveResults.flatMap(r => r.removedSnapshots),
+            pullAllocations: pullMoveResults.flatMap(r => r.allocations),
+            pullOverflowKeys: pullMoveResults.flatMap(r => r.overflowKeys),
+            pullRemovedSnapshots: pullMoveResults.flatMap(r => r.removedSnapshots)
         });
         const groupCount = new Set(preview.affected.map(a => {
             const g = groupedAllocations.value.find(grp => grp.alloc_keys.includes(a.allocation.key));
@@ -2914,7 +3169,29 @@ function undoLastAction() {
             });
             break;
         case 'shift_and_move_group':
-            // Remove overflow allocations first
+            // Undo backward-pull group moves first (last operations done, first to undo)
+            if (action.data.pullOverflowKeys?.length) {
+                action.data.pullOverflowKeys.forEach(key => {
+                    const idx = allocations.value.findIndex(a => a.key === key);
+                    if (idx > -1) allocations.value.splice(idx, 1);
+                });
+            }
+            if (action.data.pullRemovedSnapshots?.length) {
+                action.data.pullRemovedSnapshots.forEach(snap => allocations.value.push(snap));
+            }
+            if (action.data.pullAllocations?.length) {
+                action.data.pullAllocations.forEach(({ key, oldMachineId, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
+                    const a = allocations.value.find(al => al.key === key);
+                    if (a) {
+                        a.machine_id = oldMachineId;
+                        a.operation_date = oldDate;
+                        a.shift = oldShift || '';
+                        if (oldQuantity !== undefined) a.quantity = oldQuantity;
+                        if (oldAllocatedMinutes !== undefined) a.allocated_minutes = oldAllocatedMinutes;
+                    }
+                });
+            }
+            // Remove primary group overflow allocations
             if (action.data.overflowKeys?.length) {
                 action.data.overflowKeys.forEach(key => {
                     const idx = allocations.value.findIndex(a => a.key === key);
@@ -2924,6 +3201,28 @@ function undoLastAction() {
             // Re-add removed allocations (consolidated days that were eliminated)
             if (action.data.removedSnapshots?.length) {
                 action.data.removedSnapshots.forEach(snap => allocations.value.push(snap));
+            }
+            // Undo forward-push group moves (executed before primary, undone after primary)
+            if (action.data.pushOverflowKeys?.length) {
+                action.data.pushOverflowKeys.forEach(key => {
+                    const idx = allocations.value.findIndex(a => a.key === key);
+                    if (idx > -1) allocations.value.splice(idx, 1);
+                });
+            }
+            if (action.data.pushRemovedSnapshots?.length) {
+                action.data.pushRemovedSnapshots.forEach(snap => allocations.value.push(snap));
+            }
+            if (action.data.pushAllocations?.length) {
+                action.data.pushAllocations.forEach(({ key, oldMachineId, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
+                    const a = allocations.value.find(al => al.key === key);
+                    if (a) {
+                        a.machine_id = oldMachineId;
+                        a.operation_date = oldDate;
+                        a.shift = oldShift || '';
+                        if (oldQuantity !== undefined) a.quantity = oldQuantity;
+                        if (oldAllocatedMinutes !== undefined) a.allocated_minutes = oldAllocatedMinutes;
+                    }
+                });
             }
             // Undo refit: remove spill allocations and restore removed allocs
             if (action.data.refitAddedKeys) {
@@ -2936,15 +3235,17 @@ function undoLastAction() {
                 action.data.refitRemovedSnapshots.forEach(snap => allocations.value.push(snap));
             }
             // Reverse shifted allocations with quantity/minutes restoration
-            action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
-                const a = allocations.value.find(al => al.key === key);
-                if (a) {
-                    a.operation_date = oldDate;
-                    a.shift = oldShift || '';
-                    if (oldQuantity !== undefined) a.quantity = oldQuantity;
-                    if (oldAllocatedMinutes !== undefined) a.allocated_minutes = oldAllocatedMinutes;
-                }
-            });
+            if (action.data.shiftedAllocations?.length) {
+                action.data.shiftedAllocations.forEach(({ key, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
+                    const a = allocations.value.find(al => al.key === key);
+                    if (a) {
+                        a.operation_date = oldDate;
+                        a.shift = oldShift || '';
+                        if (oldQuantity !== undefined) a.quantity = oldQuantity;
+                        if (oldAllocatedMinutes !== undefined) a.allocated_minutes = oldAllocatedMinutes;
+                    }
+                });
+            }
             // Then reverse group move with quantity/minutes restoration
             action.data.moveAllocations.forEach(({ key, oldMachineId, oldDate, oldShift, oldQuantity, oldAllocatedMinutes }) => {
                 const a = allocations.value.find(al => al.key === key);
@@ -3472,10 +3773,19 @@ function confirmShift() {
     const sd = shiftModalData.value;
 
     if (sd.type === 'move_group') {
-        // Shift conflicting allocations to new dates
+        // Collect forward-push keys — these will be handled via executeMoveGroup, not simple shift
+        const pushKeys = new Set();
+        if (sd.forwardPushGroups?.length) {
+            for (const pg of sd.forwardPushGroups) {
+                pg.alloc_keys.forEach(k => pushKeys.add(k));
+            }
+        }
+
+        // Shift only non-push cascade allocs (if any remain)
         const shiftedAllocations = [];
         const shiftedAllocRefs = [];
         sd.affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
+            if (pushKeys.has(allocation.key)) return; // handled by executeMoveGroup below
             shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
             allocation.operation_date = newDate;
             const newShift = getShiftForDate(newDate);
@@ -3485,7 +3795,44 @@ function confirmShift() {
 
         const refitResult = refitShiftedAllocations(shiftedAllocRefs);
 
-        // Execute the group move
+        // Process forward-push groups with executeMoveGroup BEFORE primary move
+        // (they vacate the area the primary group is moving into)
+        const pushMoveResults = [];
+        if (sd.forwardPushGroups?.length) {
+            const dates = dateRange.value;
+            const machineId = sd.targetMachineId;
+            for (const pg of sd.forwardPushGroups) {
+                const pushAllocs = pg.alloc_keys
+                    .map(k => allocations.value.find(a => a.key === k))
+                    .filter(Boolean)
+                    .sort((a, b) => a.operation_date.localeCompare(b.operation_date));
+                if (pushAllocs.length === 0) continue;
+
+                let workDate = pg.targetStartDate;
+                if (!dates.includes(workDate) || getEffectiveMinutes(workDate, machineId) <= 0) {
+                    workDate = getNextWorkingDay(addDaysToDate(pg.targetStartDate, -1), machineId);
+                }
+                if (!workDate) continue;
+
+                const pgTargetDays = [];
+                for (const alloc of pushAllocs) {
+                    if (!workDate || !dates.includes(workDate)) break;
+                    pgTargetDays.push({ alloc, newDate: workDate });
+                    workDate = getNextWorkingDay(workDate, machineId);
+                }
+                if (pgTargetDays.length === 0) continue;
+
+                const pgData = {
+                    alloc_keys: pg.alloc_keys,
+                    machine_id: machineId,
+                    start_date: pushAllocs[0].operation_date,
+                    end_date: pushAllocs[pushAllocs.length - 1].operation_date
+                };
+                pushMoveResults.push(executeMoveGroup(pgData, pgTargetDays, machineId));
+            }
+        }
+
+        // Execute the primary group move
         const moveResult = executeMoveGroup(sd.groupData, sd.targetDays, sd.targetMachineId);
 
         saveAction('shift_and_move_group', {
@@ -3494,9 +3841,12 @@ function confirmShift() {
             removedSnapshots: moveResult.removedSnapshots,
             shiftedAllocations,
             refitAddedKeys: refitResult.addedKeys,
-            refitRemovedSnapshots: refitResult.removedSnapshots
+            refitRemovedSnapshots: refitResult.removedSnapshots,
+            pushAllocations: pushMoveResults.flatMap(r => r.allocations),
+            pushOverflowKeys: pushMoveResults.flatMap(r => r.overflowKeys),
+            pushRemovedSnapshots: pushMoveResults.flatMap(r => r.removedSnapshots)
         });
-        frappe.show_alert({ message: __(`Shifted ${shiftedAllocations.length} allocation(s) and moved group successfully`), indicator: 'green' });
+        frappe.show_alert({ message: __(`Shifted ${sd.affectedAllocations.length} allocation(s) and moved group successfully`), indicator: 'green' });
         closeShiftModal();
         return;
     }
@@ -3655,22 +4005,22 @@ async function onProcessChange() {
 }
 
 async function refreshCalendar() {
-    await loadShiftCalendars();
+    await loadShiftAllocations();
     await loadAllAllocations();
 }
 
-async function loadShiftCalendars() {
+async function loadShiftAllocations() {
     try {
         const response = await frappe.call({
-            method: 'albion.albion.page.capacity_planning.capacity_planning.get_shift_calendars',
+            method: 'albion.albion.page.capacity_planning.capacity_planning.get_shift_allocations',
             args: {
                 start_date: startDate.value,
                 end_date: endDate.value
             }
         });
         if (response.message) {
-            shiftCalendars.value = response.message.calendars;
-            defaultCalendar.value = response.message.default_calendar;
+            shiftAllocations.value = response.message.calendars;
+            defaultAllocation.value = response.message.default_calendar;
         }
     } catch (e) {
         console.error('Error loading shifts:', e);
@@ -3792,7 +4142,7 @@ async function confirmAlteration() {
         });
         frappe.show_alert({ message: __('Shift alteration added'), indicator: 'green' });
         closeAlterationModal();
-        await loadShiftCalendars();
+        await loadShiftAllocations();
         autoReflowAfterAlteration(form.date, form.machine || null, form.alteration_type, form.minutes);
     } catch (e) {
         console.error('Error adding alteration:', e);
@@ -3961,14 +4311,14 @@ function updateProcessOptions() {
 onMounted(async () => {
     await nextTick();
     initFrappeControls();
-    await loadShiftCalendars();
+    await loadShiftAllocations();
     loadAllAllocations();
     document.addEventListener('click', closeContextMenu);
 
-    if (!defaultCalendar.value) {
+    if (!defaultAllocation.value) {
         frappe.msgprint({
-            title: __('No Default Shift Calendar'),
-            message: __('Please create a Shift Calendar and mark it as default for capacity planning to work correctly.'),
+            title: __('No Default Shift Allocation'),
+            message: __('Please create a Shift Allocation and mark it as default for capacity planning to work correctly.'),
             indicator: 'orange'
         });
     }
@@ -3979,7 +4329,7 @@ onUnmounted(() => {
 });
 
 watch([startDate, endDate], () => {
-    loadShiftCalendars();
+    loadShiftAllocations();
     loadAllAllocations();
 });
 
@@ -3993,4 +4343,937 @@ defineExpose({
     refreshCalendar
 });
 </script>
+
+<style scoped>
+/* ===== Layout Shell ===== */
+.capacity-planning {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+}
+
+.cp-header {
+    background: white;
+    padding: 12px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    position: relative;
+    z-index: 10;
+}
+
+.cp-header .awesomplete > [role="listbox"] {
+    z-index: 50 !important;
+}
+
+.cp-filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.filter-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.filter-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.action-group {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.frappe-field {
+    min-width: 160px;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+}
+
+.frappe-field :deep(.frappe-control) {
+    margin-bottom: 0;
+}
+
+.frappe-field :deep(.frappe-control .form-group) {
+    margin-bottom: 0;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.form-group label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.text-info { color: #2563eb; }
+.text-danger { color: #ef4444; }
+
+/* ===== Validation ===== */
+.validation-alerts {
+    padding: 8px 20px;
+    background: #fef2f2;
+    border-bottom: 1px solid #fecaca;
+}
+
+.alert {
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.alert-danger {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+/* ===== Body Layout ===== */
+.cp-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== Left Panel - Workload ===== */
+.cp-left-panel {
+    width: 280px;
+    background: white;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.panel-header h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 2px 0;
+}
+
+.panel-subtitle {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.workload-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 20px;
+    color: #94a3b8;
+}
+
+.empty-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+}
+
+.empty-text {
+    font-size: 13px;
+    text-align: center;
+}
+
+.workload-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    margin-bottom: 8px;
+    border-left: 3px solid transparent;
+    cursor: grab;
+    transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.workload-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-color: #cbd5e1;
+}
+
+.workload-item.fully-allocated {
+    border-left-color: #10b981;
+    background: #f8fafc;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.workload-item.partial-allocated {
+    border-left-color: #f59e0b;
+}
+
+.workload-item.pending {
+    border-left-color: #3b82f6;
+}
+
+.workload-item.invalid {
+    border-left-color: #ef4444;
+    opacity: 0.5;
+    background: #fef2f2;
+    cursor: not-allowed;
+}
+
+.workload-item:active {
+    cursor: grabbing;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.drag-handle {
+    color: #cbd5e1;
+    cursor: grab;
+    font-size: 12px;
+    margin-right: 6px;
+    user-select: none;
+}
+
+.item-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: #0f172a;
+    flex: 1;
+}
+
+.item-qty {
+    background: #f1f5f9;
+    color: #334155;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.item-detail {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.item-minutes {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+.item-progress {
+    height: 3px;
+    background: #f1f5f9;
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.item-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s;
+}
+
+.item-progress-fill.full { background: #10b981; }
+.item-progress-fill.partial { background: #f59e0b; }
+.item-progress-fill.pending { background: #3b82f6; }
+
+.allocation-status {
+    font-size: 11px;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.allocation-status.full { color: #059669; }
+.allocation-status.partial { color: #d97706; }
+.allocation-status.pending { color: #2563eb; }
+
+.invalid-reason {
+    font-size: 11px;
+    color: #dc2626;
+    margin-top: 4px;
+}
+
+/* ===== Right Panel - Calendar ===== */
+.cp-right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.calendar-header {
+    background: white;
+    padding: 10px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.calendar-header h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.calendar-wrapper {
+    flex: 1;
+    overflow: auto;
+    background: #f8fafc;
+}
+
+/* ===== Gantt Grid ===== */
+.gantt-grid {
+    display: grid;
+    width: max-content;
+}
+
+.gantt-corner-cell {
+    grid-row: 1;
+    grid-column: 1;
+    background: #f1f5f9;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 12px;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid #e2e8f0;
+    position: sticky;
+    left: 0;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+}
+
+.gantt-date-header {
+    background: #f1f5f9;
+    padding: 10px 8px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    border-left: none;
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    cursor: pointer;
+}
+
+.gantt-date-header.weekly-off {
+    background: #fef9c3;
+}
+
+.gantt-date-header.past-date {
+    background: #fef2f2;
+}
+
+.date-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.day-date {
+    font-weight: 700;
+    font-size: 12px;
+    color: #1e293b;
+}
+
+.shift-info {
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.day-alteration-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.gantt-date-header:hover {
+    background: #e2e8f0 !important;
+}
+
+.gantt-machine-cell {
+    grid-column: 1;
+    background: #f8fafc;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    display: flex;
+    align-items: flex-start;
+}
+
+.machine-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.machine-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.machine-id {
+    font-weight: 700;
+    font-size: 13px;
+    color: #0f172a;
+}
+
+.machine-name {
+    font-size: 11px;
+    color: #64748b;
+}
+
+/* ===== Date Cells (Drop Targets) ===== */
+.gantt-date-cell {
+    position: relative;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    border-left: none;
+    padding: 4px 6px;
+    min-height: 98px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    transition: background 0.15s, box-shadow 0.15s;
+}
+
+.gantt-date-cell:hover {
+    box-shadow: inset 0 0 0 2px #93c5fd;
+}
+
+.cell-available {
+    background: white;
+}
+
+.cell-allocated {
+    background: #f8fafc;
+}
+
+.cell-full {
+    background: #fff1f2;
+}
+
+.cell-conflict {
+    background: #fff1f2;
+    box-shadow: inset 0 0 0 2px #f87171;
+}
+
+.cell-top-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: 18px;
+}
+
+.alteration-badge {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    z-index: 11;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.badge-add {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-reduce {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.cell-altered-add {
+    background: #f0fdf4 !important;
+}
+
+.cell-altered-reduce {
+    background: #fffbeb !important;
+}
+
+.cell-add-btn {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: white;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    margin-left: auto;
+}
+
+.gantt-date-cell:hover .cell-add-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cell-add-btn:hover {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.cell-utilization {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    right: 4px;
+    z-index: 10;
+}
+
+.util-bar {
+    position: relative;
+    height: 16px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.util-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s;
+}
+
+.util-label {
+    position: relative;
+    z-index: 1;
+    display: block;
+    text-align: end;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    color: #1e293b;
+}
+
+.util-fill.bar-ok { background: #86efac; }
+.util-fill.bar-warning { background: #fde68a; }
+.util-fill.bar-low { background: #fca5a5; }
+.util-bar.bar-ok { background: #dcfce7; }
+.util-bar.bar-warning { background: #fef9c3; }
+.util-bar.bar-low { background: #fee2e2; }
+
+/* ===== Gantt Bars ===== */
+.gantt-bar-layer {
+    position: relative;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.gantt-bar {
+    position: absolute;
+    pointer-events: auto;
+    cursor: grab;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 7px 12px 6px;
+    overflow: hidden;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    transition: box-shadow 0.15s, transform 0.15s;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-left: none;
+}
+
+.gantt-bar:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
+    z-index: 10;
+}
+
+.gantt-bar:active {
+    cursor: grabbing;
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+/* --- Bar Row: Top (Item + Qty) --- */
+.bar-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.bar-item {
+    font-weight: 700;
+    font-size: 13px;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.bar-qty {
+    background: rgba(0,0,0,0.08);
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-weight: 800;
+    font-size: 12px;
+    color: #0f172a;
+    flex-shrink: 0;
+}
+
+/* --- Bar Row: Mid (Process + Minutes) --- */
+.bar-row-mid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.bar-process {
+    font-weight: 500;
+    color: #334155;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+.bar-minutes {
+    color: #475569;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* --- Bar Row: Bottom (Tags) --- */
+.bar-row-bot {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.bar-tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.3;
+    font-weight: 600;
+}
+
+.bar-tag b {
+    font-weight: 800;
+    margin-right: 1px;
+}
+
+.order-tag {
+    color: #1e40af;
+    background: rgba(59, 130, 246, 0.14);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.colour-tag {
+    color: #c2410c;
+    background: rgba(249, 115, 22, 0.12);
+    border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+.size-tag {
+    color: #3f3f46;
+    background: rgba(113, 113, 122, 0.12);
+    border: 1px solid rgba(113, 113, 122, 0.18);
+}
+
+/* ===== Modals ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background: white;
+    padding: 24px;
+    border-radius: 14px;
+    min-width: 320px;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.modal-content h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 16px 0;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+/* ===== Buttons ===== */
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.15s, box-shadow 0.15s;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: white;
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+}
+
+.btn-default {
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+}
+
+.btn-default:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ===== Context Menu ===== */
+.context-menu {
+    position: fixed;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+    z-index: 1000;
+    min-width: 190px;
+    padding: 4px;
+}
+
+.menu-item {
+    padding: 9px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    margin: 2px 0;
+    color: #334155;
+    transition: background 0.1s;
+}
+
+.menu-item:hover {
+    background: #f1f5f9;
+}
+
+.menu-item.text-danger {
+    color: #dc2626;
+}
+
+.menu-item.text-danger:hover {
+    background: #fef2f2;
+}
+
+/* ===== Shift Modal ===== */
+.shift-modal {
+    background: white;
+    padding: 24px;
+    border-radius: 14px;
+    min-width: 500px;
+    max-width: 700px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.shift-modal h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 12px 0;
+}
+
+.shift-explanation {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #1e40af;
+}
+
+.shift-explanation p {
+    margin: 0 0 4px 0;
+}
+
+.shift-explanation p:last-child {
+    margin-bottom: 0;
+}
+
+.shift-table-wrapper {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.shift-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.shift-table th {
+    background: #f1f5f9;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 700;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.shift-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+
+.shift-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== Backfill Modal ===== */
+.backfill-explanation {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #92400e;
+}
+
+.backfill-explanation p {
+    margin: 0 0 4px 0;
+}
+
+.backfill-explanation p:last-child {
+    margin-bottom: 0;
+}
+
+/* ===== Machine GG Disabled State ===== */
+.machine-disabled {
+    opacity: 0.35;
+    pointer-events: none;
+}
+</style>
 
