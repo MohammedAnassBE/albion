@@ -1,0 +1,76 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"7kNwwbxMdb\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Albion</span>\",\"col\":12}},{\"id\":\"tdEWCV14MU\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Item\",\"col\":3}},{\"id\":\"QPbRRL48DN\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer\",\"col\":3}},{\"id\":\"DUQkhK9FQ-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Order\",\"col\":3}},{\"id\":\"_CyUTrY6aW\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Machine\",\"col\":3}},{\"id\":\"ncDO6V8zn7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Machine GG\",\"col\":3}},{\"id\":\"OBtRXQ9CAR\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Capacity Planning\",\"col\":3}}]",
+ "creation": "2026-02-13 18:26:42.616311",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "Albion",
+ "links": [],
+ "modified": "2026-02-16 18:20:46.330552",
+ "modified_by": "Administrator",
+ "module": "Albion",
+ "name": "Albion",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 28.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Item",
+   "link_to": "Item",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Customer",
+   "link_to": "Customer",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Capacity Planning",
+   "link_to": "capacity-planning",
+   "type": "Page"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Machine",
+   "link_to": "Machine",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Order",
+   "link_to": "Order",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Machine GG",
+   "link_to": "Machine GG",
+   "stats_filter": "[]",
+   "type": "DocType"
+  }
+ ],
+ "title": "Albion"
+}
