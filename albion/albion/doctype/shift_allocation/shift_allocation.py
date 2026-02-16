@@ -4,7 +4,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import getdate
+from frappe.utils import getdate, get_time
 
 
 class ShiftAllocation(Document):
@@ -12,6 +12,7 @@ class ShiftAllocation(Document):
         self.validate_dates()
         self.validate_is_default_unique()
         self.validate_alteration_dates()
+        self.validate_shift_overlaps()
         self.calculate_total_duration()
 
     def validate_dates(self):
@@ -40,6 +41,33 @@ class ShiftAllocation(Document):
                     frappe.throw(
                         _("Alteration date {0} in row {1} must be within the calendar range ({2} to {3})").format(
                             row.date, row.idx, self.start_date, self.end_date
+                        )
+                    )
+
+    def validate_shift_overlaps(self):
+        if not self.shifts or len(self.shifts) < 2:
+            return
+
+        shift_times = []
+        for row in self.shifts:
+            start_time, end_time = frappe.db.get_value(
+                "Shift", row.shift, ["start_time", "end_time"]
+            )
+            shift_times.append({
+                "idx": row.idx,
+                "shift": row.shift,
+                "start": get_time(start_time),
+                "end": get_time(end_time),
+            })
+
+        for i in range(len(shift_times)):
+            for j in range(i + 1, len(shift_times)):
+                a = shift_times[i]
+                b = shift_times[j]
+                if a["start"] < b["end"] and b["start"] < a["end"]:
+                    frappe.throw(
+                        _("Shift {0} (Row {1}) overlaps with Shift {2} (Row {3})").format(
+                            a["shift"], a["idx"], b["shift"], b["idx"]
                         )
                     )
 

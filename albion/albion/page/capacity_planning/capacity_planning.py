@@ -130,62 +130,177 @@ def _get_calendar_data(calendar_name):
     }
 
 
-@frappe.whitelist()
-def add_shift_alteration(date, alteration_type, minutes, machine=None, reason=None):
-    """Add a shift alteration to the calendar covering the given date"""
-    minutes = int(minutes)
+def _get_best_calendar_for_date(date):
+    """Find the best Shift Allocation for a date.
+    Priority: single-day calendar (start==end==date) > range calendar > default.
+    Returns (calendar_name, source) where source is 'single', 'range', or 'default'.
+    """
+    # 1. Single-day calendar exact match
+    single = frappe.db.get_value(
+        "Shift Allocation",
+        {"start_date": date, "end_date": date, "is_default": 0},
+        "name"
+    )
+    if single:
+        return single, "single"
 
-    # Find calendar covering this date
-    calendar_name = frappe.db.get_value(
+    # 2. Range calendar covering this date
+    range_cal = frappe.db.get_value(
         "Shift Allocation",
         {
             "start_date": ["<=", date],
-            "end_date": [">=", date]
+            "end_date": [">=", date],
+            "is_default": 0
         },
         "name"
     )
+    if range_cal:
+        return range_cal, "range"
 
-    if not calendar_name:
-        # No calendar covers this date — create a single-day calendar from default
-        default_name = frappe.db.get_value("Shift Allocation", {"is_default": 1}, "name")
-        if not default_name:
-            frappe.throw(_("No Shift Allocation covers this date and no default calendar exists"))
+    # 3. Default calendar
+    default_name = frappe.db.get_value("Shift Allocation", {"is_default": 1}, "name")
+    if default_name:
+        return default_name, "default"
 
-        default_doc = frappe.get_doc("Shift Allocation", default_name)
+    return None, None
+
+
+@frappe.whitelist()
+def get_all_shifts():
+    """Get all Shift records"""
+    shifts = frappe.get_all(
+        "Shift",
+        fields=["name", "shift_name", "start_time", "end_time", "duration_minutes"],
+        order_by="shift_name"
+    )
+    return shifts
+
+
+@frappe.whitelist()
+def update_date_shift(date, shifts):
+    """Update the shifts for a specific date by creating/updating a single-day calendar.
+    shifts: JSON list of Shift record names, e.g. ["Morning Shift", "Evening Shift"]
+    """
+    import json
+    if isinstance(shifts, str):
+        shifts = json.loads(shifts)
+
+    if not shifts:
+        frappe.throw(_("Please select at least one shift"))
+
+    cal_name, source = _get_best_calendar_for_date(date)
+
+    # Build shift rows and compute total minutes
+    shift_rows = []
+    total_minutes = 0
+    for shift_name in shifts:
+        shift_doc = frappe.get_doc("Shift", shift_name)
+        shift_rows.append({
+            "shift": shift_name,
+            "shift_name": shift_doc.shift_name,
+            "duration_minutes": shift_doc.duration_minutes
+        })
+        total_minutes += (shift_doc.duration_minutes or 0)
+
+    if source == "single":
+        # Single-day calendar exists — update its shifts
+        doc = frappe.get_doc("Shift Allocation", cal_name)
+        old_minutes = doc.total_duration_minutes or 0
+
+        doc.shifts = []
+        for row in shift_rows:
+            doc.append("shifts", row)
+        doc.total_duration_minutes = total_minutes
+        doc.save(ignore_permissions=True)
+
+        return {"old_minutes": old_minutes, "new_minutes": doc.total_duration_minutes}
+    else:
+        # Create a new single-day calendar
+        source_doc = frappe.get_doc("Shift Allocation", cal_name) if cal_name else None
+
         new_cal = frappe.new_doc("Shift Allocation")
         new_cal.start_date = date
         new_cal.end_date = date
         new_cal.is_default = 0
 
-        for shift_row in default_doc.shifts:
-            new_cal.append("shifts", {
-                "shift": shift_row.shift,
-                "shift_name": shift_row.shift_name,
-                "duration_minutes": shift_row.duration_minutes
-            })
+        # Copy working day flags from source
+        if source_doc:
+            for day in ("sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"):
+                setattr(new_cal, day, getattr(source_doc, day, 0))
+        old_minutes = source_doc.total_duration_minutes if source_doc else 0
 
-        new_cal.append("alterations", {
+        for row in shift_rows:
+            new_cal.append("shifts", row)
+        new_cal.total_duration_minutes = total_minutes
+
+        # Copy alterations for this date from source calendar
+        if source_doc and source_doc.alterations:
+            for alt in source_doc.alterations:
+                if str(alt.date) == str(date):
+                    new_cal.append("alterations", {
+                        "date": alt.date,
+                        "alteration_type": alt.alteration_type,
+                        "minutes": alt.minutes,
+                        "machine": alt.machine,
+                        "reason": alt.reason
+                    })
+
+        new_cal.insert(ignore_permissions=True)
+        return {"old_minutes": old_minutes, "new_minutes": new_cal.total_duration_minutes}
+
+
+@frappe.whitelist()
+def add_shift_alteration(date, alteration_type, minutes, machine=None, reason=None):
+    """Add a shift alteration to the calendar covering the given date"""
+    minutes = int(minutes)
+
+    cal_name, source = _get_best_calendar_for_date(date)
+
+    if cal_name and source in ("single", "range"):
+        # Calendar exists — append alteration
+        doc = frappe.get_doc("Shift Allocation", cal_name)
+        doc.append("alterations", {
             "date": date,
             "alteration_type": alteration_type,
             "minutes": minutes,
             "machine": machine,
             "reason": reason
         })
+        doc.save(ignore_permissions=True)
+        return {"calendar": doc.name}
 
-        new_cal.insert(ignore_permissions=True)
-        return {"calendar": new_cal.name}
+    # No range/single calendar — create a single-day calendar from default
+    default_name = frappe.db.get_value("Shift Allocation", {"is_default": 1}, "name")
+    if not default_name:
+        frappe.throw(_("No Shift Allocation covers this date and no default calendar exists"))
 
-    # Calendar exists — append alteration
-    doc = frappe.get_doc("Shift Allocation", calendar_name)
-    doc.append("alterations", {
+    default_doc = frappe.get_doc("Shift Allocation", default_name)
+    new_cal = frappe.new_doc("Shift Allocation")
+    new_cal.start_date = date
+    new_cal.end_date = date
+    new_cal.is_default = 0
+
+    for day in ("sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"):
+        setattr(new_cal, day, getattr(default_doc, day, 0))
+
+    for shift_row in default_doc.shifts:
+        new_cal.append("shifts", {
+            "shift": shift_row.shift,
+            "shift_name": shift_row.shift_name,
+            "duration_minutes": shift_row.duration_minutes
+        })
+    new_cal.total_duration_minutes = default_doc.total_duration_minutes
+
+    new_cal.append("alterations", {
         "date": date,
         "alteration_type": alteration_type,
         "minutes": minutes,
         "machine": machine,
         "reason": reason
     })
-    doc.save(ignore_permissions=True)
-    return {"calendar": doc.name}
+
+    new_cal.insert(ignore_permissions=True)
+    return {"calendar": new_cal.name}
 
 
 @frappe.whitelist()

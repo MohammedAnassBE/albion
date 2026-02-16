@@ -52,12 +52,17 @@
 
         <div class="cp-body">
             <!-- Left Panel - Workload List -->
-            <div class="cp-left-panel">
-                <div class="panel-header">
-                    <h4>Workload</h4>
-                    <span class="panel-subtitle">Drag items to calendar</span>
+            <div class="cp-left-panel" :class="{ 'panel-collapsed': workloadCollapsed }">
+                <div class="panel-header" @click="workloadCollapsed = !workloadCollapsed">
+                    <div class="panel-header-row">
+                        <h4>Workload</h4>
+                        <button class="panel-toggle-btn" :title="workloadCollapsed ? 'Expand' : 'Collapse'">
+                            {{ workloadCollapsed ? '&#9654;' : '&#9664;' }}
+                        </button>
+                    </div>
+                    <span v-if="!workloadCollapsed" class="panel-subtitle">Drag items to calendar</span>
                 </div>
-                <div class="workload-list">
+                <div v-show="!workloadCollapsed" class="workload-list">
                     <div v-if="workloadItems.length === 0" class="empty-state">
                         <div class="empty-icon">&#9776;</div>
                         <div class="empty-text">Select order and process to view workload</div>
@@ -116,7 +121,7 @@
                         <div v-for="(date, dIdx) in dateRange" :key="'hdr-'+date"
                              class="gantt-date-header" :class="getDateHeaderClass(date)"
                              :style="{ gridRow: 1, gridColumn: dIdx + 2 }"
-                             @click="openAlterationDialog(date)">
+                             @click="openActionChoice(date)">
                             <div class="date-cell">
                                 <span class="day-date">{{ formatDayName(date) }}, {{ formatDate(date) }}</span>
                                 <span class="shift-info">
@@ -472,6 +477,57 @@
             </template>
         </div>
 
+        <!-- Action Choice Dialog -->
+        <div v-if="showActionChoice" class="modal-overlay" @click="closeActionChoice">
+            <div class="modal-content action-choice-modal" @click.stop>
+                <h4>What would you like to do?</h4>
+                <p class="action-choice-date">{{ actionChoiceContext.date }} {{ actionChoiceContext.machine ? '(' + actionChoiceContext.machine + ')' : '(All Machines)' }}</p>
+                <div class="action-choice-buttons">
+                    <button class="btn btn-primary action-choice-btn" @click="chooseUpdateShift">
+                        <span class="action-icon">&#9200;</span>
+                        Update Shift
+                    </button>
+                    <button class="btn btn-default action-choice-btn" @click="chooseUpdateTime">
+                        <span class="action-icon">&#9998;</span>
+                        Update Time
+                    </button>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="closeActionChoice">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shift Update Modal -->
+        <div v-if="showShiftUpdateModal" class="modal-overlay" @click="closeShiftUpdateModal">
+            <div class="modal-content" @click.stop>
+                <h4>Update Shifts</h4>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="text" class="form-control" :value="shiftUpdateForm.date" disabled />
+                </div>
+                <div class="form-group">
+                    <label>Shifts</label>
+                    <div class="shift-checkbox-list">
+                        <label v-for="s in allShifts" :key="s.name" class="shift-checkbox-item">
+                            <input type="checkbox" :value="s.name" v-model="shiftUpdateForm.shifts" />
+                            <span class="shift-checkbox-label">{{ s.shift_name }}</span>
+                            <span class="shift-checkbox-mins">{{ s.duration_minutes }}m</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group" v-if="shiftUpdateForm.shifts.length > 0">
+                    <label class="text-muted">Total: {{ selectedShiftsTotalMinutes }}m</label>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" @click="confirmShiftUpdate" :disabled="shiftUpdateSaving || shiftUpdateForm.shifts.length === 0">
+                        {{ shiftUpdateSaving ? 'Saving...' : 'Update' }}
+                    </button>
+                    <button class="btn btn-secondary" @click="closeShiftUpdateModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Shift Alteration Modal -->
         <div v-if="showAlterationModal" class="modal-overlay" @click="closeAlterationModal">
             <div class="modal-content" @click.stop>
@@ -554,6 +610,9 @@ const startDate = ref('');
 const endDate = ref('');
 const orderData = ref(null);
 
+// Workload panel collapse
+const workloadCollapsed = ref(false);
+
 // Template refs for Frappe fields
 const customerFieldRef = ref(null);
 const machineGGFieldRef = ref(null);
@@ -623,6 +682,16 @@ const alterationForm = ref({
     reason: ''
 });
 
+// Action choice dialog state
+const showActionChoice = ref(false);
+const actionChoiceContext = ref({ date: '', machine: null });
+
+// Shift update modal state
+const showShiftUpdateModal = ref(false);
+const shiftUpdateSaving = ref(false);
+const shiftUpdateForm = ref({ date: '', shifts: [] });
+const allShifts = ref([]);
+
 // Initialize dates
 const today = new Date();
 startDate.value = today.toISOString().split('T')[0];
@@ -631,7 +700,7 @@ endDate.value = nextMonth.toISOString().split('T')[0];
 
 // Constants
 const MIN_BATCH_SIZE = 1;
-const COL_WIDTH = 152;
+const COL_WIDTH = 120;
 const BAR_HEIGHT = 68;
 const BAR_GAP = 4;
 const BAR_TOP_OFFSET = 22;
@@ -651,11 +720,35 @@ const itemMachineGG = computed(() => {
 
 function isMachineCompatible(machineId) {
     if (!draggingItem.value) return true;
-    const itemGG = itemMachineGG.value.get(draggingItem.value.item);
-    if (!itemGG) return true; // no machine_gg on item → all machines allowed
+    let itemGG = itemMachineGG.value.get(draggingItem.value.item);
+    // Fallback: infer GG from the source machine when dragging existing groups
+    if (!itemGG && draggingItem.value.sourceMachineId) {
+        const srcMachine = machines.value.find(m => m.machine_id === draggingItem.value.sourceMachineId);
+        if (srcMachine && srcMachine.machine_gg) itemGG = srcMachine.machine_gg;
+    }
+    if (!itemGG) return true; // no machine_gg info → all machines allowed
     const machine = machines.value.find(m => m.machine_id === machineId);
     if (!machine || !machine.machine_gg) return true; // no machine_gg on machine → allowed
     return machine.machine_gg === itemGG;
+}
+
+function checkMachineGGCompat(itemCode, sourceMachineId, targetMachineId) {
+    if (sourceMachineId === targetMachineId) return true;
+    // First try the orderData lookup
+    let itemGG = itemMachineGG.value.get(itemCode);
+    // Fallback: infer GG from the source machine (it was compatible when originally placed)
+    if (!itemGG) {
+        const srcMachine = machines.value.find(m => m.machine_id === sourceMachineId);
+        if (srcMachine && srcMachine.machine_gg) itemGG = srcMachine.machine_gg;
+    }
+    if (!itemGG) return true; // no GG info available → allow
+    const targetMachine = machines.value.find(m => m.machine_id === targetMachineId);
+    if (!targetMachine || !targetMachine.machine_gg) return true;
+    if (targetMachine.machine_gg !== itemGG) {
+        frappe.show_alert({ message: __(`Cannot move: item requires Machine GG "${itemGG}" but target has "${targetMachine.machine_gg}"`), indicator: 'red' });
+        return false;
+    }
+    return true;
 }
 
 // Computed
@@ -672,6 +765,13 @@ const dateRange = computed(() => {
 const ganttGridStyle = computed(() => ({
     gridTemplateColumns: `180px repeat(${dateRange.value.length}, ${COL_WIDTH}px)`,
 }));
+
+const selectedShiftsTotalMinutes = computed(() => {
+    return shiftUpdateForm.value.shifts.reduce((sum, name) => {
+        const s = allShifts.value.find(x => x.name === name);
+        return sum + (s ? s.duration_minutes : 0);
+    }, 0);
+});
 
 const filteredMachines = computed(() => {
     if (!selectedMachineGG.value) return machines.value;
@@ -881,12 +981,17 @@ function formatDate(dateStr) {
 }
 
 function getCalendarForDate(dateStr) {
+    // Prefer single-day calendar (exact match) over range calendar
+    let rangeMatch = null;
     for (const cal of shiftAllocations.value) {
         if (dateStr >= cal.start_date && dateStr <= cal.end_date) {
-            return cal;
+            if (cal.start_date === dateStr && cal.end_date === dateStr) {
+                return cal; // exact single-day match — best
+            }
+            if (!rangeMatch) rangeMatch = cal;
         }
     }
-    return defaultAllocation.value;
+    return rangeMatch || defaultAllocation.value;
 }
 
 function getShiftForDate(dateStr) {
@@ -1254,7 +1359,7 @@ function onGroupDragStart(event, group) {
         total_minutes: group.total_minutes,
     }));
     event.dataTransfer.effectAllowed = 'move';
-    draggingItem.value = { item: group.item };
+    draggingItem.value = { item: group.item, sourceMachineId: group.machine_id };
     hideTooltip();
 }
 
@@ -1403,14 +1508,7 @@ function moveGroup(groupData, newMachineId, newStartDate) {
     if (dayOffset === 0 && groupData.machine_id === newMachineId) return;
 
     // Machine GG compatibility check
-    const itemGG = itemMachineGG.value.get(groupData.item);
-    if (itemGG) {
-        const targetMachine = machines.value.find(m => m.machine_id === newMachineId);
-        if (targetMachine && targetMachine.machine_gg && targetMachine.machine_gg !== itemGG) {
-            frappe.show_alert({ message: __(`Cannot move: item requires Machine GG "${itemGG}" but target machine has "${targetMachine.machine_gg}"`), indicator: 'red' });
-            return;
-        }
-    }
+    if (!checkMachineGGCompat(groupData.item, groupData.machine_id, newMachineId)) return;
 
     const groupAllocs = groupData.alloc_keys.map(key => allocations.value.find(a => a.key === key)).filter(Boolean);
 
@@ -2263,7 +2361,9 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
         const cellAllocs = getAllocations(mId, dateStr);
         if (cellAllocs.length === 0) {
             // Off-day with new overtime: pull from subsequent groups
-            if (alterationType === 'Add' && getEffectiveMinutes(dateStr, mId) > 0) {
+            // Only pull if the date is a genuine off-day (0 base shift minutes),
+            // not just a working day where this machine has no allocations.
+            if (alterationType === 'Add' && getShiftMinutes(dateStr) === 0 && getEffectiveMinutes(dateStr, mId) > 0) {
                 let searchDate = getNextDate(dateStr);
                 let refAlloc = null;
                 while (searchDate && !refAlloc) {
@@ -3582,14 +3682,7 @@ function moveAllocation(alloc, newMachineId, newDateStr) {
     }
 
     // Machine GG compatibility check
-    const itemGG = itemMachineGG.value.get(actualAlloc.item);
-    if (itemGG) {
-        const targetMachine = machines.value.find(m => m.machine_id === newMachineId);
-        if (targetMachine && targetMachine.machine_gg && targetMachine.machine_gg !== itemGG) {
-            frappe.show_alert({ message: __(`Cannot move: Machine GG mismatch`), indicator: 'red' });
-            return;
-        }
-    }
+    if (!checkMachineGGCompat(actualAlloc.item, actualAlloc.machine_id, newMachineId)) return;
 
     // One-item-per-machine-day validation
     if (!validateMachineDaySlot(newMachineId, newDateStr, [actualAlloc.key])) {
@@ -4219,6 +4312,92 @@ async function confirmAlteration() {
     }
 }
 
+// ── Action choice dialog ──
+function openActionChoice(dateStr, machineId = null) {
+    actionChoiceContext.value = { date: dateStr, machine: machineId };
+    showActionChoice.value = true;
+}
+
+function closeActionChoice() {
+    showActionChoice.value = false;
+}
+
+function chooseUpdateTime() {
+    const ctx = actionChoiceContext.value;
+    closeActionChoice();
+    openAlterationDialog(ctx.date, ctx.machine);
+}
+
+function chooseUpdateShift() {
+    const ctx = actionChoiceContext.value;
+    closeActionChoice();
+    openShiftUpdateModal(ctx.date);
+}
+
+// ── Shift update modal ──
+function openShiftUpdateModal(dateStr) {
+    // Pre-select all current shifts for this date
+    const cal = getCalendarForDate(dateStr);
+    const currentShifts = cal && cal.shifts ? cal.shifts.map(s => s.shift) : [];
+    shiftUpdateForm.value = { date: dateStr, shifts: [...currentShifts] };
+    showShiftUpdateModal.value = true;
+}
+
+function closeShiftUpdateModal() {
+    showShiftUpdateModal.value = false;
+    shiftUpdateSaving.value = false;
+}
+
+async function confirmShiftUpdate() {
+    const form = shiftUpdateForm.value;
+    if (!form.shifts || form.shifts.length === 0) {
+        frappe.show_alert({ message: __('Please select at least one shift'), indicator: 'red' });
+        return;
+    }
+
+    shiftUpdateSaving.value = true;
+    try {
+        const response = await frappe.call({
+            method: 'albion.albion.page.capacity_planning.capacity_planning.update_date_shift',
+            args: {
+                date: form.date,
+                shifts: JSON.stringify(form.shifts)
+            }
+        });
+        frappe.show_alert({ message: __('Shift updated'), indicator: 'green' });
+        closeShiftUpdateModal();
+        await loadShiftAllocations();
+
+        // Trigger reflow if capacity changed
+        const result = response.message;
+        if (result) {
+            const delta = (result.new_minutes || 0) - (result.old_minutes || 0);
+            if (delta > 0) {
+                autoReflowAfterAlteration(form.date, null, 'Add', delta);
+            } else if (delta < 0) {
+                autoReflowAfterAlteration(form.date, null, 'Reduce', Math.abs(delta));
+            }
+        }
+    } catch (e) {
+        console.error('Error updating shift:', e);
+        frappe.show_alert({ message: __('Error updating shift'), indicator: 'red' });
+        shiftUpdateSaving.value = false;
+    }
+}
+
+async function loadAllShifts() {
+    try {
+        const response = await frappe.call({
+            method: 'albion.albion.page.capacity_planning.capacity_planning.get_all_shifts'
+        });
+        if (response.message) {
+            allShifts.value = response.message;
+        }
+    } catch (e) {
+        console.error('Error loading shifts:', e);
+    }
+}
+
 function initFrappeControls() {
     // Customer — Link field to filter orders
     customerControl = frappe.ui.form.make_control({
@@ -4382,6 +4561,7 @@ onMounted(async () => {
     await nextTick();
     initFrappeControls();
     await loadShiftAllocations();
+    loadAllShifts();
     loadAllAllocations();
     document.addEventListener('click', closeContextMenu);
 
@@ -4556,18 +4736,62 @@ defineExpose({
     padding: 16px;
     border-bottom: 1px solid #e2e8f0;
     flex-shrink: 0;
+    cursor: pointer;
+    user-select: none;
+}
+
+.panel-header:hover {
+    background: #f8fafc;
+}
+
+.panel-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .panel-header h4 {
     font-size: 14px;
     font-weight: 700;
     color: #0f172a;
-    margin: 0 0 2px 0;
+    margin: 0;
+}
+
+.panel-toggle-btn {
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 2px 4px;
+    line-height: 1;
 }
 
 .panel-subtitle {
     font-size: 12px;
     color: #94a3b8;
+    margin-top: 2px;
+}
+
+.cp-left-panel.panel-collapsed {
+    width: 44px;
+    min-width: 44px;
+}
+
+.panel-collapsed .panel-header {
+    padding: 12px 8px;
+    border-bottom: none;
+}
+
+.panel-collapsed .panel-header-row {
+    flex-direction: column;
+    gap: 8px;
+}
+
+.panel-collapsed .panel-header h4 {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 12px;
 }
 
 .workload-list {
@@ -4922,7 +5146,7 @@ defineExpose({
 
 .alteration-badge {
     position: absolute;
-    top: 3px;
+    bottom: 3px;
     left: 4px;
     z-index: 11;
     font-size: 10px;
@@ -5438,6 +5662,74 @@ defineExpose({
 .machine-disabled {
     opacity: 0.35;
     pointer-events: none;
+}
+
+/* ===== Action Choice Dialog ===== */
+.action-choice-modal {
+    max-width: 340px;
+    text-align: center;
+}
+.action-choice-date {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+.action-choice-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+.action-choice-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+}
+.action-icon {
+    font-size: 20px;
+}
+
+/* ===== Shift Checkbox List ===== */
+.shift-checkbox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px;
+}
+.shift-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0;
+    font-weight: normal;
+}
+.shift-checkbox-item:hover {
+    background: #f1f5f9;
+}
+.shift-checkbox-item input[type="checkbox"] {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+}
+.shift-checkbox-label {
+    flex: 1;
+}
+.shift-checkbox-mins {
+    color: #64748b;
+    font-size: 12px;
 }
 </style>
 
