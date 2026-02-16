@@ -48,13 +48,13 @@
    "fieldname": "colour",
    "fieldtype": "Link",
    "label": "Colour",
-   "options": "Attribute Value"
+   "options": "Colour"
   },
   {
    "fieldname": "size",
    "fieldtype": "Link",
    "label": "Size",
-   "options": "Attribute Value"
+   "options": "Size"
   },
   {
    "fieldname": "quantity",

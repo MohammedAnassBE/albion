@@ -1,28 +1,19 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:attribute_value",
- "creation": "2026-02-09 17:30:00",
+ "autoname": "field:colour_name",
+ "creation": "2026-02-16 12:00:00.000000",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "attribute",
-  "attribute_value"
+  "colour_name"
  ],
  "fields": [
   {
-   "fieldname": "attribute",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Attribute",
-   "options": "Attribute",
-   "reqd": 1
-  },
-  {
-   "fieldname": "attribute_value",
+   "fieldname": "colour_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Attribute Value",
+   "label": "Colour Name",
    "reqd": 1,
    "unique": 1
   }
@@ -30,10 +21,10 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-09 18:38:00.692013",
+ "modified": "2026-02-16 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Albion",
- "name": "Attribute Value",
+ "name": "Colour",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [

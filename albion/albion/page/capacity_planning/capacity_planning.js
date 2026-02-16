@@ -7,6 +7,32 @@ frappe.pages['capacity-planning'].on_page_load = function(wrapper) {
         single_column: true
     });
 
+    // Make the page fill viewport — no page-level scrolling
+    const style = document.createElement('style');
+    style.textContent = `
+        [data-page-container="capacity-planning"] .layout-main-section,
+        [data-page-container="capacity-planning"] .layout-main-section-wrapper {
+            max-width: 100% !important;
+        }
+        [data-page-container="capacity-planning"] .page-container {
+            overflow: hidden !important;
+        }
+        [data-page-container="capacity-planning"] .main-section {
+            overflow: hidden !important;
+        }
+        [data-page-container="capacity-planning"] .container.page-body {
+            overflow: hidden !important;
+        }
+        [data-page-container="capacity-planning"] .page-content {
+            overflow: hidden !important;
+        }
+        #capacity-planning-app {
+            height: calc(100vh - var(--navbar-height, 60px) - 40px);
+            overflow: hidden;
+        }
+    `;
+    document.head.appendChild(style);
+
     // Add container for Vue app
     $(page.main).html('<div id="capacity-planning-app"></div>');
 

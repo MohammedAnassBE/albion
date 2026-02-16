@@ -6,9 +6,6 @@
  "engine": "InnoDB",
  "field_order": [
   "defaults_section",
-  "default_colour_attribute",
-  "default_size_attribute",
-  "column_break_defaults",
   "default_size_range",
   "company_info_section",
   "company_name"
@@ -18,22 +15,6 @@
    "fieldname": "defaults_section",
    "fieldtype": "Section Break",
    "label": "Defaults"
-  },
-  {
-   "fieldname": "default_colour_attribute",
-   "fieldtype": "Link",
-   "label": "Default Colour Attribute",
-   "options": "Attribute"
-  },
-  {
-   "fieldname": "default_size_attribute",
-   "fieldtype": "Link",
-   "label": "Default Size Attribute",
-   "options": "Attribute"
-  },
-  {
-   "fieldname": "column_break_defaults",
-   "fieldtype": "Column Break"
   },
   {
    "fieldname": "default_size_range",

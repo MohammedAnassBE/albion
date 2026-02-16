@@ -9,8 +9,6 @@
   "item_code",
   "item_name",
   "machine_gg",
-  "colour_attribute",
-  "size_attribute",
   "size_range",
   "section_break_colours",
   "colours",
@@ -42,18 +40,6 @@
    "label": "Machine GG",
    "options": "Machine GG",
    "reqd": 1
-  },
-  {
-   "fieldname": "colour_attribute",
-   "fieldtype": "Link",
-   "label": "Colour Attribute",
-   "options": "Attribute"
-  },
-  {
-   "fieldname": "size_attribute",
-   "fieldtype": "Link",
-   "label": "Size Attribute",
-   "options": "Attribute"
   },
   {
    "fieldname": "size_range",

@@ -81,6 +81,7 @@
                             <span class="item-name">{{ item.item }}</span>
                             <span class="item-qty">{{ item.quantity }}</span>
                         </div>
+                        <div v-if="item.machine_gg" class="item-gg">{{ item.machine_gg }}</div>
                         <div v-if="item.colour" class="item-detail">
                             Colour: {{ item.colour }}
                         </div>
@@ -134,6 +135,7 @@
                                 <div class="machine-info">
                                     <div class="machine-title">
                                         <span class="machine-id">{{ machine.machine_id }}</span>
+                                        <span class="machine-gg-badge">{{ machine.machine_gg }}</span>
                                     </div>
                                     <span class="machine-name">{{ machine.machine_name }}</span>
                                 </div>
@@ -174,14 +176,15 @@
                                      :key="group.group_id"
                                      class="gantt-bar"
                                      :style="getBarStyle(group)"
-                                     :title="getGroupTooltip(group)"
                                      draggable="true"
                                      @dragstart="onGroupDragStart($event, group)"
                                      @dragend="onDragEnd"
                                      @dragover="onCellDragOver($event, machine.machine_id)"
                                      @drop="onBarDrop($event, machine.machine_id)"
                                      @contextmenu.prevent="onBarContextMenu($event, group)"
-                                     @click.stop="selectGroup(group)">
+                                     @click.stop="selectGroup(group)"
+                                     @mouseenter="showTooltip($event, group)"
+                                     @mouseleave="hideTooltip">
                                     <div class="bar-row-top">
                                         <span class="bar-item">{{ group.item }}</span>
                                         <span class="bar-qty">{{ group.total_quantity }}</span>
@@ -504,6 +507,32 @@
                 </div>
             </div>
         </div>
+        <!-- Custom Tooltip -->
+        <div v-if="tooltip.show" class="gantt-tooltip" :style="{ top: tooltip.y + 'px', left: tooltip.x + 'px' }">
+            <div class="tooltip-header">{{ tooltip.data.item }}</div>
+            <div class="tooltip-grid">
+                <span class="tooltip-label">Order</span>
+                <span class="tooltip-value">{{ tooltip.data.order }}</span>
+                <span class="tooltip-label">Process</span>
+                <span class="tooltip-value">{{ tooltip.data.process }}</span>
+                <span class="tooltip-label">Dates</span>
+                <span class="tooltip-value">{{ tooltip.data.start_date }} &rarr; {{ tooltip.data.end_date }}</span>
+                <span class="tooltip-label">Days</span>
+                <span class="tooltip-value">{{ tooltip.data.days }}</span>
+                <span class="tooltip-label">Quantity</span>
+                <span class="tooltip-value tooltip-qty">{{ tooltip.data.total_quantity }}</span>
+                <span class="tooltip-label">Minutes</span>
+                <span class="tooltip-value">{{ tooltip.data.total_minutes }}m</span>
+                <template v-if="tooltip.data.colour">
+                    <span class="tooltip-label">Colour</span>
+                    <span class="tooltip-value">{{ tooltip.data.colour }}</span>
+                </template>
+                <template v-if="tooltip.data.size">
+                    <span class="tooltip-label">Size</span>
+                    <span class="tooltip-value">{{ tooltip.data.size }}</span>
+                </template>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -563,6 +592,9 @@ const backfillModalData = ref(null);
 
 // Context menu
 const contextMenu = ref({ show: false, x: 0, y: 0 });
+
+// Tooltip
+const tooltip = ref({ show: false, x: 0, y: 0, data: {} });
 
 // Group state
 const selectedGroup = ref(null);
@@ -676,7 +708,8 @@ const workloadItems = computed(() => {
                 quantity: qty,
                 minutes: processMinutes[item] || 0,
                 colour: null,
-                size: null
+                size: null,
+                machine_gg: itemMachineGG.value.get(item) || null
             });
         });
     } else if (viewType.value === 'colour_wise') {
@@ -695,7 +728,8 @@ const workloadItems = computed(() => {
                 quantity: data.quantity,
                 minutes: processMinutes[data.item] || 0,
                 colour: data.colour,
-                size: null
+                size: null,
+                machine_gg: itemMachineGG.value.get(data.item) || null
             });
         });
     } else if (viewType.value === 'size_wise') {
@@ -714,7 +748,8 @@ const workloadItems = computed(() => {
                 quantity: data.quantity,
                 minutes: processMinutes[data.item] || 0,
                 colour: null,
-                size: data.size
+                size: data.size,
+                machine_gg: itemMachineGG.value.get(data.item) || null
             });
         });
     }
@@ -1157,17 +1192,34 @@ function getBarStyle(group) {
     };
 }
 
-function getGroupTooltip(group) {
-    let tooltip = `Item: ${group.item}\n`;
-    tooltip += `Process: ${group.process}\n`;
-    tooltip += `Order: ${group.order}\n`;
-    tooltip += `Dates: ${group.start_date} to ${group.end_date}\n`;
-    tooltip += `Days: ${group.allocs.length}\n`;
-    tooltip += `Total Qty: ${group.total_quantity}\n`;
-    tooltip += `Total Minutes: ${group.total_minutes}m\n`;
-    if (group.colour) tooltip += `Colour: ${group.colour}\n`;
-    if (group.size) tooltip += `Size: ${group.size}\n`;
-    return tooltip;
+let tooltipTimer = null;
+function showTooltip(event, group) {
+    clearTimeout(tooltipTimer);
+    tooltipTimer = setTimeout(() => {
+        const rect = event.target.closest('.gantt-bar').getBoundingClientRect();
+        tooltip.value = {
+            show: true,
+            x: rect.left + rect.width / 2,
+            y: rect.top - 8,
+            data: {
+                item: group.item,
+                process: group.process,
+                order: group.order,
+                start_date: group.start_date,
+                end_date: group.end_date,
+                days: group.allocs.length,
+                total_quantity: group.total_quantity,
+                total_minutes: group.total_minutes,
+                colour: group.colour,
+                size: group.size
+            }
+        };
+    }, 350);
+}
+
+function hideTooltip() {
+    clearTimeout(tooltipTimer);
+    tooltip.value.show = false;
 }
 
 // === One-Item-Per-Machine-Day Validation ===
@@ -1203,6 +1255,7 @@ function onGroupDragStart(event, group) {
     }));
     event.dataTransfer.effectAllowed = 'move';
     draggingItem.value = { item: group.item };
+    hideTooltip();
 }
 
 function onBarContextMenu(event, group) {
@@ -4279,6 +4332,7 @@ function initFrappeControls() {
         render_input: true,
         only_input: true
     });
+    startDateControl.set_value(frappe.datetime.add_days(frappe.datetime.nowdate(), -7))
     startDateControl.refresh();
 
     // End Date
@@ -4295,6 +4349,7 @@ function initFrappeControls() {
         render_input: true,
         only_input: true
     });
+    endDateControl.set_value(frappe.datetime.add_months(frappe.datetime.nowdate(), 1))
     endDateControl.refresh();
 }
 
@@ -4349,9 +4404,10 @@ defineExpose({
 .capacity-planning {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: calc(100vh - var(--navbar-height, 60px));
     background: #f8fafc;
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    overflow: hidden;
 }
 
 .cp-header {
@@ -4361,6 +4417,7 @@ defineExpose({
     box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     position: relative;
     z-index: 10;
+    flex-shrink: 0;
 }
 
 .cp-header .awesomplete > [role="listbox"] {
@@ -4443,6 +4500,7 @@ defineExpose({
     padding: 8px 20px;
     background: #fef2f2;
     border-bottom: 1px solid #fecaca;
+    flex-shrink: 0;
 }
 
 .alert {
@@ -4462,6 +4520,7 @@ defineExpose({
 .cp-body {
     display: flex;
     flex: 1;
+    min-height: 0;
     overflow: hidden;
     position: relative;
     z-index: 1;
@@ -4470,15 +4529,18 @@ defineExpose({
 /* ===== Left Panel - Workload ===== */
 .cp-left-panel {
     width: 280px;
+    min-width: 280px;
     background: white;
     border-right: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .panel-header {
     padding: 16px;
     border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
 }
 
 .panel-header h4 {
@@ -4495,6 +4557,7 @@ defineExpose({
 
 .workload-list {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 12px;
 }
@@ -4592,6 +4655,13 @@ defineExpose({
     font-weight: 700;
 }
 
+.item-gg {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6d28d9;
+    margin-top: 2px;
+}
+
 .item-detail {
     font-size: 12px;
     color: #64748b;
@@ -4640,6 +4710,7 @@ defineExpose({
 /* ===== Right Panel - Calendar ===== */
 .cp-right-panel {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -4652,6 +4723,7 @@ defineExpose({
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .calendar-header h4 {
@@ -4663,6 +4735,7 @@ defineExpose({
 
 .calendar-wrapper {
     flex: 1;
+    min-height: 0;
     overflow: auto;
     background: #f8fafc;
 }
@@ -4778,6 +4851,16 @@ defineExpose({
 .machine-name {
     font-size: 11px;
     color: #64748b;
+}
+
+.machine-gg-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: #6d28d9;
+    background: #ede9fe;
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
 }
 
 /* ===== Date Cells (Drop Targets) ===== */
@@ -5173,6 +5256,72 @@ defineExpose({
 
 .menu-item.text-danger:hover {
     background: #fef2f2;
+}
+
+/* ===== Gantt Tooltip ===== */
+.gantt-tooltip {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    transform: translate(-50%, -100%);
+    background: #0f172a;
+    color: #f1f5f9;
+    border-radius: 10px;
+    padding: 12px 16px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 220px;
+    max-width: 300px;
+    animation: tooltip-in 0.15s ease-out;
+}
+
+@keyframes tooltip-in {
+    from { opacity: 0; transform: translate(-50%, -100%) translateY(4px); }
+    to   { opacity: 1; transform: translate(-50%, -100%) translateY(0); }
+}
+
+.gantt-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid #0f172a;
+}
+
+.tooltip-header {
+    font-weight: 700;
+    font-size: 14px;
+    color: white;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #334155;
+}
+
+.tooltip-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+    align-items: baseline;
+}
+
+.tooltip-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.tooltip-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.tooltip-qty {
+    color: #67e8f9;
 }
 
 /* ===== Shift Modal ===== */

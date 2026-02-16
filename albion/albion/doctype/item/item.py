@@ -17,14 +17,3 @@ class Item(Document):
                 self.append("sizes", {
                     "size": size_row.size
                 })
-
-@frappe.whitelist()
-def get_attribute_values(doctype, txt, searchfield, start, page_len, filters):
-    if filters and filters.get('attribute'):
-        return frappe.get_all(
-            'Attribute Value',
-            filters={'attribute': filters['attribute']},
-            fields=['name'],
-            as_list=True
-        )
-    return []

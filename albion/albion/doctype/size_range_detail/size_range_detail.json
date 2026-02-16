@@ -14,7 +14,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Size",
-   "options": "Attribute Value",
+   "options": "Size",
    "reqd": 1
   }
  ],
