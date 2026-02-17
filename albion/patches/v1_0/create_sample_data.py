@@ -6,6 +6,33 @@ from frappe.utils import today, add_days
 def execute():
 	"""Create sample/test data for Albion app development."""
 
+	# --- Prerequisite: Colours (7) ---
+	for colour in ["Red", "Blue", "Green", "Black", "White", "Navy", "Grey"]:
+		if not frappe.db.exists("Colour", colour):
+			frappe.get_doc({"doctype": "Colour", "colour_name": colour}).insert()
+
+	# --- Prerequisite: Sizes (6) ---
+	for size in ["S", "M", "L", "XL", "XXL", "3XL"]:
+		if not frappe.db.exists("Size", size):
+			frappe.get_doc({"doctype": "Size", "size_value": size}).insert()
+
+	# --- Prerequisite: Size Ranges (2) ---
+	size_ranges = {
+		"S-XL": ["S", "M", "L", "XL"],
+		"S-3XL": ["S", "M", "L", "XL", "XXL", "3XL"],
+	}
+	for sr_name, sizes in size_ranges.items():
+		if not frappe.db.exists("Size Range", sr_name):
+			frappe.get_doc({
+				"doctype": "Size Range",
+				"size_range_name": sr_name,
+				"sizes": [{"size": s} for s in sizes],
+			}).insert()
+
+	# --- Prerequisite: Process (1) ---
+	if not frappe.db.exists("Process", "Knitting"):
+		frappe.get_doc({"doctype": "Process", "process_name": "Knitting"}).insert()
+
 	# --- Customers (4) ---
 	customers = ["Alpha Textiles", "Beta Garments", "Gamma Knitwear", "Delta Fashions"]
 	for name in customers:
