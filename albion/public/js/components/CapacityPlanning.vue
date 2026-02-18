@@ -115,7 +115,7 @@
                 <div class="calendar-header">
                     <h4>Capacity Calendar</h4>
                 </div>
-                <div class="calendar-wrapper">
+                <div class="calendar-wrapper" @dragover="onWrapperDragOver">
                     <div class="gantt-grid" :style="ganttGridStyle">
                         <!-- Header row -->
                         <div class="gantt-corner-cell">Machine</div>
@@ -609,6 +609,7 @@ const selectedProcess = ref('');
 const viewType = ref('item_wise');
 const startDate = ref('');
 const endDate = ref('');
+const suppressDateWatch = ref(false);
 const orderData = ref(null);
 
 // Workload panel collapse
@@ -706,6 +707,11 @@ const COL_WIDTH = 120;
 const BAR_HEIGHT = 68;
 const BAR_GAP = 4;
 const BAR_TOP_OFFSET = 22;
+const SCROLL_EDGE_ZONE = 60;   // px from edge to trigger scroll
+const SCROLL_SPEED = 12;       // px per animation frame
+let autoScrollRAF = null;
+let autoScrollDX = 0;
+let autoScrollDY = 0;
 
 // Machine GG lookup: Map<itemCode, machineGG>
 const itemMachineGG = computed(() => {
@@ -1178,14 +1184,38 @@ function getAllocationColor(alloc) {
 }
 
 function getAllocatedQuantity(item) {
-    return allocations.value
-        .filter(a =>
-            a.order === selectedOrder.value &&
-            a.item === item.item &&
-            a.process === selectedProcess.value &&
-            a.colour === item.colour &&
-            a.size === item.size
-        )
+    const itemAllocs = allocations.value.filter(a =>
+        a.order === selectedOrder.value &&
+        a.item === item.item &&
+        a.process === selectedProcess.value
+    );
+    if (itemAllocs.length === 0) return 0;
+
+    // Detect this workload item's granularity
+    const isItemWise = !item.colour && !item.size;
+    const isColourWise = !!item.colour && !item.size;
+    const isSizeWise = !item.colour && !!item.size;
+
+    // Check if any allocations exist at a different granularity
+    const hasDifferentGranularity = itemAllocs.some(a => {
+        const allocIsItemWise = !a.colour && !a.size;
+        const allocIsColourWise = !!a.colour && !a.size;
+        const allocIsSizeWise = !a.colour && !!a.size;
+
+        if (isItemWise) return !allocIsItemWise;
+        if (isColourWise) return !allocIsColourWise;
+        if (isSizeWise) return !allocIsSizeWise;
+        return false;
+    });
+
+    if (hasDifferentGranularity) {
+        // Different granularity exists — block this item by returning its full quantity
+        return item.quantity;
+    }
+
+    // Same granularity — use exact match
+    return itemAllocs
+        .filter(a => a.colour === item.colour && a.size === item.size)
         .reduce((sum, a) => sum + a.quantity, 0);
 }
 
@@ -1248,6 +1278,25 @@ function getNextWorkingDay(dateStr, machineId) {
         if (getEffectiveMinutes(dates[idx], machineId) > 0) return dates[idx];
     }
     return null;
+}
+
+function extendEndDate(newEndDate) {
+    suppressDateWatch.value = true;
+    endDate.value = newEndDate;
+    nextTick(() => { suppressDateWatch.value = false; });
+}
+
+function ensureWorkingDaysAvailable(fromDate, neededCount, machineId) {
+    let available = 0;
+    let scanDate = fromDate;
+    while (scanDate) {
+        if (getEffectiveMinutes(scanDate, machineId) > 0) available++;
+        if (available >= neededCount) return;
+        scanDate = getNextDate(scanDate);
+    }
+    // Not enough working days — extend endDate
+    const shortfall = neededCount - available;
+    extendEndDate(addDaysToDate(endDate.value, shortfall * 3));
 }
 
 function simulateGroupEnd(totalQty, minutesPerUnit, startDate, machineId) {
@@ -1474,6 +1523,10 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
         const lastTargetDate = lastPlacedDate;
         const allMovedKeys = targetDays.map(({ alloc }) => alloc.key);
         let currentDate = getNextDate(lastTargetDate);
+        if (!currentDate && remaining > 0) {
+            extendEndDate(addDaysToDate(endDate.value, Math.ceil(remaining * minutesPerUnit / 480) * 3));
+            currentDate = getNextDate(lastTargetDate);
+        }
         const refAlloc = targetDays[0].alloc;
 
         while (remaining > 0 && currentDate) {
@@ -1538,15 +1591,16 @@ function moveGroup(groupData, newMachineId, newStartDate) {
 
     // Pack into consecutive working days from drop date (skip holidays)
     // Prevents mid-week gaps when original group spans weekends
+    // Auto-extend calendar if not enough working days for the group
+    ensureWorkingDaysAvailable(newStartDate, groupAllocs.length, newMachineId);
+
     const targetDays = [];
     let _nextDate = newStartDate;
     for (const alloc of groupAllocs) {
         while (_nextDate && getEffectiveMinutes(_nextDate, newMachineId) <= 0) {
             _nextDate = getNextDate(_nextDate);
         }
-        if (!_nextDate) {
-            _nextDate = targetDays[targetDays.length - 1].newDate;
-        }
+        if (!_nextDate) break;
         targetDays.push({ alloc, newDate: _nextDate });
         _nextDate = getNextDate(_nextDate);
     }
@@ -1841,23 +1895,30 @@ function computeShiftByDaysPreview() {
     const sortedAllocs = [...groupAllocs].sort((a, b) => a.operation_date.localeCompare(b.operation_date));
 
     // Compute first alloc's new date using working days
-    const firstNewDate = addWorkingDays(sortedAllocs[0].operation_date, dayOffset, machineId);
+    let firstNewDate = addWorkingDays(sortedAllocs[0].operation_date, dayOffset, machineId);
+    if (!firstNewDate && dayOffset > 0) {
+        extendEndDate(addDaysToDate(endDate.value, Math.abs(dayOffset) * 3));
+        firstNewDate = addWorkingDays(sortedAllocs[0].operation_date, dayOffset, machineId);
+    }
     if (!firstNewDate) {
-        shiftByDaysPreview.value = { error: 'Shift would place days outside calendar range. Extend the end date first.' };
+        shiftByDaysPreview.value = { error: 'Shift would place days outside calendar range.' };
         return;
     }
+
+    // Auto-extend calendar if not enough working days for the group
+    ensureWorkingDaysAvailable(firstNewDate, sortedAllocs.length, machineId);
 
     // Lay out allocs on consecutive working days from firstNewDate
     const targetDays = [];
     let currentWorkDate = firstNewDate;
     for (const alloc of sortedAllocs) {
-        if (!currentWorkDate) {
-            shiftByDaysPreview.value = { error: 'Not enough working days in calendar range.' };
-            return;
-        }
-        if (!dates.includes(currentWorkDate)) {
-            shiftByDaysPreview.value = { error: 'Shift would place days outside calendar range. Extend the end date first.' };
-            return;
+        if (!currentWorkDate || !dateRange.value.includes(currentWorkDate)) {
+            ensureWorkingDaysAvailable(firstNewDate, sortedAllocs.length, machineId);
+            currentWorkDate = getNextWorkingDay(targetDays[targetDays.length - 1].newDate, machineId);
+            if (!currentWorkDate) {
+                shiftByDaysPreview.value = { error: 'Not enough working days in calendar range.' };
+                return;
+            }
         }
         if (isPastDate(currentWorkDate)) {
             shiftByDaysPreview.value = { error: 'Cannot shift to past dates' };
@@ -1892,7 +1953,7 @@ function computeShiftByDaysPreview() {
     // Phase 2: overflow onto subsequent working days (mirrors executeMoveGroup overflow loop)
     if (simRemaining > 0 && minutesPerUnit > 0) {
         let extendDate = getNextWorkingDay(targetDays[targetDays.length - 1].newDate, machineId);
-        while (simRemaining > 0 && extendDate && dates.includes(extendDate)) {
+        while (simRemaining > 0 && extendDate && dateRange.value.includes(extendDate)) {
             const cap = getEffectiveMinutes(extendDate, machineId);
             const maxQty = Math.floor(cap / minutesPerUnit);
             const allocQty = Math.min(simRemaining, Math.max(maxQty, 0));
@@ -1931,7 +1992,7 @@ function computeShiftByDaysPreview() {
             const targetStart = addDaysToDate(currentEnd, 1);
             let workDate = targetStart;
             // Find first working day at or after targetStart
-            if (!dates.includes(workDate) || getEffectiveMinutes(workDate, machineId) <= 0) {
+            if (!dateRange.value.includes(workDate) || getEffectiveMinutes(workDate, machineId) <= 0) {
                 workDate = getNextWorkingDay(addDaysToDate(targetStart, -1), machineId);
             }
             if (!workDate) {
@@ -1949,7 +2010,7 @@ function computeShiftByDaysPreview() {
 
             let lastWorkDate = null;
             for (const alloc of otherGroup.allocObjs) {
-                if (!workDate || !dates.includes(workDate)) {
+                if (!workDate || !dateRange.value.includes(workDate)) {
                     outOfBounds = true;
                     affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
                 } else if (isPastDate(workDate)) {
@@ -3558,11 +3619,55 @@ function redoLastAction() {
     frappe.show_alert({ message: __('Action redone'), indicator: 'blue' });
 }
 
+// Auto-scroll during drag
+function autoScrollDuringDrag(event) {
+    const wrapper = document.querySelector('.calendar-wrapper');
+    if (!wrapper) return;
+    const rect = wrapper.getBoundingClientRect();
+
+    // Use clientHeight/clientWidth — these exclude scrollbar dimensions
+    const contentBottom = rect.top + wrapper.clientHeight;
+    const contentRight = rect.left + wrapper.clientWidth;
+
+    autoScrollDY = 0;
+    autoScrollDX = 0;
+    if (event.clientY < rect.top + SCROLL_EDGE_ZONE) autoScrollDY = -SCROLL_SPEED;
+    else if (event.clientY > contentBottom - SCROLL_EDGE_ZONE) autoScrollDY = SCROLL_SPEED;
+    if (event.clientX < rect.left + SCROLL_EDGE_ZONE) autoScrollDX = -SCROLL_SPEED;
+    else if (event.clientX > contentRight - SCROLL_EDGE_ZONE) autoScrollDX = SCROLL_SPEED;
+
+    if (autoScrollDX === 0 && autoScrollDY === 0) {
+        stopAutoScroll();
+        return;
+    }
+
+    if (!autoScrollRAF) {
+        const step = () => {
+            wrapper.scrollLeft += autoScrollDX;
+            wrapper.scrollTop += autoScrollDY;
+            autoScrollRAF = requestAnimationFrame(step);
+        };
+        autoScrollRAF = requestAnimationFrame(step);
+    }
+}
+
+function stopAutoScroll() {
+    if (autoScrollRAF) {
+        cancelAnimationFrame(autoScrollRAF);
+        autoScrollRAF = null;
+    }
+}
+
+function onWrapperDragOver(event) {
+    autoScrollDuringDrag(event);
+}
+
 // Drag and Drop
 function onCellDragOver(event, machineId) {
     if (isMachineCompatible(machineId)) {
         event.preventDefault(); // allow drop only on compatible machines
     }
+    autoScrollDuringDrag(event);
 }
 
 function onDragStart(event, item) {
@@ -3572,6 +3677,7 @@ function onDragStart(event, item) {
 
 function onDragEnd() {
     draggingItem.value = null;
+    stopAutoScroll();
 }
 
 function getNextDate(currentDateStr) {
@@ -4696,6 +4802,7 @@ onUnmounted(() => {
 });
 
 watch([startDate, endDate], () => {
+    if (suppressDateWatch.value) return;
     loadShiftAllocations();
     loadAllAllocations();
 });
