@@ -4,11 +4,11 @@
             <div class="cp-filters">
                 <div class="filter-rows">
                     <div class="filter-row">
-                        <div class="filter-field">
+                        <div class="filter-field" v-show="!isZoomedOut">
                             <label class="filter-label">Customer</label>
                             <div class="frappe-field" ref="customerFieldRef"></div>
                         </div>
-                        <div class="filter-field">
+                        <div class="filter-field" v-show="!isZoomedOut">
                             <label class="filter-label">Order</label>
                             <div class="frappe-field" ref="orderFieldRef"></div>
                         </div>
@@ -21,7 +21,7 @@
                             <div class="frappe-field" ref="endDateFieldRef"></div>
                         </div>
                     </div>
-                    <div class="filter-row">
+                    <div class="filter-row" v-show="!isZoomedOut">
                         <div class="filter-field">
                             <label class="filter-label">Process</label>
                             <div class="frappe-field" ref="processFieldRef"></div>
@@ -37,11 +37,14 @@
                     </div>
                 </div>
                 <div class="action-group">
-                    <button class="btn btn-default" @click="undoLastAction" :disabled="actionHistory.length === 0">Undo</button>
-                    <button class="btn btn-default" @click="redoLastAction" :disabled="redoHistory.length === 0">Redo</button>
+                    <button class="btn btn-default" @click="isZoomedOut = !isZoomedOut">
+                        {{ isZoomedOut ? 'Zoom In' : 'Zoom Out' }}
+                    </button>
+                    <button class="btn btn-default" @click="undoLastAction" :disabled="actionHistory.length === 0" v-show="!isZoomedOut">Undo</button>
+                    <button class="btn btn-default" @click="redoLastAction" :disabled="redoHistory.length === 0" v-show="!isZoomedOut">Redo</button>
                     <button class="btn btn-default" @click="refreshCalendar">Refresh</button>
-                    <button class="btn btn-default" @click="openBulkShiftModal">Update Shifts</button>
-                    <button class="btn btn-primary" @click="saveAllocations">Save</button>
+                    <button class="btn btn-default" @click="openBulkShiftModal" v-show="!isZoomedOut">Update Shifts</button>
+                    <button class="btn btn-primary" @click="saveAllocations" v-show="!isZoomedOut">Save</button>
                 </div>
             </div>
         </div>
@@ -54,7 +57,7 @@
 
         <div class="cp-body">
             <!-- Left Panel - Workload List -->
-            <div class="cp-left-panel" :class="{ 'panel-collapsed': workloadCollapsed }">
+            <div class="cp-left-panel" :class="{ 'panel-collapsed': workloadCollapsed }" v-show="!isZoomedOut">
                 <div class="panel-header" @click="workloadCollapsed = !workloadCollapsed">
                     <div class="panel-header-row">
                         <h4>Workload</h4>
@@ -109,24 +112,53 @@
                         </div>
                     </div>
                 </div>
+                <!-- Recently Deleted Blocks -->
+                <div v-show="!workloadCollapsed && deletedBlocks.length > 0" class="deleted-blocks-section">
+                    <div class="deleted-header">
+                        <span class="deleted-title">Recently Deleted</span>
+                        <button class="deleted-clear-btn" @click="clearDeletedBlocks" title="Clear all">&#10005;</button>
+                    </div>
+                    <div class="deleted-list">
+                        <div
+                            v-for="block in deletedBlocks"
+                            :key="block.id"
+                            class="deleted-item"
+                            draggable="true"
+                            @dragstart="onDeletedBlockDragStart($event, block)"
+                            @dragend="onDragEnd"
+                        >
+                            <div class="deleted-item-header">
+                                <span class="drag-handle">&#8942;&#8942;</span>
+                                <span class="deleted-item-name">{{ block.item }}</span>
+                                <span class="deleted-item-qty">{{ block.total_quantity }}</span>
+                            </div>
+                            <div v-if="block.colour" class="item-detail">Colour: {{ block.colour }}</div>
+                            <div v-if="block.size" class="item-detail">Size: {{ block.size }}</div>
+                            <div class="deleted-item-meta">
+                                {{ block.days }} day(s) &middot; {{ block.minutes_per_unit }} mins/unit
+                            </div>
+                            <button class="deleted-dismiss-btn" @click="removeDeletedBlock(block.id)" title="Dismiss">&#10005;</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Right Panel - Gantt Calendar -->
             <div class="cp-right-panel">
-                <div class="calendar-header">
+                <div class="calendar-header" v-show="!isZoomedOut">
                     <h4>Capacity Calendar</h4>
                 </div>
                 <div class="calendar-wrapper" @dragover="onWrapperDragOver">
-                    <div class="gantt-grid" :style="ganttGridStyle">
+                    <div class="gantt-grid" :class="{ 'gantt-grid-zoom': isZoomedOut }" :style="ganttGridStyle">
                         <!-- Header row -->
                         <div class="gantt-corner-cell">Machine</div>
                         <div v-for="(date, dIdx) in dateRange" :key="'hdr-'+date"
                              class="gantt-date-header" :class="getDateHeaderClass(date)"
                              :style="{ gridRow: 1, gridColumn: dIdx + 2 }"
-                             @click="openActionChoice(date)">
+                             @click="!isZoomedOut && openActionChoice(date)">
                             <div class="date-cell">
-                                <span class="day-date">{{ formatDayName(date) }}, {{ formatDate(date) }}</span>
-                                <span class="shift-info">
+                                <span class="day-date">{{ isZoomedOut ? formatDate(date) : formatDayName(date) + ', ' + formatDate(date) }}</span>
+                                <span v-if="!isZoomedOut" class="shift-info">
                                     {{ getShiftNamesForDate(date) }} &middot; {{ getEffectiveMinutes(date) }}m
                                     <span v-if="getDayAlterationDelta(date)" class="day-alteration-badge clickable" :class="getDayAlterationDelta(date).cls"
                                           @click.stop="openEditAlterationsModal(date, null)">
@@ -155,26 +187,28 @@
                                  class="gantt-date-cell"
                                  :class="[getCellClass(machine.machine_id, date), { 'machine-disabled': !isMachineCompatible(machine.machine_id) }]"
                                  :style="{ gridRow: mIdx + 2, gridColumn: dIdx + 2 }"
-                                 @dragover="onCellDragOver($event, machine.machine_id)"
-                                 @drop="onDrop($event, machine.machine_id, date)">
-                                <span v-if="getCellAlterationBadge(date, machine.machine_id)"
-                                      class="alteration-badge clickable"
-                                      :class="getCellAlterationBadge(date, machine.machine_id).cls"
-                                      @click.stop="openEditAlterationsModal(date, machine.machine_id)">
-                                    {{ getCellAlterationBadge(date, machine.machine_id).label }}
-                                </span>
-                                <div class="cell-top-row">
-                                    <button class="cell-add-btn" @click.stop="openAlterationDialog(date, machine.machine_id)" title="Add overtime/break">+</button>
-                                </div>
-                                <div class="cell-utilization" v-if="getUsedMinutes(machine.machine_id, date) > 0"
-                                     :title="`${getUsedMinutes(machine.machine_id, date)}m / ${getEffectiveMinutes(date, machine.machine_id)}m`">
-                                    <div class="util-bar" :class="getCapacityBarClass(machine.machine_id, date)">
-                                        <div class="util-fill"
-                                             :style="{ width: Math.min(getCapacityPercentage(machine.machine_id, date), 100) + '%' }"
-                                             :class="getCapacityBarClass(machine.machine_id, date)"></div>
-                                        <span class="util-label">{{ getUsedMinutes(machine.machine_id, date) }}m/{{ getEffectiveMinutes(date, machine.machine_id) }}m</span>
+                                 @dragover="!isZoomedOut && onCellDragOver($event, machine.machine_id)"
+                                 @drop="!isZoomedOut && onDrop($event, machine.machine_id, date)">
+                                <template v-if="!isZoomedOut">
+                                    <span v-if="getCellAlterationBadge(date, machine.machine_id)"
+                                          class="alteration-badge clickable"
+                                          :class="getCellAlterationBadge(date, machine.machine_id).cls"
+                                          @click.stop="openEditAlterationsModal(date, machine.machine_id)">
+                                        {{ getCellAlterationBadge(date, machine.machine_id).label }}
+                                    </span>
+                                    <div class="cell-top-row">
+                                        <button class="cell-add-btn" @click.stop="openAlterationDialog(date, machine.machine_id)" title="Add overtime/break">+</button>
                                     </div>
-                                </div>
+                                    <div class="cell-utilization" v-if="getUsedMinutes(machine.machine_id, date) > 0"
+                                         :title="`${getUsedMinutes(machine.machine_id, date)}m / ${getEffectiveMinutes(date, machine.machine_id)}m`">
+                                        <div class="util-bar" :class="getCapacityBarClass(machine.machine_id, date)">
+                                            <div class="util-fill"
+                                                 :style="{ width: Math.min(getCapacityPercentage(machine.machine_id, date), 100) + '%' }"
+                                                 :class="getCapacityBarClass(machine.machine_id, date)"></div>
+                                            <span class="util-label">{{ getUsedMinutes(machine.machine_id, date) }}m/{{ getEffectiveMinutes(date, machine.machine_id) }}m</span>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
 
                             <!-- Gantt bar layer (overlays date cells in same row) -->
@@ -183,30 +217,40 @@
                                  :style="{ gridRow: mIdx + 2, gridColumn: `2 / ${dateRange.length + 2}`, minHeight: getBarLayerHeight(machine.machine_id) + 'px' }">
                                 <div v-for="group in getGroupsForMachine(machine.machine_id)"
                                      :key="group.group_id"
-                                     class="gantt-bar"
+                                     :class="['gantt-bar', { 'snap-in': isJustDropped(group), 'zoomed-out-bar': isZoomedOut }]"
                                      :style="getBarStyle(group)"
-                                     draggable="true"
-                                     @dragstart="onGroupDragStart($event, group)"
-                                     @dragend="onDragEnd"
-                                     @dragover="onCellDragOver($event, machine.machine_id)"
-                                     @drop="onBarDrop($event, machine.machine_id)"
-                                     @contextmenu.prevent="onBarContextMenu($event, group)"
-                                     @click.stop="selectGroup(group)"
+                                     :draggable="!isZoomedOut"
+                                     @dragstart="!isZoomedOut && onGroupDragStart($event, group)"
+                                     @dragend="!isZoomedOut && onDragEnd()"
+                                     @dragover="!isZoomedOut && onCellDragOver($event, machine.machine_id)"
+                                     @drop="!isZoomedOut && onBarDrop($event, machine.machine_id)"
+                                     @contextmenu.prevent="!isZoomedOut && onBarContextMenu($event, group)"
+                                     @click.stop="!isZoomedOut && selectGroup(group)"
                                      @mouseenter="showTooltip($event, group)"
-                                     @mouseleave="hideTooltip">
-                                    <div class="bar-row-top">
-                                        <span class="bar-item">{{ group.item }}</span>
-                                        <span class="bar-qty">{{ group.total_quantity }}</span>
-                                    </div>
-                                    <div class="bar-row-mid">
-                                        <span class="bar-process">{{ group.process }}</span>
-                                        <span class="bar-minutes">{{ group.total_minutes }}m</span>
-                                    </div>
-                                    <div class="bar-row-bot">
-                                        <span v-if="group.order" class="bar-tag order-tag"><b>O:</b> {{ group.order }}</span>
-                                        <span v-if="group.colour" class="bar-tag colour-tag"><b>C:</b> {{ group.colour }}</span>
-                                        <span v-if="group.size" class="bar-tag size-tag"><b>S:</b> {{ group.size }}</span>
-                                    </div>
+                                     @mouseleave="hideTooltip"
+                                     @animationend="onSnapAnimationEnd(group)">
+                                    <template v-if="isZoomedOut">
+                                        <div class="bar-row-zoom">
+                                            <span v-if="group.order" class="bar-tag order-tag"><b>O:</b> {{ group.order }}</span>
+                                            <span class="bar-item">{{ group.item }}</span>
+                                            <span class="bar-qty">{{ group.total_quantity }}</span>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <div class="bar-row-top">
+                                            <span class="bar-item">{{ group.item }}</span>
+                                            <span class="bar-qty">{{ group.total_quantity }}</span>
+                                        </div>
+                                        <div class="bar-row-mid">
+                                            <span class="bar-process">{{ group.process }}</span>
+                                            <span class="bar-minutes">{{ group.total_minutes }}m</span>
+                                        </div>
+                                        <div class="bar-row-bot">
+                                            <span v-if="group.order" class="bar-tag order-tag"><b>O:</b> {{ group.order }}</span>
+                                            <span v-if="group.colour" class="bar-tag colour-tag"><b>C:</b> {{ group.colour }}</span>
+                                            <span v-if="group.size" class="bar-tag size-tag"><b>S:</b> {{ group.size }}</span>
+                                        </div>
+                                    </template>
                                 </div>
                             </div>
                         </template>
@@ -316,7 +360,6 @@
                     <button class="btn btn-primary" @click="confirmShift">
                         {{ shiftModalData.type === 'move_group' ? 'Shift & Move' : 'Shift & Allocate' }}
                     </button>
-                    <button v-if="shiftModalData.type !== 'move_group'" class="btn btn-default" @click="allocateWithoutShift">Allocate Without Shifting</button>
                     <button class="btn btn-secondary" @click="closeShiftModal">Cancel</button>
                 </div>
             </div>
@@ -717,6 +760,7 @@ const orderData = ref(null);
 
 // Workload panel collapse
 const workloadCollapsed = ref(false);
+const isZoomedOut = ref(false);
 
 // Template refs for Frappe fields
 const customerFieldRef = ref(null);
@@ -774,6 +818,12 @@ const splitGroupDate = ref('');
 // Drag tracking for machine_gg filtering
 const draggingItem = ref(null);
 
+// Snap animation tracking for just-dropped groups
+const droppedAllocKeys = ref(new Set());
+
+// Recently deleted blocks for drag-to-reallocate
+const deletedBlocks = ref([]);
+
 // Shift group by days modal state
 const showShiftByDaysModal = ref(false);
 const shiftByDaysCount = ref(0);
@@ -821,7 +871,9 @@ endDate.value = nextMonth.toISOString().split('T')[0];
 // Constants
 const MIN_BATCH_SIZE = 1;
 const COL_WIDTH = 120;
+const COL_WIDTH_ZOOM = 48;
 const BAR_HEIGHT = 68;
+const BAR_HEIGHT_ZOOM = 22;
 const BAR_GAP = 4;
 const BAR_TOP_OFFSET = 22;
 const SCROLL_EDGE_ZONE = 60;   // px from edge to trigger scroll
@@ -887,8 +939,10 @@ const dateRange = computed(() => {
     return dates;
 });
 
+const colWidth = computed(() => isZoomedOut.value ? COL_WIDTH_ZOOM : COL_WIDTH);
+
 const ganttGridStyle = computed(() => ({
-    gridTemplateColumns: `180px repeat(${dateRange.value.length}, ${COL_WIDTH}px)`,
+    gridTemplateColumns: `${isZoomedOut.value ? 120 : 180}px repeat(${dateRange.value.length}, ${colWidth.value}px)`,
 }));
 
 const selectedShiftsTotalMinutes = computed(() => {
@@ -1450,7 +1504,9 @@ function getLaneCount(machineId) {
 function getBarLayerHeight(machineId) {
     const lanes = getLaneCount(machineId);
     if (lanes === 0) return 0;
-    return lanes * (BAR_HEIGHT + BAR_GAP) + BAR_TOP_OFFSET * 2;
+    const h = isZoomedOut.value ? BAR_HEIGHT_ZOOM : BAR_HEIGHT;
+    const offset = isZoomedOut.value ? 4 : BAR_TOP_OFFSET;
+    return lanes * (h + BAR_GAP) + offset * 2;
 }
 
 function getBarStyle(group) {
@@ -1460,9 +1516,12 @@ function getBarStyle(group) {
 
     if (startIdx < 0 || endIdx < 0) return { display: 'none' };
 
-    const left = startIdx * COL_WIDTH + BAR_GAP;
-    const width = (endIdx - startIdx + 1) * COL_WIDTH - BAR_GAP * 2;
-    const top = (group.lane || 0) * (BAR_HEIGHT + BAR_GAP) + BAR_TOP_OFFSET;
+    const h = isZoomedOut.value ? BAR_HEIGHT_ZOOM : BAR_HEIGHT;
+    const offset = isZoomedOut.value ? 4 : BAR_TOP_OFFSET;
+    const cw = colWidth.value;
+    const left = startIdx * cw + BAR_GAP;
+    const width = (endIdx - startIdx + 1) * cw - BAR_GAP * 2;
+    const top = (group.lane || 0) * (h + BAR_GAP) + offset;
 
     const colors = getAllocationColor(group);
 
@@ -1471,7 +1530,7 @@ function getBarStyle(group) {
         left: left + 'px',
         top: top + 'px',
         width: width + 'px',
-        height: BAR_HEIGHT + 'px',
+        height: h + 'px',
         backgroundColor: colors.bg,
         borderLeft: `4px solid ${colors.border}`,
         borderRadius: '4px',
@@ -1509,6 +1568,69 @@ function hideTooltip() {
     tooltip.value.show = false;
 }
 
+function isJustDropped(group) {
+    return group.alloc_keys.some(k => droppedAllocKeys.value.has(k));
+}
+
+function onSnapAnimationEnd(group) {
+    group.alloc_keys.forEach(k => droppedAllocKeys.value.delete(k));
+}
+
+function triggerSnapAnimation(allocKeys) {
+    droppedAllocKeys.value = new Set(allocKeys);
+}
+
+// === Recently Deleted Blocks ===
+
+function addDeletedBlock(group, allocSnapshots) {
+    const firstAlloc = allocSnapshots[0];
+    const totalQty = allocSnapshots.reduce((sum, a) => sum + a.quantity, 0);
+    const minutesPerUnit = firstAlloc.quantity > 0
+        ? firstAlloc.allocated_minutes / firstAlloc.quantity
+        : 0;
+
+    deletedBlocks.value.unshift({
+        id: `del-${Date.now()}`,
+        item: firstAlloc.item,
+        order: firstAlloc.order,
+        process: firstAlloc.process,
+        colour: firstAlloc.colour || null,
+        size: firstAlloc.size || null,
+        total_quantity: totalQty,
+        minutes_per_unit: minutesPerUnit,
+        machine_id: firstAlloc.machine_id,
+        machine_gg: itemMachineGG.value.get(firstAlloc.item) || null,
+        days: allocSnapshots.length,
+        timestamp: Date.now()
+    });
+}
+
+function removeDeletedBlock(blockId) {
+    const idx = deletedBlocks.value.findIndex(b => b.id === blockId);
+    if (idx > -1) deletedBlocks.value.splice(idx, 1);
+}
+
+function clearDeletedBlocks() {
+    deletedBlocks.value = [];
+}
+
+function onDeletedBlockDragStart(event, block) {
+    const dragData = {
+        key: block.id,
+        item: block.item,
+        quantity: block.total_quantity,
+        minutes: block.minutes_per_unit,
+        colour: block.colour,
+        size: block.size,
+        machine_gg: block.machine_gg,
+        isDeletedBlock: true,
+        deletedBlockId: block.id
+    };
+    event.dataTransfer.setData('application/json', JSON.stringify(dragData));
+    event.dataTransfer.setData('application/deleted-block', block.id);
+    draggingItem.value = dragData;
+}
+
 // === One-Item-Per-Machine-Day Validation ===
 
 function validateMachineDaySlot(machineId, date, excludeKeys = []) {
@@ -1529,7 +1651,7 @@ function onGroupDragStart(event, group) {
     // Calculate grab offset: how many columns from bar start the cursor is
     const bar = event.target.closest('.gantt-bar');
     const grabOffsetDays = bar
-        ? Math.floor((event.clientX - bar.getBoundingClientRect().left) / COL_WIDTH)
+        ? Math.floor((event.clientX - bar.getBoundingClientRect().left) / colWidth.value)
         : 0;
 
     event.dataTransfer.setData('application/gantt-group', JSON.stringify({
@@ -1769,6 +1891,7 @@ function moveGroup(groupData, newMachineId, newStartDate) {
         // No conflicts - move directly
         const result = executeMoveGroup(groupData, targetDays, newMachineId);
         saveAction('move_group', { allocations: result.allocations, overflowKeys: result.overflowKeys, removedSnapshots: result.removedSnapshots });
+        triggerSnapAnimation(groupData.alloc_keys);
         frappe.show_alert({ message: __('Group moved successfully'), indicator: 'green' });
         return;
     }
@@ -2410,6 +2533,7 @@ function confirmShiftByDays() {
         frappe.show_alert({ message: __(`Group shifted by ${shiftByDaysCount.value} day(s)`), indicator: 'green' });
     }
 
+    triggerSnapAnimation(group.alloc_keys);
     closeShiftByDaysModal();
 }
 
@@ -2497,6 +2621,7 @@ function deleteGroup() {
             () => {
                 // Confirmed
                 saveAction('delete_group', { allocations: undoData });
+                addDeletedBlock(group, undoData);
                 frappe.show_alert({ message: __(`Deleted group: ${group.allocs.length} day(s)`), indicator: 'green' });
             },
             () => {
@@ -2531,6 +2656,7 @@ function confirmBackfill() {
         refitAddedKeys: refitResult.addedKeys,
         refitRemovedSnapshots: refitResult.removedSnapshots
     });
+    addDeletedBlock(null, bd.deletedAllocations);
     frappe.show_alert({ message: __(`Deleted group and shifted ${shiftedAllocations.length} allocation(s) backward`), indicator: 'green' });
     closeBackfillModal();
 }
@@ -2540,6 +2666,7 @@ function declineBackfill() {
     const bd = backfillModalData.value;
 
     saveAction('delete_group', { allocations: bd.deletedAllocations });
+    addDeletedBlock(null, bd.deletedAllocations);
     frappe.show_alert({ message: __('Group deleted'), indicator: 'green' });
     closeBackfillModal();
 }
@@ -3832,7 +3959,7 @@ function onBarDrop(event, machineId) {
     if (!barLayer) return;
     const layerRect = barLayer.getBoundingClientRect();
     const xInLayer = event.clientX - layerRect.left;
-    const dateIdx = Math.floor(xInLayer / COL_WIDTH);
+    const dateIdx = Math.floor(xInLayer / colWidth.value);
     const dates = dateRange.value;
     if (dateIdx < 0 || dateIdx >= dates.length) return;
     const dateStr = dates[dateIdx];
@@ -3856,8 +3983,10 @@ function onDrop(event, machineId, dateStr) {
         return;
     }
 
-    // New allocation from workload
+    // New allocation from workload or deleted block
     const item = JSON.parse(event.dataTransfer.getData('application/json'));
+    const isFromDeleted = item.isDeletedBlock || false;
+    const deletedBlockId = isFromDeleted ? item.deletedBlockId : null;
 
     // Run validations
     validationErrors.value = [];
@@ -3880,12 +4009,12 @@ function onDrop(event, machineId, dateStr) {
         errors.push('No shift defined for this date');
     }
 
-    if (!isValidForProcess(item)) {
+    if (!isFromDeleted && !isValidForProcess(item)) {
         errors.push('Process not defined for this item');
     }
 
     // Machine GG compatibility check
-    const draggedItemGG = itemMachineGG.value.get(item.item);
+    const draggedItemGG = isFromDeleted ? item.machine_gg : itemMachineGG.value.get(item.item);
     if (draggedItemGG) {
         const targetMachine = machines.value.find(m => m.machine_id === machineId);
         if (targetMachine && targetMachine.machine_gg && targetMachine.machine_gg !== draggedItemGG) {
@@ -3902,29 +4031,33 @@ function onDrop(event, machineId, dateStr) {
         return;
     }
 
-    // Check if already fully allocated
-    const alreadyAllocated = getAllocatedQuantity(item);
-    if (alreadyAllocated >= item.quantity) {
-        const allocatedOrders = [...new Set(allocations.value
-            .filter(a =>
-                a.item === item.item &&
-                a.process === selectedProcess.value &&
-                a.colour === item.colour &&
-                a.size === item.size
-            )
-            .map(a => a.order)
-        )];
-        const orderMsg = allocatedOrders.length > 0
-            ? ` (Order: ${allocatedOrders.join(', ')})`
-            : '';
-        frappe.show_alert({
-            message: __('This item is already fully allocated' + orderMsg),
-            indicator: 'orange'
-        });
-        return;
+    if (!isFromDeleted) {
+        // Check if already fully allocated (only for workload items, not deleted blocks)
+        const alreadyAllocated = getAllocatedQuantity(item);
+        if (alreadyAllocated >= item.quantity) {
+            const allocatedOrders = [...new Set(allocations.value
+                .filter(a =>
+                    a.item === item.item &&
+                    a.process === selectedProcess.value &&
+                    a.colour === item.colour &&
+                    a.size === item.size
+                )
+                .map(a => a.order)
+            )];
+            const orderMsg = allocatedOrders.length > 0
+                ? ` (Order: ${allocatedOrders.join(', ')})`
+                : '';
+            frappe.show_alert({
+                message: __('This item is already fully allocated' + orderMsg),
+                indicator: 'orange'
+            });
+            return;
+        }
     }
 
-    const remainingQuantity = item.quantity - alreadyAllocated;
+    const remainingQuantity = isFromDeleted
+        ? item.quantity
+        : item.quantity - getAllocatedQuantity(item);
     const minutesPerUnit = item.minutes || 0;
 
     if (!minutesPerUnit || minutesPerUnit <= 0) {
@@ -3964,7 +4097,8 @@ function onDrop(event, machineId, dateStr) {
         size: item.size,
         minutesPerUnit,
         maxQty: remainingQuantity,
-        availableCapacityQty
+        availableCapacityQty,
+        deletedBlockId
     };
     dropQuantity.value = remainingQuantity;
     showDropModal.value = true;
@@ -4114,6 +4248,9 @@ function confirmDrop() {
 
         if (allocationsMade > 0) {
             saveAction('add', { keys: allocationKeys });
+            if (pd.deletedBlockId) {
+                removeDeletedBlock(pd.deletedBlockId);
+            }
             if (remainingQty > 0) {
                 frappe.show_alert({ message: __(`Allocated across ${allocationsMade} day(s). ${remainingQty} units could not be allocated (no capacity)`), indicator: 'orange' });
             } else {
@@ -4337,59 +4474,6 @@ function confirmShift() {
     closeDropModal();
 }
 
-function allocateWithoutShift() {
-    if (!shiftModalData.value) return;
-    const sd = shiftModalData.value;
-    const pd = sd.pendingDropData;
-
-    if (sd.type === 'move') {
-        const sourceAlloc = allocations.value.find(a => a.key === sd.sourceKey);
-        if (!sourceAlloc) {
-            frappe.show_alert({ message: __('Source allocation not found'), indicator: 'red' });
-            closeShiftModal();
-            closeDropModal();
-            return;
-        }
-        const sourceResult = handleMoveSource(sourceAlloc, sd.dropQty, pd.minutesPerUnit);
-        const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
-            pd.machineId, pd.dateStr, sd.dropQty, pd.minutesPerUnit, pd.item, pd.colour, pd.size, pd.order, pd.process
-        );
-
-        if (allocationsMade > 0 || sourceResult.sourceRemoved) {
-            saveAction('shift_and_move', {
-                addedKeys: allocationKeys,
-                shiftedAllocations: [],
-                sourceRemoved: sourceResult.sourceRemoved,
-                sourceKey: pd.allocKey,
-                sourceSnapshot: sourceResult.sourceSnapshot || null,
-                movedQty: sd.dropQty,
-                movedMinutes: sd.dropQty * pd.minutesPerUnit
-            });
-            frappe.show_alert({ message: __(`Moved ${sd.dropQty - remainingQty} units across ${allocationsMade} day(s)`), indicator: 'green' });
-        } else {
-            frappe.show_alert({ message: __('No capacity available'), indicator: 'red' });
-        }
-    } else {
-        const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
-            pd.machineId, pd.dateStr, sd.dropQty, pd.minutesPerUnit, pd.item, pd.colour, pd.size
-        );
-
-        if (allocationsMade > 0) {
-            saveAction('add', { keys: allocationKeys });
-            if (remainingQty > 0) {
-                frappe.show_alert({ message: __(`Allocated across ${allocationsMade} day(s). ${remainingQty} units could not be allocated (no capacity)`), indicator: 'orange' });
-            } else {
-                frappe.show_alert({ message: __(`Allocated ${sd.dropQty} units across ${allocationsMade} day(s)`), indicator: 'green' });
-            }
-        } else {
-            frappe.show_alert({ message: __('No capacity available'), indicator: 'red' });
-        }
-    }
-
-    closeShiftModal();
-    closeDropModal();
-}
-
 function executeShiftAndAllocate(shiftData, sourceResult) {
     const { affectedAllocations, pendingDropData: pd, dropQty, type } = shiftData;
 
@@ -4431,6 +4515,10 @@ function executeShiftAndAllocate(shiftData, sourceResult) {
             refitAddedKeys: refitResult.addedKeys,
             refitRemovedSnapshots: refitResult.removedSnapshots
         });
+    }
+
+    if (pd.deletedBlockId) {
+        removeDeletedBlock(pd.deletedBlockId);
     }
 
     if (allocationsMade > 0) {
@@ -5058,7 +5146,7 @@ function initFrappeControls() {
         render_input: true,
         only_input: true
     });
-    endDateControl.set_value(frappe.datetime.add_months(frappe.datetime.nowdate(), 1))
+    endDateControl.set_value(frappe.datetime.add_months(frappe.datetime.nowdate(), 5))
     endDateControl.refresh();
 }
 
@@ -5110,7 +5198,7 @@ onMounted(async () => {
         const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         const todayIdx = dateRange.value.indexOf(todayStr);
         if (todayIdx >= 0) {
-            wrapper.scrollLeft = Math.max(0, todayIdx * COL_WIDTH - COL_WIDTH * 2);
+            wrapper.scrollLeft = Math.max(0, todayIdx * colWidth.value - colWidth.value * 2);
         }
     }
 });
@@ -5513,6 +5601,120 @@ defineExpose({
     margin-top: 4px;
 }
 
+/* ===== Recently Deleted Blocks ===== */
+.deleted-blocks-section {
+    border-top: 1px dashed #e2e8f0;
+    flex-shrink: 0;
+}
+
+.deleted-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px 6px;
+}
+
+.deleted-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ef4444;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.deleted-clear-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.deleted-clear-btn:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.deleted-list {
+    padding: 0 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.deleted-item {
+    position: relative;
+    padding: 8px 28px 8px 10px;
+    background: #fef2f2;
+    border: 1px dashed #fca5a5;
+    border-radius: 8px;
+    cursor: grab;
+    font-size: 12px;
+    transition: all 0.15s ease;
+}
+
+.deleted-item:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.1);
+}
+
+.deleted-item:active {
+    cursor: grabbing;
+    transform: translateY(0);
+}
+
+.deleted-item-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.deleted-item-name {
+    font-weight: 600;
+    color: #1e293b;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.deleted-item-qty {
+    font-weight: 700;
+    color: #dc2626;
+    font-size: 13px;
+}
+
+.deleted-item-meta {
+    color: #94a3b8;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.deleted-dismiss-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: none;
+    border: none;
+    color: #d4d4d8;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 3px;
+    line-height: 1;
+}
+
+.deleted-dismiss-btn:hover {
+    background: #fca5a5;
+    color: white;
+}
+
 /* ===== Right Panel - Calendar ===== */
 .cp-right-panel {
     flex: 1;
@@ -5885,6 +6087,16 @@ defineExpose({
     box-shadow: 0 1px 2px rgba(0,0,0,0.06);
 }
 
+@keyframes snapIn {
+    0%   { transform: scale(0.90); opacity: 0.5; box-shadow: 0 0 0 rgba(0,0,0,0); }
+    60%  { transform: scale(1.04); opacity: 1; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+    100% { transform: scale(1); box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06); }
+}
+
+.gantt-bar.snap-in {
+    animation: snapIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
 /* --- Bar Row: Top (Item + Qty) --- */
 .bar-row-top {
     display: flex;
@@ -5978,6 +6190,102 @@ defineExpose({
     color: #3f3f46;
     background: rgba(113, 113, 122, 0.12);
     border: 1px solid rgba(113, 113, 122, 0.18);
+}
+
+/* ===== Zoom-Out Bar ===== */
+.zoomed-out-bar {
+    cursor: default;
+    padding: 2px 6px;
+    gap: 0;
+}
+
+.zoomed-out-bar:hover {
+    transform: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.zoomed-out-bar:active {
+    cursor: default;
+    transform: none;
+}
+
+.bar-row-zoom {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.bar-row-zoom .bar-item {
+    font-size: 12px;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.bar-row-zoom .bar-qty {
+    font-size: 11px;
+    padding: 0 5px;
+    font-weight: 800;
+}
+
+.bar-row-zoom .bar-tag {
+    font-size: 11px;
+    padding: 0 4px;
+    flex-shrink: 0;
+}
+
+/* ===== Zoom-Out Grid Compact ===== */
+.gantt-grid-zoom .gantt-date-header {
+    padding: 4px 6px;
+}
+
+.gantt-grid-zoom .gantt-date-header .day-date {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gantt-grid-zoom .gantt-machine-cell {
+    padding: 4px 8px;
+}
+
+.gantt-grid-zoom .gantt-machine-cell .machine-name {
+    display: none;
+}
+
+.gantt-grid-zoom .gantt-machine-cell .machine-id {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.gantt-grid-zoom .gantt-machine-cell .machine-title {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.gantt-grid-zoom .gantt-machine-cell .machine-gg-badge {
+    font-size: 10px;
+    padding: 0 4px;
+}
+
+.gantt-grid-zoom .gantt-date-cell {
+    min-height: 30px;
+    padding: 2px 4px;
+}
+
+.gantt-grid-zoom .gantt-date-cell:hover {
+    box-shadow: none;
+}
+
+.gantt-grid-zoom .gantt-corner-cell {
+    padding: 4px 8px;
+    font-size: 11px;
 }
 
 /* ===== Modals ===== */
