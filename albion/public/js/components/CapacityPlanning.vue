@@ -1526,6 +1526,12 @@ function selectGroup(group) {
 }
 
 function onGroupDragStart(event, group) {
+    // Calculate grab offset: how many columns from bar start the cursor is
+    const bar = event.target.closest('.gantt-bar');
+    const grabOffsetDays = bar
+        ? Math.floor((event.clientX - bar.getBoundingClientRect().left) / COL_WIDTH)
+        : 0;
+
     event.dataTransfer.setData('application/gantt-group', JSON.stringify({
         group_id: group.group_id,
         machine_id: group.machine_id,
@@ -1539,6 +1545,7 @@ function onGroupDragStart(event, group) {
         size: group.size,
         total_quantity: group.total_quantity,
         total_minutes: group.total_minutes,
+        grab_offset: grabOffsetDays,
     }));
     event.dataTransfer.effectAllowed = 'move';
     draggingItem.value = { item: group.item, sourceMachineId: group.machine_id };
@@ -1687,6 +1694,19 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
 }
 
 function moveGroup(groupData, newMachineId, newStartDate) {
+    // Adjust drop date by grab offset so the block keeps its position relative to cursor
+    const grabOffset = groupData.grab_offset || 0;
+    if (grabOffset > 0) {
+        const dates = dateRange.value;
+        const dropIdx = dates.indexOf(newStartDate);
+        const adjustedIdx = dropIdx - grabOffset;
+        if (adjustedIdx >= 0) {
+            newStartDate = dates[adjustedIdx];
+        } else {
+            newStartDate = dates[0]; // clamp to calendar start
+        }
+    }
+
     const oldStart = new Date(groupData.start_date);
     const newStart = new Date(newStartDate);
     const dayOffset = Math.round((newStart - oldStart) / (1000 * 60 * 60 * 24));

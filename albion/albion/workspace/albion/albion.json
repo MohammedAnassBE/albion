@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"7kNwwbxMdb\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Albion</span>\",\"col\":12}},{\"id\":\"tdEWCV14MU\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Item\",\"col\":3}},{\"id\":\"QPbRRL48DN\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer\",\"col\":3}},{\"id\":\"DUQkhK9FQ-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Order\",\"col\":3}},{\"id\":\"_CyUTrY6aW\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Machine\",\"col\":3}},{\"id\":\"ncDO6V8zn7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Machine GG\",\"col\":3}},{\"id\":\"OBtRXQ9CAR\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Capacity Planning\",\"col\":3}}]",
+ "content": "[{\"id\":\"7kNwwbxMdb\",\"type\":\"header\",\"data\":{\"text\":\"<span style=\\\"font-size: 18px; letter-spacing: 0.18px;\\\"><b>Order Details</b></span>\",\"col\":12}},{\"id\":\"DUQkhK9FQ-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Order\",\"col\":3}},{\"id\":\"QPbRRL48DN\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer\",\"col\":3}},{\"id\":\"OBtRXQ9CAR\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Capacity Planning\",\"col\":3}},{\"id\":\"dIWj2Dwe4Y\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"kjgY1l5af1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Item Details</b></span>\",\"col\":12}},{\"id\":\"tdEWCV14MU\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Item\",\"col\":3}},{\"id\":\"zwQZNysL3V\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Colour\",\"col\":3}},{\"id\":\"xn2eI2C5qw\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Size\",\"col\":3}},{\"id\":\"Ka_k-RMp6r\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Size Range\",\"col\":3}},{\"id\":\"Yl8NKTt3l_\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"6dEeUDS6d2\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Machine Details</b></span>\",\"col\":12}},{\"id\":\"_CyUTrY6aW\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Machine\",\"col\":3}},{\"id\":\"ncDO6V8zn7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Machine GG\",\"col\":3}},{\"id\":\"lRgi3rM4PI\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Process\",\"col\":3}},{\"id\":\"_FO6mxMyd0\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"yZe7G56dmS\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Shift Details</b></span>\",\"col\":12}},{\"id\":\"pGWsljrRyM\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Shift\",\"col\":3}},{\"id\":\"t3KHOcmd0A\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Shift Allocation\",\"col\":3}},{\"id\":\"ck_ptk8Q3Y\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"jx3upTS0za\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>User Details</b></span>\",\"col\":12}},{\"id\":\"mwJLcCkiuO\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"User\",\"col\":3}},{\"id\":\"23JdqeH9dr\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Role\",\"col\":3}}]",
  "creation": "2026-02-13 18:26:42.616311",
  "custom_blocks": [],
  "docstatus": 0,
@@ -12,7 +12,7 @@
  "is_hidden": 0,
  "label": "Albion",
  "links": [],
- "modified": "2026-02-16 18:20:46.330552",
+ "modified": "2026-02-18 14:52:37.450321",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Albion",
@@ -22,8 +22,32 @@
  "public": 1,
  "quick_lists": [],
  "roles": [],
- "sequence_id": 28.0,
+ "sequence_id": 1.0,
  "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Colour",
+   "link_to": "Colour",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Size Range",
+   "link_to": "Size Range",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Process",
+   "link_to": "Process",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
   {
    "color": "Grey",
    "doc_view": "List",
@@ -35,8 +59,48 @@
   {
    "color": "Grey",
    "doc_view": "List",
+   "label": "User",
+   "link_to": "User",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Size",
+   "link_to": "Size",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Shift",
+   "link_to": "Shift",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
    "label": "Customer",
    "link_to": "Customer",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Role",
+   "link_to": "Role",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Shift Allocation",
+   "link_to": "Shift Allocation",
    "stats_filter": "[]",
    "type": "DocType"
   },

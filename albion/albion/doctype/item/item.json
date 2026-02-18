@@ -8,6 +8,7 @@
  "field_order": [
   "item_code",
   "item_name",
+  "column_break_pfvy",
   "machine_gg",
   "size_range",
   "section_break_colours",
@@ -79,12 +80,16 @@
    "fieldtype": "Table",
    "label": "Processes",
    "options": "Item Process"
+  },
+  {
+   "fieldname": "column_break_pfvy",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-13 14:17:24.451256",
+ "modified": "2026-02-18 14:30:47.641969",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Item",
