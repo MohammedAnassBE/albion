@@ -38,6 +38,7 @@
                 </div>
                 <div class="action-group">
                     <button class="btn btn-default" @click="undoLastAction" :disabled="actionHistory.length === 0">Undo</button>
+                    <button class="btn btn-default" @click="redoLastAction" :disabled="redoHistory.length === 0">Redo</button>
                     <button class="btn btn-default" @click="refreshCalendar">Refresh</button>
                     <button class="btn btn-primary" @click="saveAllocations">Save</button>
                 </div>
@@ -634,6 +635,7 @@ const shiftAllocations = ref([]);
 const defaultAllocation = ref(null);
 const allocations = ref([]);
 const actionHistory = ref([]);
+const redoHistory = ref([]);
 const validationErrors = ref([]);
 
 // Drop quantity modal state
@@ -1076,10 +1078,20 @@ function isPastDate(dateStr) {
     return date < today;
 }
 
+function isToday(dateStr) {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    return dateStr === `${y}-${m}-${d}`;
+}
+
 function getDateHeaderClass(dateStr) {
-    if (isPastDate(dateStr)) return 'past-date';
-    if (isOffDay(dateStr)) return 'weekly-off';
-    return '';
+    const classes = [];
+    if (isToday(dateStr)) classes.push('today-date');
+    else if (isPastDate(dateStr)) classes.push('past-date');
+    if (isOffDay(dateStr)) classes.push('weekly-off');
+    return classes.join(' ');
 }
 
 function getAllocations(machineId, dateStr) {
@@ -1113,6 +1125,9 @@ function getCellClass(machineId, dateStr) {
     else if (used >= total) classes.push('cell-full');
     else if (used > 0) classes.push('cell-allocated');
     else classes.push('cell-available');
+
+    if (isToday(dateStr)) classes.push('cell-today');
+    else if (isPastDate(dateStr)) classes.push('cell-past');
 
     const badge = getCellAlterationBadge(dateStr, machineId);
     if (badge) {
@@ -1165,6 +1180,7 @@ function getAllocationColor(alloc) {
 function getAllocatedQuantity(item) {
     return allocations.value
         .filter(a =>
+            a.order === selectedOrder.value &&
             a.item === item.item &&
             a.process === selectedProcess.value &&
             a.colour === item.colour &&
@@ -2848,10 +2864,24 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
                 removedKeys.push({ ...sameGroup });
                 const idx = allocations.value.findIndex(a => a.key === sameGroup.key);
                 if (idx > -1) allocations.value.splice(idx, 1);
+                // Recursively compact the emptied source day to prevent gaps
+                const cascadeResult = compactAfterPull(
+                    machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                );
+                addedKeys.push(...cascadeResult.addedKeys);
+                removedKeys.push(...cascadeResult.removedKeys);
+                modified.push(...cascadeResult.modified);
             } else {
                 modified.push({ key: sameGroup.key, oldQty: sameGroup.quantity, oldMinutes: sameGroup.allocated_minutes });
                 sameGroup.quantity -= pullQty;
                 sameGroup.allocated_minutes -= pullMin;
+                // Recursively compact the partially-freed source day
+                const cascadeResult = compactAfterPull(
+                    machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                );
+                addedKeys.push(...cascadeResult.addedKeys);
+                removedKeys.push(...cascadeResult.removedKeys);
+                modified.push(...cascadeResult.modified);
             }
 
             nextDate = getNextDate(nextDate);
@@ -2865,10 +2895,24 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
             removedKeys.push({ ...sameGroup });
             const idx = allocations.value.findIndex(a => a.key === sameGroup.key);
             if (idx > -1) allocations.value.splice(idx, 1);
+            // Recursively compact the emptied source day to prevent gaps
+            const cascadeResult = compactAfterPull(
+                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+            );
+            addedKeys.push(...cascadeResult.addedKeys);
+            removedKeys.push(...cascadeResult.removedKeys);
+            modified.push(...cascadeResult.modified);
         } else {
             modified.push({ key: sameGroup.key, oldQty: sameGroup.quantity, oldMinutes: sameGroup.allocated_minutes });
             sameGroup.quantity -= pullQty;
             sameGroup.allocated_minutes -= pullMin;
+            // Recursively compact the partially-freed source day
+            const cascadeResult = compactAfterPull(
+                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+            );
+            addedKeys.push(...cascadeResult.addedKeys);
+            removedKeys.push(...cascadeResult.removedKeys);
+            modified.push(...cascadeResult.modified);
         }
 
         nextDate = getNextDate(nextDate);
@@ -3217,11 +3261,21 @@ function saveAction(type, data) {
     if (actionHistory.value.length > 20) {
         actionHistory.value.shift();
     }
+    redoHistory.value = [];
 }
 
 function undoLastAction() {
     if (actionHistory.value.length === 0) return;
     const action = actionHistory.value.pop();
+
+    const snapshot = {
+        allocations: JSON.parse(JSON.stringify(allocations.value)),
+        splitMarkers: new Set(splitMarkers.value)
+    };
+    redoHistory.value.push({ action, snapshot });
+    if (redoHistory.value.length > 20) {
+        redoHistory.value.shift();
+    }
 
     switch (action.type) {
         case 'add':
@@ -3493,6 +3547,15 @@ function undoLastAction() {
     }
 
     frappe.show_alert({ message: __('Action undone'), indicator: 'blue' });
+}
+
+function redoLastAction() {
+    if (redoHistory.value.length === 0) return;
+    const { action, snapshot } = redoHistory.value.pop();
+    allocations.value = snapshot.allocations;
+    splitMarkers.value = snapshot.splitMarkers;
+    actionHistory.value.push(action);
+    frappe.show_alert({ message: __('Action redone'), indicator: 'blue' });
 }
 
 // Drag and Drop
@@ -4163,6 +4226,7 @@ async function onOrderChange() {
 
 async function onProcessChange() {
     actionHistory.value = [];
+    redoHistory.value = [];
 }
 
 async function refreshCalendar() {
@@ -4206,6 +4270,7 @@ async function loadAllAllocations() {
             allocations.value = [];
         }
         actionHistory.value = [];
+        redoHistory.value = [];
         splitMarkers.value = new Set();
     } catch (e) {
         console.error('Error loading allocations:', e);
@@ -4256,6 +4321,7 @@ async function saveAllocations() {
         if (response.message) {
             frappe.show_alert({ message: __('Allocations saved successfully'), indicator: 'green' });
             actionHistory.value = [];
+            redoHistory.value = [];
             await loadAllAllocations();
             emit('saveAllocations', allocations.value);
         }
@@ -4557,6 +4623,17 @@ function updateProcessOptions() {
     processControl.refresh();
 }
 
+function onKeyDown(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undoLastAction();
+    } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        redoLastAction();
+    }
+}
+
 onMounted(async () => {
     await nextTick();
     initFrappeControls();
@@ -4564,6 +4641,9 @@ onMounted(async () => {
     loadAllShifts();
     loadAllAllocations();
     document.addEventListener('click', closeContextMenu);
+    document.addEventListener('keydown', onKeyDown);
+    window.addEventListener('beforeunload', onBeforeUnload);
+    frappe.router.on('change', onRouteChange);
 
     if (!defaultAllocation.value) {
         frappe.msgprint({
@@ -4572,10 +4652,47 @@ onMounted(async () => {
             indicator: 'orange'
         });
     }
+
+    // Auto-scroll to current date
+    await nextTick();
+    const wrapper = document.querySelector('.calendar-wrapper');
+    if (wrapper) {
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const todayIdx = dateRange.value.indexOf(todayStr);
+        if (todayIdx >= 0) {
+            wrapper.scrollLeft = Math.max(0, todayIdx * COL_WIDTH - COL_WIDTH * 2);
+        }
+    }
 });
+
+function hasUnsavedChanges() {
+    return actionHistory.value.length > 0;
+}
+
+function onBeforeUnload(e) {
+    if (hasUnsavedChanges()) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+}
+
+function onRouteChange() {
+    if (hasUnsavedChanges()) {
+        frappe.confirm(
+            __('You have unsaved changes. Are you sure you want to leave?'),
+            () => { actionHistory.value = []; redoHistory.value = []; frappe.set_route(frappe.get_route()); },
+            () => { frappe.set_route('capacity-planning'); }
+        );
+        return false;
+    }
+}
 
 onUnmounted(() => {
     document.removeEventListener('click', closeContextMenu);
+    document.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('beforeunload', onBeforeUnload);
+    frappe.router.off('change', onRouteChange);
 });
 
 watch([startDate, endDate], () => {
@@ -5021,7 +5138,17 @@ defineExpose({
 }
 
 .gantt-date-header.past-date {
-    background: #fef2f2;
+    background: #f1f5f9;
+    color: #94a3b8;
+}
+
+.gantt-date-header.today-date {
+    background: #eff6ff;
+    border-bottom: 3px solid #3b82f6;
+}
+
+.gantt-date-header.today-date .day-date {
+    color: #2563eb;
 }
 
 .date-cell {
@@ -5135,6 +5262,15 @@ defineExpose({
 .cell-conflict {
     background: #fff1f2;
     box-shadow: inset 0 0 0 2px #f87171;
+}
+
+.cell-past {
+    background: #f8f9fb !important;
+}
+
+.cell-today {
+    background: #eff6ff !important;
+    box-shadow: inset 0 0 0 1px #bfdbfe;
 }
 
 .cell-top-row {
