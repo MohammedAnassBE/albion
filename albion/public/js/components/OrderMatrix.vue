@@ -83,7 +83,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td class="tf-label">Column Total</td>
+                            <td class="tf-label">Total</td>
                             <td v-for="size in itemData.sizes" :key="size" class="tf-col-total">
                                 {{ getColumnTotal(itemData, size) }}
                             </td>
@@ -358,7 +358,7 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
 
 <style scoped>
 .order-matrix {
-    padding: 4px 0;
+    padding: 0;
 }
 
 /* Empty State */
@@ -367,16 +367,16 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 20px;
+    padding: 48px 20px;
     color: var(--text-muted);
 }
 .empty-state-icon {
-    margin-bottom: 12px;
-    opacity: 0.4;
+    margin-bottom: 14px;
+    opacity: 0.35;
 }
 .empty-state p {
     margin: 0;
-    font-size: var(--text-sm);
+    font-size: 13px;
 }
 
 /* Item Card */
@@ -392,7 +392,7 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
+    padding: 10px 16px;
     background: var(--subtle-fg, #f8fafc);
     border-bottom: 1px solid var(--border-color, #e2e8f0);
 }
@@ -400,23 +400,26 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
 .item-card-title {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .item-badge {
     display: inline-flex;
     align-items: center;
-    font-size: var(--text-base);
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
     color: var(--text-color);
+    letter-spacing: 0.02em;
 }
 
 .item-grand-total {
-    font-size: var(--text-sm);
+    font-size: 12px;
     color: var(--text-muted);
 }
 .item-grand-total strong {
     color: var(--text-color);
+    font-weight: 700;
+    font-size: 13px;
 }
 
 .item-card-actions {
@@ -427,10 +430,10 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
 .btn-refresh {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    font-size: 12px;
-    font-weight: 500;
+    gap: 5px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
     color: var(--text-muted);
     background: var(--control-bg, #f0f0f0);
     border: 1px solid var(--border-color, #e2e8f0);
@@ -446,15 +449,16 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
 
 /* Colour Selector */
 .colour-selector {
-    padding: 10px 16px;
+    padding: 12px 16px;
+    background: var(--subtle-fg, #f8fafc);
     border-bottom: 1px solid var(--border-color, #e2e8f0);
 }
 .colour-selector-label {
     display: block;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     color: var(--text-muted);
     margin-bottom: 8px;
 }
@@ -467,7 +471,7 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 5px 12px;
+    padding: 5px 14px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 500;
@@ -475,16 +479,16 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
     user-select: none;
     transition: all 0.15s ease;
     border: 1px solid var(--border-color, #e2e8f0);
-    background: var(--control-bg, #f5f5f5);
+    background: #fff;
     color: var(--text-muted);
 }
 .colour-chip:hover {
-    border-color: var(--primary);
-    color: var(--primary);
+    border-color: var(--gray-400);
+    color: var(--text-color);
 }
 .colour-chip.active {
-    background: var(--primary);
-    border-color: var(--primary);
+    background: var(--text-color);
+    border-color: var(--text-color);
     color: #fff;
 }
 
@@ -497,7 +501,8 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
 .matrix-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: var(--text-sm);
+    font-size: 13px;
+    table-layout: auto;
 }
 
 .matrix-table thead tr {
@@ -505,62 +510,67 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
 }
 
 .matrix-table th {
-    padding: 8px 12px;
+    padding: 10px 16px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     color: var(--text-muted);
-    border-bottom: 2px solid var(--border-color, #e2e8f0);
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
     white-space: nowrap;
 }
 
 .th-colour {
     text-align: left;
-    min-width: 120px;
+    width: 140px;
 }
 .th-size {
-    text-align: center;
-    min-width: 80px;
+    text-align: right;
+    padding-right: 20px;
 }
 .th-total {
     text-align: right;
-    min-width: 80px;
+    width: 90px;
 }
 
 .matrix-table tbody tr {
     transition: background 0.1s ease;
+}
+.matrix-table tbody tr:nth-child(even) {
+    background: rgba(248, 250, 252, 0.5);
 }
 .matrix-table tbody tr:hover {
     background: var(--subtle-fg, #f8fafc);
 }
 
 .matrix-table td {
-    padding: 4px 8px;
-    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    padding: 0;
+    border-bottom: 1px solid var(--border-color, #f1f5f9);
 }
 
 .td-colour {
     font-weight: 600;
+    font-size: 13px;
     color: var(--text-color);
-    padding-left: 16px;
+    padding: 10px 16px;
     white-space: nowrap;
 }
 
 .td-qty {
-    text-align: center;
-    padding: 4px 6px;
+    text-align: right;
+    padding: 4px 8px;
 }
 
 .qty-input {
     width: 100%;
-    max-width: 72px;
-    margin: 0 auto;
+    max-width: 80px;
+    margin: 0 0 0 auto;
     display: block;
-    padding: 5px 8px;
-    text-align: center;
-    font-size: var(--text-sm);
+    padding: 7px 12px;
+    text-align: right;
+    font-size: 13px;
     font-weight: 500;
+    font-variant-numeric: tabular-nums;
     border: 1px solid transparent;
     border-radius: 6px;
     background: var(--control-bg, #f5f5f5);
@@ -575,9 +585,9 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
 }
 .qty-input:focus {
     outline: none;
-    border-color: var(--primary);
-    background: var(--fg-color, #fff);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 15%, transparent);
+    border-color: var(--gray-400);
+    background: #fff;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.06);
 }
 .qty-input::placeholder {
     color: var(--text-light, #ccc);
@@ -585,14 +595,22 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
 .qty-input[readonly] {
     cursor: default;
     background: transparent;
+    border-color: transparent;
+    padding: 7px 16px 7px 8px;
+    font-weight: 600;
+    color: var(--text-color);
 }
 
 .td-row-total {
     text-align: right;
     font-weight: 700;
+    font-variant-numeric: tabular-nums;
     color: var(--text-color);
-    padding-right: 16px;
+    padding: 10px 16px;
     white-space: nowrap;
+    font-size: 13px;
+    background: rgba(241, 245, 249, 0.5);
+    border-left: 1px solid var(--border-color, #f1f5f9);
 }
 
 /* Footer */
@@ -600,35 +618,39 @@ defineExpose({ getData, matrixData, loadFromItem, initMatrix, refreshItem, isRea
     background: var(--subtle-fg, #f8fafc);
 }
 .matrix-table tfoot td {
-    padding: 8px 12px;
-    font-size: 11px;
+    padding: 10px 16px;
+    font-size: 12px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
     color: var(--text-muted);
     border-top: 2px solid var(--border-color, #e2e8f0);
     border-bottom: none;
+    font-variant-numeric: tabular-nums;
 }
 
 .tf-label {
     text-align: left;
-    padding-left: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 10px;
 }
 .tf-col-total {
-    text-align: center;
+    text-align: right;
+    padding-right: 20px;
 }
 .tf-grand-total {
     text-align: right;
     color: var(--text-color);
-    font-size: var(--text-sm);
-    padding-right: 16px;
+    font-size: 13px;
+    font-weight: 800;
+    background: rgba(241, 245, 249, 0.5);
+    border-left: 1px solid var(--border-color, #f1f5f9);
 }
 
 /* Item empty state */
 .item-empty {
-    padding: 24px 16px;
+    padding: 32px 16px;
     text-align: center;
     color: var(--text-muted);
-    font-size: var(--text-sm);
+    font-size: 13px;
 }
 </style>

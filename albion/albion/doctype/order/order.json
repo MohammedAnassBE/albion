@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "customer",
+  "purchase_order",
   "order_date",
   "delivery_date",
   "items",
@@ -23,6 +24,12 @@
    "label": "Customer",
    "options": "Customer",
    "reqd": 1
+  },
+  {
+   "fieldname": "purchase_order",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Purchase Order"
   },
   {
    "fieldname": "order_date",
