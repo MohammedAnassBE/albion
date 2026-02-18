@@ -40,6 +40,7 @@
                     <button class="btn btn-default" @click="undoLastAction" :disabled="actionHistory.length === 0">Undo</button>
                     <button class="btn btn-default" @click="redoLastAction" :disabled="redoHistory.length === 0">Redo</button>
                     <button class="btn btn-default" @click="refreshCalendar">Refresh</button>
+                    <button class="btn btn-default" @click="openBulkShiftModal">Update Shifts</button>
                     <button class="btn btn-primary" @click="saveAllocations">Save</button>
                 </div>
             </div>
@@ -564,6 +565,60 @@
                 </div>
             </div>
         </div>
+        <!-- Bulk Shift Update Modal -->
+        <div v-if="showBulkShiftModal" class="modal-overlay" @click="closeBulkShiftModal">
+            <div class="modal-content bulk-shift-modal" @click.stop>
+                <h4>Update Shifts</h4>
+                <div class="form-group">
+                    <label>Date</label>
+                    <div ref="bulkShiftDateFieldRef"></div>
+                </div>
+                <div v-if="bulkShiftMachines.length > 0" class="bulk-shift-table-wrap">
+                    <table class="bulk-shift-table">
+                        <thead>
+                            <tr>
+                                <th>Machine</th>
+                                <th>Shift</th>
+                                <th class="text-right">Total Min</th>
+                                <th class="text-right">Allocated</th>
+                                <th>Type</th>
+                                <th class="text-right">Minutes</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(row, idx) in bulkShiftMachines" :key="row.machine_id">
+                                <td>{{ row.machine_name }}</td>
+                                <td>{{ row.shift_name }}</td>
+                                <td class="text-right">{{ row.total_minutes }}</td>
+                                <td class="text-right">{{ row.allocated_minutes }}</td>
+                                <td>
+                                    <select v-model="bulkShiftMachines[idx].alteration_type" class="form-control bulk-shift-select">
+                                        <option value="Add">Overtime</option>
+                                        <option value="Reduce">Break</option>
+                                    </select>
+                                </td>
+                                <td class="text-right">
+                                    <input type="number" v-model.number="bulkShiftMachines[idx].update_minutes" class="form-control bulk-shift-input" min="0" />
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-danger bulk-shift-delete" @click="bulkShiftMachines.splice(idx, 1)" title="Remove machine">&#10005;</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div v-else-if="bulkShiftDate" class="text-muted" style="padding: 12px 0;">No machines loaded for this date.</div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" @click="applyBulkShiftUpdates"
+                        :disabled="bulkShiftSaving || !bulkShiftMachines.some(r => r.update_minutes > 0)">
+                        {{ bulkShiftSaving ? 'Applying...' : 'Apply' }}
+                    </button>
+                    <button class="btn btn-secondary" @click="closeBulkShiftModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Custom Tooltip -->
         <div v-if="tooltip.show" class="gantt-tooltip" :style="{ top: tooltip.y + 'px', left: tooltip.x + 'px' }">
             <div class="tooltip-header">{{ tooltip.data.item }}</div>
@@ -623,6 +678,7 @@ const processFieldRef = ref(null);
 const viewTypeFieldRef = ref(null);
 const startDateFieldRef = ref(null);
 const endDateFieldRef = ref(null);
+const bulkShiftDateFieldRef = ref(null);
 
 // Frappe control instances
 let customerControl = null;
@@ -632,6 +688,7 @@ let processControl = null;
 let viewTypeControl = null;
 let startDateControl = null;
 let endDateControl = null;
+let bulkShiftDateControl = null;
 const shiftAllocations = ref([]);
 const defaultAllocation = ref(null);
 const allocations = ref([]);
@@ -694,6 +751,12 @@ const showShiftUpdateModal = ref(false);
 const shiftUpdateSaving = ref(false);
 const shiftUpdateForm = ref({ date: '', shifts: [] });
 const allShifts = ref([]);
+
+// Bulk shift update modal state
+const showBulkShiftModal = ref(false);
+const bulkShiftSaving = ref(false);
+const bulkShiftDate = ref('');
+const bulkShiftMachines = ref([]);
 
 // Initialize dates
 const today = new Date();
@@ -4484,6 +4547,102 @@ async function confirmAlteration() {
     }
 }
 
+// ── Bulk shift update ──
+function openBulkShiftModal() {
+    bulkShiftMachines.value = [];
+    bulkShiftSaving.value = false;
+    showBulkShiftModal.value = true;
+    const defaultDate = dateRange.value.length > 0 ? dateRange.value[0] : frappe.datetime.nowdate();
+    bulkShiftDate.value = defaultDate;
+    // Init frappe date control after DOM renders
+    nextTick(() => {
+        if (bulkShiftDateFieldRef.value && !bulkShiftDateControl) {
+            bulkShiftDateControl = frappe.ui.form.make_control({
+                df: {
+                    fieldtype: 'Date',
+                    fieldname: 'bulk_shift_date',
+                    label: 'Date',
+                    change() {
+                        bulkShiftDate.value = bulkShiftDateControl.get_value() || '';
+                        populateBulkShiftTable();
+                    }
+                },
+                parent: bulkShiftDateFieldRef.value,
+                render_input: true,
+                only_input: true
+            });
+        }
+        if (bulkShiftDateControl) {
+            bulkShiftDateControl.set_value(defaultDate);
+            bulkShiftDateControl.refresh();
+        }
+        populateBulkShiftTable();
+    });
+}
+
+function closeBulkShiftModal() {
+    showBulkShiftModal.value = false;
+    bulkShiftSaving.value = false;
+    bulkShiftDate.value = '';
+    bulkShiftMachines.value = [];
+    bulkShiftDateControl = null;
+}
+
+function populateBulkShiftTable() {
+    const dateStr = bulkShiftDate.value;
+    if (!dateStr) {
+        bulkShiftMachines.value = [];
+        return;
+    }
+    bulkShiftMachines.value = machines.value.map(m => ({
+        machine_id: m.machine_id,
+        machine_name: m.machine_name || m.machine_id,
+        shift_name: getShiftNamesForDate(dateStr),
+        total_minutes: getEffectiveMinutes(dateStr, m.machine_id),
+        allocated_minutes: getUsedMinutes(m.machine_id, dateStr),
+        alteration_type: 'Add',
+        update_minutes: 0
+    }));
+}
+
+async function applyBulkShiftUpdates() {
+    const dateStr = bulkShiftDate.value;
+    const affected = bulkShiftMachines.value.filter(r => r.update_minutes > 0);
+    if (affected.length === 0) return;
+
+    bulkShiftSaving.value = true;
+    try {
+        // Call add_shift_alteration for each affected machine
+        for (const row of affected) {
+            await frappe.call({
+                method: 'albion.albion.page.capacity_planning.capacity_planning.add_shift_alteration',
+                args: {
+                    date: dateStr,
+                    alteration_type: row.alteration_type,
+                    minutes: row.update_minutes,
+                    machine: row.machine_id,
+                    reason: null
+                }
+            });
+        }
+
+        // Reload shift data so getEffectiveMinutes reflects new alterations
+        await loadShiftAllocations();
+
+        // Reflow each affected machine
+        for (const row of affected) {
+            autoReflowAfterAlteration(dateStr, row.machine_id, row.alteration_type, row.update_minutes);
+        }
+
+        frappe.show_alert({ message: __(`Shift updated for ${affected.length} machine(s)`), indicator: 'green' });
+        closeBulkShiftModal();
+    } catch (e) {
+        console.error('Error applying bulk shift updates:', e);
+        frappe.show_alert({ message: __('Error applying shift updates'), indicator: 'red' });
+        bulkShiftSaving.value = false;
+    }
+}
+
 // ── Action choice dialog ──
 function openActionChoice(dateStr, machineId = null) {
     actionChoiceContext.value = { date: dateStr, machine: machineId };
@@ -5655,6 +5814,84 @@ defineExpose({
     gap: 8px;
     justify-content: flex-end;
     margin-top: 20px;
+}
+
+/* Bulk Shift Modal */
+.bulk-shift-modal {
+    max-width: 900px;
+    min-width: 700px;
+}
+
+.bulk-shift-table-wrap {
+    max-height: 450px;
+    overflow-y: auto;
+    margin-top: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.bulk-shift-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.bulk-shift-table th {
+    background: #f8fafc;
+    padding: 8px 10px;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    white-space: nowrap;
+}
+
+.bulk-shift-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.bulk-shift-table .text-right {
+    text-align: right;
+}
+
+.bulk-shift-table .text-center {
+    text-align: center;
+}
+
+.bulk-shift-input {
+    width: 80px;
+    padding: 4px 6px;
+    text-align: right;
+    font-size: 13px;
+    display: inline-block;
+}
+
+.bulk-shift-select {
+    width: 110px;
+    padding: 4px 6px;
+    font-size: 13px;
+    display: inline-block;
+}
+
+.bulk-shift-delete {
+    padding: 2px 6px;
+    font-size: 12px;
+    line-height: 1;
+    border-radius: 4px;
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+    cursor: pointer;
+}
+
+.bulk-shift-delete:hover {
+    background: #fca5a5;
+    color: #991b1b;
 }
 
 /* ===== Buttons ===== */
