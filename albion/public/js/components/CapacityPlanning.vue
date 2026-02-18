@@ -38,7 +38,9 @@
                 </div>
                 <div class="action-group">
                     <button class="btn btn-default" @click="undoLastAction" :disabled="actionHistory.length === 0">Undo</button>
+                    <button class="btn btn-default" @click="redoLastAction" :disabled="redoHistory.length === 0">Redo</button>
                     <button class="btn btn-default" @click="refreshCalendar">Refresh</button>
+                    <button class="btn btn-default" @click="openBulkShiftModal">Update Shifts</button>
                     <button class="btn btn-primary" @click="saveAllocations">Save</button>
                 </div>
             </div>
@@ -114,7 +116,7 @@
                 <div class="calendar-header">
                     <h4>Capacity Calendar</h4>
                 </div>
-                <div class="calendar-wrapper">
+                <div class="calendar-wrapper" @dragover="onWrapperDragOver">
                     <div class="gantt-grid" :style="ganttGridStyle">
                         <!-- Header row -->
                         <div class="gantt-corner-cell">Machine</div>
@@ -126,7 +128,8 @@
                                 <span class="day-date">{{ formatDayName(date) }}, {{ formatDate(date) }}</span>
                                 <span class="shift-info">
                                     {{ getShiftNamesForDate(date) }} &middot; {{ getEffectiveMinutes(date) }}m
-                                    <span v-if="getDayAlterationDelta(date)" class="day-alteration-badge" :class="getDayAlterationDelta(date).cls">
+                                    <span v-if="getDayAlterationDelta(date)" class="day-alteration-badge clickable" :class="getDayAlterationDelta(date).cls"
+                                          @click.stop="openEditAlterationsModal(date, null)">
                                         {{ getDayAlterationDelta(date).label }}
                                     </span>
                                 </span>
@@ -155,8 +158,9 @@
                                  @dragover="onCellDragOver($event, machine.machine_id)"
                                  @drop="onDrop($event, machine.machine_id, date)">
                                 <span v-if="getCellAlterationBadge(date, machine.machine_id)"
-                                      class="alteration-badge"
-                                      :class="getCellAlterationBadge(date, machine.machine_id).cls">
+                                      class="alteration-badge clickable"
+                                      :class="getCellAlterationBadge(date, machine.machine_id).cls"
+                                      @click.stop="openEditAlterationsModal(date, machine.machine_id)">
                                     {{ getCellAlterationBadge(date, machine.machine_id).label }}
                                 </span>
                                 <div class="cell-top-row">
@@ -563,6 +567,106 @@
                 </div>
             </div>
         </div>
+        <!-- Edit Alterations Modal -->
+        <div v-if="showEditAlterationsModal" class="modal-overlay" @click="closeEditAlterationsModal">
+            <div class="modal-content bulk-shift-modal" @click.stop>
+                <h4>Manage Alterations — {{ formatDate(editAlterationsContext.date) }}{{ editAlterationsContext.machine_id ? ' — ' + editAlterationsContext.machine_id : '' }}</h4>
+                <div v-if="editAlterationsList.length === 0" class="text-muted" style="padding: 12px 0;">
+                    No alterations for this {{ editAlterationsContext.machine_id ? 'cell' : 'date' }}.
+                </div>
+                <table v-else class="bulk-shift-table">
+                    <thead>
+                        <tr>
+                            <th v-if="!editAlterationsContext.machine_id">Machine</th>
+                            <th>Type</th>
+                            <th class="text-right">Minutes</th>
+                            <th>Reason</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(row, idx) in editAlterationsList" :key="row.name">
+                            <td v-if="!editAlterationsContext.machine_id">{{ row.machine || 'All' }}</td>
+                            <td>
+                                <select v-model="editAlterationsList[idx].alteration_type" class="form-control bulk-shift-select">
+                                    <option value="Add">Overtime</option>
+                                    <option value="Reduce">Break</option>
+                                </select>
+                            </td>
+                            <td class="text-right">
+                                <input type="number" v-model.number="editAlterationsList[idx].minutes" class="form-control bulk-shift-input" min="1" />
+                            </td>
+                            <td>
+                                <input type="text" v-model="editAlterationsList[idx].reason" class="form-control" placeholder="Reason" style="min-width: 120px;" />
+                            </td>
+                            <td class="text-center" style="white-space: nowrap;">
+                                <button class="btn btn-xs btn-primary" @click="saveAlteration(idx)" :disabled="editAlterationsSaving" title="Save">Save</button>
+                                <button class="btn btn-xs btn-danger" @click="deleteAlteration(idx)" :disabled="editAlterationsSaving" title="Delete" style="margin-left: 4px;">&#10005;</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="modal-actions">
+                    <button class="btn btn-primary btn-sm" @click="addNewFromEditModal">+ Add New</button>
+                    <button class="btn btn-secondary btn-sm" @click="closeEditAlterationsModal">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Shift Update Modal -->
+        <div v-if="showBulkShiftModal" class="modal-overlay" @click="closeBulkShiftModal">
+            <div class="modal-content bulk-shift-modal" @click.stop>
+                <h4>Update Shifts</h4>
+                <div class="form-group">
+                    <label>Date</label>
+                    <div ref="bulkShiftDateFieldRef"></div>
+                </div>
+                <div v-if="bulkShiftMachines.length > 0" class="bulk-shift-table-wrap">
+                    <table class="bulk-shift-table">
+                        <thead>
+                            <tr>
+                                <th>Machine</th>
+                                <th>Shift</th>
+                                <th class="text-right">Total Min</th>
+                                <th class="text-right">Allocated</th>
+                                <th>Type</th>
+                                <th class="text-right">Minutes</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(row, idx) in bulkShiftMachines" :key="row.machine_id">
+                                <td>{{ row.machine_name }}</td>
+                                <td>{{ row.shift_name }}</td>
+                                <td class="text-right">{{ row.total_minutes }}</td>
+                                <td class="text-right">{{ row.allocated_minutes }}</td>
+                                <td>
+                                    <select v-model="bulkShiftMachines[idx].alteration_type" class="form-control bulk-shift-select">
+                                        <option value="Add">Overtime</option>
+                                        <option value="Reduce">Break</option>
+                                    </select>
+                                </td>
+                                <td class="text-right">
+                                    <input type="number" v-model.number="bulkShiftMachines[idx].update_minutes" class="form-control bulk-shift-input" min="0" />
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-danger bulk-shift-delete" @click="bulkShiftMachines.splice(idx, 1)" title="Remove machine">&#10005;</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div v-else-if="bulkShiftDate" class="text-muted" style="padding: 12px 0;">No machines loaded for this date.</div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" @click="applyBulkShiftUpdates"
+                        :disabled="bulkShiftSaving || !bulkShiftMachines.some(r => r.update_minutes > 0)">
+                        {{ bulkShiftSaving ? 'Applying...' : 'Apply' }}
+                    </button>
+                    <button class="btn btn-secondary" @click="closeBulkShiftModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Custom Tooltip -->
         <div v-if="tooltip.show" class="gantt-tooltip" :style="{ top: tooltip.y + 'px', left: tooltip.x + 'px' }">
             <div class="tooltip-header">{{ tooltip.data.item }}</div>
@@ -608,6 +712,7 @@ const selectedProcess = ref('');
 const viewType = ref('item_wise');
 const startDate = ref('');
 const endDate = ref('');
+const suppressDateWatch = ref(false);
 const orderData = ref(null);
 
 // Workload panel collapse
@@ -621,6 +726,7 @@ const processFieldRef = ref(null);
 const viewTypeFieldRef = ref(null);
 const startDateFieldRef = ref(null);
 const endDateFieldRef = ref(null);
+const bulkShiftDateFieldRef = ref(null);
 
 // Frappe control instances
 let customerControl = null;
@@ -630,10 +736,12 @@ let processControl = null;
 let viewTypeControl = null;
 let startDateControl = null;
 let endDateControl = null;
+let bulkShiftDateControl = null;
 const shiftAllocations = ref([]);
 const defaultAllocation = ref(null);
 const allocations = ref([]);
 const actionHistory = ref([]);
+const redoHistory = ref([]);
 const validationErrors = ref([]);
 
 // Drop quantity modal state
@@ -682,6 +790,12 @@ const alterationForm = ref({
     reason: ''
 });
 
+// Edit alterations modal state
+const showEditAlterationsModal = ref(false);
+const editAlterationsContext = ref({ date: '', machine_id: null });
+const editAlterationsList = ref([]);
+const editAlterationsSaving = ref(false);
+
 // Action choice dialog state
 const showActionChoice = ref(false);
 const actionChoiceContext = ref({ date: '', machine: null });
@@ -691,6 +805,12 @@ const showShiftUpdateModal = ref(false);
 const shiftUpdateSaving = ref(false);
 const shiftUpdateForm = ref({ date: '', shifts: [] });
 const allShifts = ref([]);
+
+// Bulk shift update modal state
+const showBulkShiftModal = ref(false);
+const bulkShiftSaving = ref(false);
+const bulkShiftDate = ref('');
+const bulkShiftMachines = ref([]);
 
 // Initialize dates
 const today = new Date();
@@ -704,6 +824,11 @@ const COL_WIDTH = 120;
 const BAR_HEIGHT = 68;
 const BAR_GAP = 4;
 const BAR_TOP_OFFSET = 22;
+const SCROLL_EDGE_ZONE = 60;   // px from edge to trigger scroll
+const SCROLL_SPEED = 12;       // px per animation frame
+let autoScrollRAF = null;
+let autoScrollDX = 0;
+let autoScrollDY = 0;
 
 // Machine GG lookup: Map<itemCode, machineGG>
 const itemMachineGG = computed(() => {
@@ -1076,10 +1201,20 @@ function isPastDate(dateStr) {
     return date < today;
 }
 
+function isToday(dateStr) {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    return dateStr === `${y}-${m}-${d}`;
+}
+
 function getDateHeaderClass(dateStr) {
-    if (isPastDate(dateStr)) return 'past-date';
-    if (isOffDay(dateStr)) return 'weekly-off';
-    return '';
+    const classes = [];
+    if (isToday(dateStr)) classes.push('today-date');
+    else if (isPastDate(dateStr)) classes.push('past-date');
+    if (isOffDay(dateStr)) classes.push('weekly-off');
+    return classes.join(' ');
 }
 
 function getAllocations(machineId, dateStr) {
@@ -1113,6 +1248,9 @@ function getCellClass(machineId, dateStr) {
     else if (used >= total) classes.push('cell-full');
     else if (used > 0) classes.push('cell-allocated');
     else classes.push('cell-available');
+
+    if (isToday(dateStr)) classes.push('cell-today');
+    else if (isPastDate(dateStr)) classes.push('cell-past');
 
     const badge = getCellAlterationBadge(dateStr, machineId);
     if (badge) {
@@ -1163,13 +1301,38 @@ function getAllocationColor(alloc) {
 }
 
 function getAllocatedQuantity(item) {
-    return allocations.value
-        .filter(a =>
-            a.item === item.item &&
-            a.process === selectedProcess.value &&
-            a.colour === item.colour &&
-            a.size === item.size
-        )
+    const itemAllocs = allocations.value.filter(a =>
+        a.order === selectedOrder.value &&
+        a.item === item.item &&
+        a.process === selectedProcess.value
+    );
+    if (itemAllocs.length === 0) return 0;
+
+    // Detect this workload item's granularity
+    const isItemWise = !item.colour && !item.size;
+    const isColourWise = !!item.colour && !item.size;
+    const isSizeWise = !item.colour && !!item.size;
+
+    // Check if any allocations exist at a different granularity
+    const hasDifferentGranularity = itemAllocs.some(a => {
+        const allocIsItemWise = !a.colour && !a.size;
+        const allocIsColourWise = !!a.colour && !a.size;
+        const allocIsSizeWise = !a.colour && !!a.size;
+
+        if (isItemWise) return !allocIsItemWise;
+        if (isColourWise) return !allocIsColourWise;
+        if (isSizeWise) return !allocIsSizeWise;
+        return false;
+    });
+
+    if (hasDifferentGranularity) {
+        // Different granularity exists — block this item by returning its full quantity
+        return item.quantity;
+    }
+
+    // Same granularity — use exact match
+    return itemAllocs
+        .filter(a => a.colour === item.colour && a.size === item.size)
         .reduce((sum, a) => sum + a.quantity, 0);
 }
 
@@ -1232,6 +1395,25 @@ function getNextWorkingDay(dateStr, machineId) {
         if (getEffectiveMinutes(dates[idx], machineId) > 0) return dates[idx];
     }
     return null;
+}
+
+function extendEndDate(newEndDate) {
+    suppressDateWatch.value = true;
+    endDate.value = newEndDate;
+    nextTick(() => { suppressDateWatch.value = false; });
+}
+
+function ensureWorkingDaysAvailable(fromDate, neededCount, machineId) {
+    let available = 0;
+    let scanDate = fromDate;
+    while (scanDate) {
+        if (getEffectiveMinutes(scanDate, machineId) > 0) available++;
+        if (available >= neededCount) return;
+        scanDate = getNextDate(scanDate);
+    }
+    // Not enough working days — extend endDate
+    const shortfall = neededCount - available;
+    extendEndDate(addDaysToDate(endDate.value, shortfall * 3));
 }
 
 function simulateGroupEnd(totalQty, minutesPerUnit, startDate, machineId) {
@@ -1344,6 +1526,12 @@ function selectGroup(group) {
 }
 
 function onGroupDragStart(event, group) {
+    // Calculate grab offset: how many columns from bar start the cursor is
+    const bar = event.target.closest('.gantt-bar');
+    const grabOffsetDays = bar
+        ? Math.floor((event.clientX - bar.getBoundingClientRect().left) / COL_WIDTH)
+        : 0;
+
     event.dataTransfer.setData('application/gantt-group', JSON.stringify({
         group_id: group.group_id,
         machine_id: group.machine_id,
@@ -1357,6 +1545,7 @@ function onGroupDragStart(event, group) {
         size: group.size,
         total_quantity: group.total_quantity,
         total_minutes: group.total_minutes,
+        grab_offset: grabOffsetDays,
     }));
     event.dataTransfer.effectAllowed = 'move';
     draggingItem.value = { item: group.item, sourceMachineId: group.machine_id };
@@ -1458,6 +1647,10 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
         const lastTargetDate = lastPlacedDate;
         const allMovedKeys = targetDays.map(({ alloc }) => alloc.key);
         let currentDate = getNextDate(lastTargetDate);
+        if (!currentDate && remaining > 0) {
+            extendEndDate(addDaysToDate(endDate.value, Math.ceil(remaining * minutesPerUnit / 480) * 3));
+            currentDate = getNextDate(lastTargetDate);
+        }
         const refAlloc = targetDays[0].alloc;
 
         while (remaining > 0 && currentDate) {
@@ -1501,6 +1694,19 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
 }
 
 function moveGroup(groupData, newMachineId, newStartDate) {
+    // Adjust drop date by grab offset so the block keeps its position relative to cursor
+    const grabOffset = groupData.grab_offset || 0;
+    if (grabOffset > 0) {
+        const dates = dateRange.value;
+        const dropIdx = dates.indexOf(newStartDate);
+        const adjustedIdx = dropIdx - grabOffset;
+        if (adjustedIdx >= 0) {
+            newStartDate = dates[adjustedIdx];
+        } else {
+            newStartDate = dates[0]; // clamp to calendar start
+        }
+    }
+
     const oldStart = new Date(groupData.start_date);
     const newStart = new Date(newStartDate);
     const dayOffset = Math.round((newStart - oldStart) / (1000 * 60 * 60 * 24));
@@ -1522,15 +1728,16 @@ function moveGroup(groupData, newMachineId, newStartDate) {
 
     // Pack into consecutive working days from drop date (skip holidays)
     // Prevents mid-week gaps when original group spans weekends
+    // Auto-extend calendar if not enough working days for the group
+    ensureWorkingDaysAvailable(newStartDate, groupAllocs.length, newMachineId);
+
     const targetDays = [];
     let _nextDate = newStartDate;
     for (const alloc of groupAllocs) {
         while (_nextDate && getEffectiveMinutes(_nextDate, newMachineId) <= 0) {
             _nextDate = getNextDate(_nextDate);
         }
-        if (!_nextDate) {
-            _nextDate = targetDays[targetDays.length - 1].newDate;
-        }
+        if (!_nextDate) break;
         targetDays.push({ alloc, newDate: _nextDate });
         _nextDate = getNextDate(_nextDate);
     }
@@ -1825,23 +2032,30 @@ function computeShiftByDaysPreview() {
     const sortedAllocs = [...groupAllocs].sort((a, b) => a.operation_date.localeCompare(b.operation_date));
 
     // Compute first alloc's new date using working days
-    const firstNewDate = addWorkingDays(sortedAllocs[0].operation_date, dayOffset, machineId);
+    let firstNewDate = addWorkingDays(sortedAllocs[0].operation_date, dayOffset, machineId);
+    if (!firstNewDate && dayOffset > 0) {
+        extendEndDate(addDaysToDate(endDate.value, Math.abs(dayOffset) * 3));
+        firstNewDate = addWorkingDays(sortedAllocs[0].operation_date, dayOffset, machineId);
+    }
     if (!firstNewDate) {
-        shiftByDaysPreview.value = { error: 'Shift would place days outside calendar range. Extend the end date first.' };
+        shiftByDaysPreview.value = { error: 'Shift would place days outside calendar range.' };
         return;
     }
+
+    // Auto-extend calendar if not enough working days for the group
+    ensureWorkingDaysAvailable(firstNewDate, sortedAllocs.length, machineId);
 
     // Lay out allocs on consecutive working days from firstNewDate
     const targetDays = [];
     let currentWorkDate = firstNewDate;
     for (const alloc of sortedAllocs) {
-        if (!currentWorkDate) {
-            shiftByDaysPreview.value = { error: 'Not enough working days in calendar range.' };
-            return;
-        }
-        if (!dates.includes(currentWorkDate)) {
-            shiftByDaysPreview.value = { error: 'Shift would place days outside calendar range. Extend the end date first.' };
-            return;
+        if (!currentWorkDate || !dateRange.value.includes(currentWorkDate)) {
+            ensureWorkingDaysAvailable(firstNewDate, sortedAllocs.length, machineId);
+            currentWorkDate = getNextWorkingDay(targetDays[targetDays.length - 1].newDate, machineId);
+            if (!currentWorkDate) {
+                shiftByDaysPreview.value = { error: 'Not enough working days in calendar range.' };
+                return;
+            }
         }
         if (isPastDate(currentWorkDate)) {
             shiftByDaysPreview.value = { error: 'Cannot shift to past dates' };
@@ -1876,7 +2090,7 @@ function computeShiftByDaysPreview() {
     // Phase 2: overflow onto subsequent working days (mirrors executeMoveGroup overflow loop)
     if (simRemaining > 0 && minutesPerUnit > 0) {
         let extendDate = getNextWorkingDay(targetDays[targetDays.length - 1].newDate, machineId);
-        while (simRemaining > 0 && extendDate && dates.includes(extendDate)) {
+        while (simRemaining > 0 && extendDate && dateRange.value.includes(extendDate)) {
             const cap = getEffectiveMinutes(extendDate, machineId);
             const maxQty = Math.floor(cap / minutesPerUnit);
             const allocQty = Math.min(simRemaining, Math.max(maxQty, 0));
@@ -1915,7 +2129,7 @@ function computeShiftByDaysPreview() {
             const targetStart = addDaysToDate(currentEnd, 1);
             let workDate = targetStart;
             // Find first working day at or after targetStart
-            if (!dates.includes(workDate) || getEffectiveMinutes(workDate, machineId) <= 0) {
+            if (!dateRange.value.includes(workDate) || getEffectiveMinutes(workDate, machineId) <= 0) {
                 workDate = getNextWorkingDay(addDaysToDate(targetStart, -1), machineId);
             }
             if (!workDate) {
@@ -1933,7 +2147,7 @@ function computeShiftByDaysPreview() {
 
             let lastWorkDate = null;
             for (const alloc of otherGroup.allocObjs) {
-                if (!workDate || !dates.includes(workDate)) {
+                if (!workDate || !dateRange.value.includes(workDate)) {
                     outOfBounds = true;
                     affected.push({ allocation: alloc, currentDate: alloc.operation_date, newDate: null });
                 } else if (isPastDate(workDate)) {
@@ -2848,10 +3062,24 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
                 removedKeys.push({ ...sameGroup });
                 const idx = allocations.value.findIndex(a => a.key === sameGroup.key);
                 if (idx > -1) allocations.value.splice(idx, 1);
+                // Recursively compact the emptied source day to prevent gaps
+                const cascadeResult = compactAfterPull(
+                    machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                );
+                addedKeys.push(...cascadeResult.addedKeys);
+                removedKeys.push(...cascadeResult.removedKeys);
+                modified.push(...cascadeResult.modified);
             } else {
                 modified.push({ key: sameGroup.key, oldQty: sameGroup.quantity, oldMinutes: sameGroup.allocated_minutes });
                 sameGroup.quantity -= pullQty;
                 sameGroup.allocated_minutes -= pullMin;
+                // Recursively compact the partially-freed source day
+                const cascadeResult = compactAfterPull(
+                    machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                );
+                addedKeys.push(...cascadeResult.addedKeys);
+                removedKeys.push(...cascadeResult.removedKeys);
+                modified.push(...cascadeResult.modified);
             }
 
             nextDate = getNextDate(nextDate);
@@ -2865,10 +3093,24 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
             removedKeys.push({ ...sameGroup });
             const idx = allocations.value.findIndex(a => a.key === sameGroup.key);
             if (idx > -1) allocations.value.splice(idx, 1);
+            // Recursively compact the emptied source day to prevent gaps
+            const cascadeResult = compactAfterPull(
+                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+            );
+            addedKeys.push(...cascadeResult.addedKeys);
+            removedKeys.push(...cascadeResult.removedKeys);
+            modified.push(...cascadeResult.modified);
         } else {
             modified.push({ key: sameGroup.key, oldQty: sameGroup.quantity, oldMinutes: sameGroup.allocated_minutes });
             sameGroup.quantity -= pullQty;
             sameGroup.allocated_minutes -= pullMin;
+            // Recursively compact the partially-freed source day
+            const cascadeResult = compactAfterPull(
+                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+            );
+            addedKeys.push(...cascadeResult.addedKeys);
+            removedKeys.push(...cascadeResult.removedKeys);
+            modified.push(...cascadeResult.modified);
         }
 
         nextDate = getNextDate(nextDate);
@@ -3217,11 +3459,21 @@ function saveAction(type, data) {
     if (actionHistory.value.length > 20) {
         actionHistory.value.shift();
     }
+    redoHistory.value = [];
 }
 
 function undoLastAction() {
     if (actionHistory.value.length === 0) return;
     const action = actionHistory.value.pop();
+
+    const snapshot = {
+        allocations: JSON.parse(JSON.stringify(allocations.value)),
+        splitMarkers: new Set(splitMarkers.value)
+    };
+    redoHistory.value.push({ action, snapshot });
+    if (redoHistory.value.length > 20) {
+        redoHistory.value.shift();
+    }
 
     switch (action.type) {
         case 'add':
@@ -3495,11 +3747,64 @@ function undoLastAction() {
     frappe.show_alert({ message: __('Action undone'), indicator: 'blue' });
 }
 
+function redoLastAction() {
+    if (redoHistory.value.length === 0) return;
+    const { action, snapshot } = redoHistory.value.pop();
+    allocations.value = snapshot.allocations;
+    splitMarkers.value = snapshot.splitMarkers;
+    actionHistory.value.push(action);
+    frappe.show_alert({ message: __('Action redone'), indicator: 'blue' });
+}
+
+// Auto-scroll during drag
+function autoScrollDuringDrag(event) {
+    const wrapper = document.querySelector('.calendar-wrapper');
+    if (!wrapper) return;
+    const rect = wrapper.getBoundingClientRect();
+
+    // Use clientHeight/clientWidth — these exclude scrollbar dimensions
+    const contentBottom = rect.top + wrapper.clientHeight;
+    const contentRight = rect.left + wrapper.clientWidth;
+
+    autoScrollDY = 0;
+    autoScrollDX = 0;
+    if (event.clientY < rect.top + SCROLL_EDGE_ZONE) autoScrollDY = -SCROLL_SPEED;
+    else if (event.clientY > contentBottom - SCROLL_EDGE_ZONE) autoScrollDY = SCROLL_SPEED;
+    if (event.clientX < rect.left + SCROLL_EDGE_ZONE) autoScrollDX = -SCROLL_SPEED;
+    else if (event.clientX > contentRight - SCROLL_EDGE_ZONE) autoScrollDX = SCROLL_SPEED;
+
+    if (autoScrollDX === 0 && autoScrollDY === 0) {
+        stopAutoScroll();
+        return;
+    }
+
+    if (!autoScrollRAF) {
+        const step = () => {
+            wrapper.scrollLeft += autoScrollDX;
+            wrapper.scrollTop += autoScrollDY;
+            autoScrollRAF = requestAnimationFrame(step);
+        };
+        autoScrollRAF = requestAnimationFrame(step);
+    }
+}
+
+function stopAutoScroll() {
+    if (autoScrollRAF) {
+        cancelAnimationFrame(autoScrollRAF);
+        autoScrollRAF = null;
+    }
+}
+
+function onWrapperDragOver(event) {
+    autoScrollDuringDrag(event);
+}
+
 // Drag and Drop
 function onCellDragOver(event, machineId) {
     if (isMachineCompatible(machineId)) {
         event.preventDefault(); // allow drop only on compatible machines
     }
+    autoScrollDuringDrag(event);
 }
 
 function onDragStart(event, item) {
@@ -3509,6 +3814,7 @@ function onDragStart(event, item) {
 
 function onDragEnd() {
     draggingItem.value = null;
+    stopAutoScroll();
 }
 
 function getNextDate(currentDateStr) {
@@ -4163,6 +4469,7 @@ async function onOrderChange() {
 
 async function onProcessChange() {
     actionHistory.value = [];
+    redoHistory.value = [];
 }
 
 async function refreshCalendar() {
@@ -4206,6 +4513,7 @@ async function loadAllAllocations() {
             allocations.value = [];
         }
         actionHistory.value = [];
+        redoHistory.value = [];
         splitMarkers.value = new Set();
     } catch (e) {
         console.error('Error loading allocations:', e);
@@ -4256,6 +4564,7 @@ async function saveAllocations() {
         if (response.message) {
             frappe.show_alert({ message: __('Allocations saved successfully'), indicator: 'green' });
             actionHistory.value = [];
+            redoHistory.value = [];
             await loadAllAllocations();
             emit('saveAllocations', allocations.value);
         }
@@ -4309,6 +4618,212 @@ async function confirmAlteration() {
         console.error('Error adding alteration:', e);
         frappe.show_alert({ message: __('Error adding alteration'), indicator: 'red' });
         alterationSaving.value = false;
+    }
+}
+
+// ── Edit / Delete Existing Alterations ──
+
+function openEditAlterationsModal(dateStr, machineId) {
+    const cal = getCalendarForDate(dateStr);
+    if (!cal) return;
+
+    const matching = (cal.alterations || []).filter(a => {
+        if (a.date !== dateStr) return false;
+        // If machineId is null, show ALL alterations for this date
+        if (machineId === null) return true;
+        return a.machine === machineId;
+    });
+    editAlterationsList.value = matching.map(a => ({ ...a }));
+    editAlterationsContext.value = { date: dateStr, machine_id: machineId };
+    editAlterationsSaving.value = false;
+    showEditAlterationsModal.value = true;
+}
+
+function closeEditAlterationsModal() {
+    showEditAlterationsModal.value = false;
+    editAlterationsList.value = [];
+    editAlterationsSaving.value = false;
+}
+
+async function saveAlteration(idx) {
+    const row = editAlterationsList.value[idx];
+    if (!row.minutes || row.minutes < 1) {
+        frappe.show_alert({ message: __('Minutes must be at least 1'), indicator: 'red' });
+        return;
+    }
+    editAlterationsSaving.value = true;
+    try {
+        await frappe.call({
+            method: 'albion.albion.page.capacity_planning.capacity_planning.update_shift_alteration',
+            args: {
+                alteration_name: row.name,
+                alteration_type: row.alteration_type,
+                minutes: row.minutes,
+                reason: row.reason || null
+            }
+        });
+        frappe.show_alert({ message: __('Alteration updated'), indicator: 'green' });
+        await loadShiftAllocations();
+        // Reflow for the specific machine this alteration targets
+        autoReflowAfterAlteration(
+            editAlterationsContext.value.date,
+            row.machine || null,
+            row.alteration_type,
+            row.minutes
+        );
+        // Refresh list with latest data
+        const cal = getCalendarForDate(editAlterationsContext.value.date);
+        if (cal) {
+            const dateStr = editAlterationsContext.value.date;
+            const ctxMachine = editAlterationsContext.value.machine_id;
+            editAlterationsList.value = (cal.alterations || [])
+                .filter(a => {
+                    if (a.date !== dateStr) return false;
+                    if (ctxMachine === null) return true;
+                    return a.machine === ctxMachine;
+                })
+                .map(a => ({ ...a }));
+        }
+    } catch (e) {
+        console.error('Error updating alteration:', e);
+        frappe.show_alert({ message: __('Error updating alteration'), indicator: 'red' });
+    }
+    editAlterationsSaving.value = false;
+}
+
+async function deleteAlteration(idx) {
+    const row = editAlterationsList.value[idx];
+    editAlterationsSaving.value = true;
+    try {
+        await frappe.call({
+            method: 'albion.albion.page.capacity_planning.capacity_planning.delete_shift_alteration',
+            args: {
+                alteration_name: row.name,
+                parent_calendar: row.parent
+            }
+        });
+        frappe.show_alert({ message: __('Alteration deleted'), indicator: 'green' });
+        editAlterationsList.value.splice(idx, 1);
+        await loadShiftAllocations();
+
+        // Reflow with the opposite effect: deleting an Add is like a Reduce, and vice versa
+        const reverseType = row.alteration_type === 'Add' ? 'Reduce' : 'Add';
+        autoReflowAfterAlteration(
+            editAlterationsContext.value.date,
+            row.machine || null,
+            reverseType,
+            row.minutes
+        );
+
+        if (editAlterationsList.value.length === 0) {
+            closeEditAlterationsModal();
+        }
+    } catch (e) {
+        console.error('Error deleting alteration:', e);
+        frappe.show_alert({ message: __('Error deleting alteration'), indicator: 'red' });
+    }
+    editAlterationsSaving.value = false;
+}
+
+function addNewFromEditModal() {
+    const ctx = editAlterationsContext.value;
+    closeEditAlterationsModal();
+    openAlterationDialog(ctx.date, ctx.machine_id);
+}
+
+// ── Bulk shift update ──
+function openBulkShiftModal() {
+    bulkShiftMachines.value = [];
+    bulkShiftSaving.value = false;
+    showBulkShiftModal.value = true;
+    const defaultDate = dateRange.value.length > 0 ? dateRange.value[0] : frappe.datetime.nowdate();
+    bulkShiftDate.value = defaultDate;
+    // Init frappe date control after DOM renders
+    nextTick(() => {
+        if (bulkShiftDateFieldRef.value && !bulkShiftDateControl) {
+            bulkShiftDateControl = frappe.ui.form.make_control({
+                df: {
+                    fieldtype: 'Date',
+                    fieldname: 'bulk_shift_date',
+                    label: 'Date',
+                    change() {
+                        bulkShiftDate.value = bulkShiftDateControl.get_value() || '';
+                        populateBulkShiftTable();
+                    }
+                },
+                parent: bulkShiftDateFieldRef.value,
+                render_input: true,
+                only_input: true
+            });
+        }
+        if (bulkShiftDateControl) {
+            bulkShiftDateControl.set_value(defaultDate);
+            bulkShiftDateControl.refresh();
+        }
+        populateBulkShiftTable();
+    });
+}
+
+function closeBulkShiftModal() {
+    showBulkShiftModal.value = false;
+    bulkShiftSaving.value = false;
+    bulkShiftDate.value = '';
+    bulkShiftMachines.value = [];
+    bulkShiftDateControl = null;
+}
+
+function populateBulkShiftTable() {
+    const dateStr = bulkShiftDate.value;
+    if (!dateStr) {
+        bulkShiftMachines.value = [];
+        return;
+    }
+    bulkShiftMachines.value = machines.value.map(m => ({
+        machine_id: m.machine_id,
+        machine_name: m.machine_name || m.machine_id,
+        shift_name: getShiftNamesForDate(dateStr),
+        total_minutes: getEffectiveMinutes(dateStr, m.machine_id),
+        allocated_minutes: getUsedMinutes(m.machine_id, dateStr),
+        alteration_type: 'Add',
+        update_minutes: 0
+    }));
+}
+
+async function applyBulkShiftUpdates() {
+    const dateStr = bulkShiftDate.value;
+    const affected = bulkShiftMachines.value.filter(r => r.update_minutes > 0);
+    if (affected.length === 0) return;
+
+    bulkShiftSaving.value = true;
+    try {
+        // Call add_shift_alteration for each affected machine
+        for (const row of affected) {
+            await frappe.call({
+                method: 'albion.albion.page.capacity_planning.capacity_planning.add_shift_alteration',
+                args: {
+                    date: dateStr,
+                    alteration_type: row.alteration_type,
+                    minutes: row.update_minutes,
+                    machine: row.machine_id,
+                    reason: null
+                }
+            });
+        }
+
+        // Reload shift data so getEffectiveMinutes reflects new alterations
+        await loadShiftAllocations();
+
+        // Reflow each affected machine
+        for (const row of affected) {
+            autoReflowAfterAlteration(dateStr, row.machine_id, row.alteration_type, row.update_minutes);
+        }
+
+        frappe.show_alert({ message: __(`Shift updated for ${affected.length} machine(s)`), indicator: 'green' });
+        closeBulkShiftModal();
+    } catch (e) {
+        console.error('Error applying bulk shift updates:', e);
+        frappe.show_alert({ message: __('Error applying shift updates'), indicator: 'red' });
+        bulkShiftSaving.value = false;
     }
 }
 
@@ -4557,6 +5072,17 @@ function updateProcessOptions() {
     processControl.refresh();
 }
 
+function onKeyDown(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undoLastAction();
+    } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        redoLastAction();
+    }
+}
+
 onMounted(async () => {
     await nextTick();
     initFrappeControls();
@@ -4564,6 +5090,9 @@ onMounted(async () => {
     loadAllShifts();
     loadAllAllocations();
     document.addEventListener('click', closeContextMenu);
+    document.addEventListener('keydown', onKeyDown);
+    window.addEventListener('beforeunload', onBeforeUnload);
+    frappe.router.on('change', onRouteChange);
 
     if (!defaultAllocation.value) {
         frappe.msgprint({
@@ -4572,13 +5101,51 @@ onMounted(async () => {
             indicator: 'orange'
         });
     }
+
+    // Auto-scroll to current date
+    await nextTick();
+    const wrapper = document.querySelector('.calendar-wrapper');
+    if (wrapper) {
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const todayIdx = dateRange.value.indexOf(todayStr);
+        if (todayIdx >= 0) {
+            wrapper.scrollLeft = Math.max(0, todayIdx * COL_WIDTH - COL_WIDTH * 2);
+        }
+    }
 });
+
+function hasUnsavedChanges() {
+    return actionHistory.value.length > 0;
+}
+
+function onBeforeUnload(e) {
+    if (hasUnsavedChanges()) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+}
+
+function onRouteChange() {
+    if (hasUnsavedChanges()) {
+        frappe.confirm(
+            __('You have unsaved changes. Are you sure you want to leave?'),
+            () => { actionHistory.value = []; redoHistory.value = []; frappe.set_route(frappe.get_route()); },
+            () => { frappe.set_route('capacity-planning'); }
+        );
+        return false;
+    }
+}
 
 onUnmounted(() => {
     document.removeEventListener('click', closeContextMenu);
+    document.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('beforeunload', onBeforeUnload);
+    frappe.router.off('change', onRouteChange);
 });
 
 watch([startDate, endDate], () => {
+    if (suppressDateWatch.value) return;
     loadShiftAllocations();
     loadAllAllocations();
 });
@@ -5021,7 +5588,17 @@ defineExpose({
 }
 
 .gantt-date-header.past-date {
-    background: #fef2f2;
+    background: #f1f5f9;
+    color: #94a3b8;
+}
+
+.gantt-date-header.today-date {
+    background: #eff6ff;
+    border-bottom: 3px solid #3b82f6;
+}
+
+.gantt-date-header.today-date .day-date {
+    color: #2563eb;
 }
 
 .date-cell {
@@ -5049,6 +5626,15 @@ defineExpose({
     border-radius: 3px;
     margin-left: 4px;
     vertical-align: middle;
+}
+
+.day-alteration-badge.clickable {
+    cursor: pointer;
+}
+
+.day-alteration-badge.clickable:hover {
+    filter: brightness(0.9);
+    text-decoration: underline;
 }
 
 .gantt-date-header:hover {
@@ -5137,6 +5723,15 @@ defineExpose({
     box-shadow: inset 0 0 0 2px #f87171;
 }
 
+.cell-past {
+    background: #f8f9fb !important;
+}
+
+.cell-today {
+    background: #eff6ff !important;
+    box-shadow: inset 0 0 0 1px #bfdbfe;
+}
+
 .cell-top-row {
     display: flex;
     justify-content: flex-end;
@@ -5154,6 +5749,15 @@ defineExpose({
     padding: 1px 6px;
     border-radius: 3px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.alteration-badge.clickable {
+    cursor: pointer;
+}
+
+.alteration-badge.clickable:hover {
+    filter: brightness(0.9);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
 }
 
 .badge-add {
@@ -5412,6 +6016,84 @@ defineExpose({
     gap: 8px;
     justify-content: flex-end;
     margin-top: 20px;
+}
+
+/* Bulk Shift Modal */
+.bulk-shift-modal {
+    max-width: 900px;
+    min-width: 700px;
+}
+
+.bulk-shift-table-wrap {
+    max-height: 450px;
+    overflow-y: auto;
+    margin-top: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.bulk-shift-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.bulk-shift-table th {
+    background: #f8fafc;
+    padding: 8px 10px;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    white-space: nowrap;
+}
+
+.bulk-shift-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.bulk-shift-table .text-right {
+    text-align: right;
+}
+
+.bulk-shift-table .text-center {
+    text-align: center;
+}
+
+.bulk-shift-input {
+    width: 80px;
+    padding: 4px 6px;
+    text-align: right;
+    font-size: 13px;
+    display: inline-block;
+}
+
+.bulk-shift-select {
+    width: 110px;
+    padding: 4px 6px;
+    font-size: 13px;
+    display: inline-block;
+}
+
+.bulk-shift-delete {
+    padding: 2px 6px;
+    font-size: 12px;
+    line-height: 1;
+    border-radius: 4px;
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+    cursor: pointer;
+}
+
+.bulk-shift-delete:hover {
+    background: #fca5a5;
+    color: #991b1b;
 }
 
 /* ===== Buttons ===== */
