@@ -104,6 +104,8 @@ def _get_calendar_data(calendar_name):
     alterations = []
     for row in doc.alterations or []:
         alterations.append({
+            "name": row.name,
+            "parent": doc.name,
             "date": str(row.date),
             "alteration_type": row.alteration_type,
             "minutes": row.minutes,
@@ -300,6 +302,48 @@ def add_shift_alteration(date, alteration_type, minutes, machine=None, reason=No
 
     new_cal.insert(ignore_permissions=True)
     return {"calendar": new_cal.name}
+
+
+@frappe.whitelist()
+def update_shift_alteration(alteration_name, alteration_type, minutes, reason=None):
+    """Update an existing shift alteration child row"""
+    minutes = int(minutes)
+
+    # Find the parent Shift Allocation containing this child row
+    parent_name = frappe.db.get_value("Shift Alteration", alteration_name, "parent")
+    if not parent_name:
+        frappe.throw(_("Shift alteration not found: {0}").format(alteration_name))
+
+    doc = frappe.get_doc("Shift Allocation", parent_name)
+    for row in doc.alterations or []:
+        if row.name == alteration_name:
+            row.alteration_type = alteration_type
+            row.minutes = minutes
+            row.reason = reason
+            break
+    else:
+        frappe.throw(_("Alteration row not found in calendar"))
+
+    doc.save(ignore_permissions=True)
+    return {"calendar": doc.name}
+
+
+@frappe.whitelist()
+def delete_shift_alteration(alteration_name, parent_calendar):
+    """Delete a shift alteration child row"""
+    doc = frappe.get_doc("Shift Allocation", parent_calendar)
+    row_to_remove = None
+    for row in doc.alterations or []:
+        if row.name == alteration_name:
+            row_to_remove = row
+            break
+
+    if not row_to_remove:
+        frappe.throw(_("Alteration row not found"))
+
+    doc.remove(row_to_remove)
+    doc.save(ignore_permissions=True)
+    return {"success": True}
 
 
 @frappe.whitelist()

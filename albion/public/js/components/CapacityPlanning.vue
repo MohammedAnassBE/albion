@@ -128,7 +128,8 @@
                                 <span class="day-date">{{ formatDayName(date) }}, {{ formatDate(date) }}</span>
                                 <span class="shift-info">
                                     {{ getShiftNamesForDate(date) }} &middot; {{ getEffectiveMinutes(date) }}m
-                                    <span v-if="getDayAlterationDelta(date)" class="day-alteration-badge" :class="getDayAlterationDelta(date).cls">
+                                    <span v-if="getDayAlterationDelta(date)" class="day-alteration-badge clickable" :class="getDayAlterationDelta(date).cls"
+                                          @click.stop="openEditAlterationsModal(date, null)">
                                         {{ getDayAlterationDelta(date).label }}
                                     </span>
                                 </span>
@@ -157,8 +158,9 @@
                                  @dragover="onCellDragOver($event, machine.machine_id)"
                                  @drop="onDrop($event, machine.machine_id, date)">
                                 <span v-if="getCellAlterationBadge(date, machine.machine_id)"
-                                      class="alteration-badge"
-                                      :class="getCellAlterationBadge(date, machine.machine_id).cls">
+                                      class="alteration-badge clickable"
+                                      :class="getCellAlterationBadge(date, machine.machine_id).cls"
+                                      @click.stop="openEditAlterationsModal(date, machine.machine_id)">
                                     {{ getCellAlterationBadge(date, machine.machine_id).label }}
                                 </span>
                                 <div class="cell-top-row">
@@ -565,6 +567,52 @@
                 </div>
             </div>
         </div>
+        <!-- Edit Alterations Modal -->
+        <div v-if="showEditAlterationsModal" class="modal-overlay" @click="closeEditAlterationsModal">
+            <div class="modal-content bulk-shift-modal" @click.stop>
+                <h4>Manage Alterations — {{ formatDate(editAlterationsContext.date) }}{{ editAlterationsContext.machine_id ? ' — ' + editAlterationsContext.machine_id : '' }}</h4>
+                <div v-if="editAlterationsList.length === 0" class="text-muted" style="padding: 12px 0;">
+                    No alterations for this {{ editAlterationsContext.machine_id ? 'cell' : 'date' }}.
+                </div>
+                <table v-else class="bulk-shift-table">
+                    <thead>
+                        <tr>
+                            <th v-if="!editAlterationsContext.machine_id">Machine</th>
+                            <th>Type</th>
+                            <th class="text-right">Minutes</th>
+                            <th>Reason</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(row, idx) in editAlterationsList" :key="row.name">
+                            <td v-if="!editAlterationsContext.machine_id">{{ row.machine || 'All' }}</td>
+                            <td>
+                                <select v-model="editAlterationsList[idx].alteration_type" class="form-control bulk-shift-select">
+                                    <option value="Add">Overtime</option>
+                                    <option value="Reduce">Break</option>
+                                </select>
+                            </td>
+                            <td class="text-right">
+                                <input type="number" v-model.number="editAlterationsList[idx].minutes" class="form-control bulk-shift-input" min="1" />
+                            </td>
+                            <td>
+                                <input type="text" v-model="editAlterationsList[idx].reason" class="form-control" placeholder="Reason" style="min-width: 120px;" />
+                            </td>
+                            <td class="text-center" style="white-space: nowrap;">
+                                <button class="btn btn-xs btn-primary" @click="saveAlteration(idx)" :disabled="editAlterationsSaving" title="Save">Save</button>
+                                <button class="btn btn-xs btn-danger" @click="deleteAlteration(idx)" :disabled="editAlterationsSaving" title="Delete" style="margin-left: 4px;">&#10005;</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="modal-actions">
+                    <button class="btn btn-primary btn-sm" @click="addNewFromEditModal">+ Add New</button>
+                    <button class="btn btn-secondary btn-sm" @click="closeEditAlterationsModal">Close</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Bulk Shift Update Modal -->
         <div v-if="showBulkShiftModal" class="modal-overlay" @click="closeBulkShiftModal">
             <div class="modal-content bulk-shift-modal" @click.stop>
@@ -741,6 +789,12 @@ const alterationForm = ref({
     minutes: 60,
     reason: ''
 });
+
+// Edit alterations modal state
+const showEditAlterationsModal = ref(false);
+const editAlterationsContext = ref({ date: '', machine_id: null });
+const editAlterationsList = ref([]);
+const editAlterationsSaving = ref(false);
 
 // Action choice dialog state
 const showActionChoice = ref(false);
@@ -4547,6 +4601,116 @@ async function confirmAlteration() {
     }
 }
 
+// ── Edit / Delete Existing Alterations ──
+
+function openEditAlterationsModal(dateStr, machineId) {
+    const cal = getCalendarForDate(dateStr);
+    if (!cal) return;
+
+    const matching = (cal.alterations || []).filter(a => {
+        if (a.date !== dateStr) return false;
+        // If machineId is null, show ALL alterations for this date
+        if (machineId === null) return true;
+        return a.machine === machineId;
+    });
+    editAlterationsList.value = matching.map(a => ({ ...a }));
+    editAlterationsContext.value = { date: dateStr, machine_id: machineId };
+    editAlterationsSaving.value = false;
+    showEditAlterationsModal.value = true;
+}
+
+function closeEditAlterationsModal() {
+    showEditAlterationsModal.value = false;
+    editAlterationsList.value = [];
+    editAlterationsSaving.value = false;
+}
+
+async function saveAlteration(idx) {
+    const row = editAlterationsList.value[idx];
+    if (!row.minutes || row.minutes < 1) {
+        frappe.show_alert({ message: __('Minutes must be at least 1'), indicator: 'red' });
+        return;
+    }
+    editAlterationsSaving.value = true;
+    try {
+        await frappe.call({
+            method: 'albion.albion.page.capacity_planning.capacity_planning.update_shift_alteration',
+            args: {
+                alteration_name: row.name,
+                alteration_type: row.alteration_type,
+                minutes: row.minutes,
+                reason: row.reason || null
+            }
+        });
+        frappe.show_alert({ message: __('Alteration updated'), indicator: 'green' });
+        await loadShiftAllocations();
+        // Reflow for the specific machine this alteration targets
+        autoReflowAfterAlteration(
+            editAlterationsContext.value.date,
+            row.machine || null,
+            row.alteration_type,
+            row.minutes
+        );
+        // Refresh list with latest data
+        const cal = getCalendarForDate(editAlterationsContext.value.date);
+        if (cal) {
+            const dateStr = editAlterationsContext.value.date;
+            const ctxMachine = editAlterationsContext.value.machine_id;
+            editAlterationsList.value = (cal.alterations || [])
+                .filter(a => {
+                    if (a.date !== dateStr) return false;
+                    if (ctxMachine === null) return true;
+                    return a.machine === ctxMachine;
+                })
+                .map(a => ({ ...a }));
+        }
+    } catch (e) {
+        console.error('Error updating alteration:', e);
+        frappe.show_alert({ message: __('Error updating alteration'), indicator: 'red' });
+    }
+    editAlterationsSaving.value = false;
+}
+
+async function deleteAlteration(idx) {
+    const row = editAlterationsList.value[idx];
+    editAlterationsSaving.value = true;
+    try {
+        await frappe.call({
+            method: 'albion.albion.page.capacity_planning.capacity_planning.delete_shift_alteration',
+            args: {
+                alteration_name: row.name,
+                parent_calendar: row.parent
+            }
+        });
+        frappe.show_alert({ message: __('Alteration deleted'), indicator: 'green' });
+        editAlterationsList.value.splice(idx, 1);
+        await loadShiftAllocations();
+
+        // Reflow with the opposite effect: deleting an Add is like a Reduce, and vice versa
+        const reverseType = row.alteration_type === 'Add' ? 'Reduce' : 'Add';
+        autoReflowAfterAlteration(
+            editAlterationsContext.value.date,
+            row.machine || null,
+            reverseType,
+            row.minutes
+        );
+
+        if (editAlterationsList.value.length === 0) {
+            closeEditAlterationsModal();
+        }
+    } catch (e) {
+        console.error('Error deleting alteration:', e);
+        frappe.show_alert({ message: __('Error deleting alteration'), indicator: 'red' });
+    }
+    editAlterationsSaving.value = false;
+}
+
+function addNewFromEditModal() {
+    const ctx = editAlterationsContext.value;
+    closeEditAlterationsModal();
+    openAlterationDialog(ctx.date, ctx.machine_id);
+}
+
 // ── Bulk shift update ──
 function openBulkShiftModal() {
     bulkShiftMachines.value = [];
@@ -5444,6 +5608,15 @@ defineExpose({
     vertical-align: middle;
 }
 
+.day-alteration-badge.clickable {
+    cursor: pointer;
+}
+
+.day-alteration-badge.clickable:hover {
+    filter: brightness(0.9);
+    text-decoration: underline;
+}
+
 .gantt-date-header:hover {
     background: #e2e8f0 !important;
 }
@@ -5556,6 +5729,15 @@ defineExpose({
     padding: 1px 6px;
     border-radius: 3px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.alteration-badge.clickable {
+    cursor: pointer;
+}
+
+.alteration-badge.clickable:hover {
+    filter: brightness(0.9);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
 }
 
 .badge-add {
