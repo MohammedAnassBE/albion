@@ -5771,6 +5771,7 @@ defineExpose({
 .gantt-grid {
     display: grid;
     width: max-content;
+    padding-bottom: 120px;
 }
 
 .gantt-corner-cell {
