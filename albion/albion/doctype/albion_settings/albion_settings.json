@@ -8,7 +8,9 @@
   "defaults_section",
   "default_size_range",
   "company_info_section",
-  "company_name"
+  "company_name",
+  "capacity_planning_section",
+  "apply_zoom"
  ],
  "fields": [
   {
@@ -31,6 +33,17 @@
    "fieldname": "company_name",
    "fieldtype": "Data",
    "label": "Company Name"
+  },
+  {
+   "fieldname": "capacity_planning_section",
+   "fieldtype": "Section Break",
+   "label": "Capacity Planning"
+  },
+  {
+   "default": "0",
+   "fieldname": "apply_zoom",
+   "fieldtype": "Check",
+   "label": "Apply Zoom"
   }
  ],
  "grid_page_length": 50,
