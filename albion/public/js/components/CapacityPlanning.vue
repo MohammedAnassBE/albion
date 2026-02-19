@@ -37,9 +37,12 @@
                     </div>
                 </div>
                 <div class="action-group">
-                    <button v-if="applyZoom" class="btn btn-default" @click="isZoomedOut = !isZoomedOut">
-                        {{ isZoomedOut ? 'Zoom In' : 'Zoom Out' }}
-                    </button>
+                    <label v-if="applyZoom" class="compact-toggle-wrap">
+                        <span class="compact-label">Compact View</span>
+                        <div class="toggle-switch" :class="{ 'toggle-on': isZoomedOut }" @click="isZoomedOut = !isZoomedOut">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </label>
                     <button class="btn btn-default" @click="undoLastAction" :disabled="actionHistory.length === 0" v-show="!isZoomedOut">Undo</button>
                     <button class="btn btn-default" @click="redoLastAction" :disabled="redoHistory.length === 0" v-show="!isZoomedOut">Redo</button>
                     <button class="btn btn-default" @click="refreshCalendar">Refresh</button>
@@ -5317,6 +5320,51 @@ defineExpose({
     display: flex;
     gap: 8px;
     align-items: flex-end;
+}
+
+.compact-toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin: 0;
+    user-select: none;
+}
+
+.compact-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.toggle-switch {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    background: #cbd5e1;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.toggle-switch.toggle-on {
+    background: #7c3aed;
+}
+
+.toggle-knob {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: left 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch.toggle-on .toggle-knob {
+    left: 20px;
 }
 
 .frappe-field {
