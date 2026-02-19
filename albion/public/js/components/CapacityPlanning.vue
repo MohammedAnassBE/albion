@@ -37,7 +37,7 @@
                     </div>
                 </div>
                 <div class="action-group">
-                    <button class="btn btn-default" @click="isZoomedOut = !isZoomedOut">
+                    <button v-if="applyZoom" class="btn btn-default" @click="isZoomedOut = !isZoomedOut">
                         {{ isZoomedOut ? 'Zoom In' : 'Zoom Out' }}
                     </button>
                     <button class="btn btn-default" @click="undoLastAction" :disabled="actionHistory.length === 0" v-show="!isZoomedOut">Undo</button>
@@ -171,14 +171,20 @@
                         <!-- Machine rows -->
                         <template v-for="(machine, mIdx) in filteredMachines" :key="machine.machine_id">
                             <!-- Machine label cell -->
-                            <div class="gantt-machine-cell" :class="{ 'machine-disabled': !isMachineCompatible(machine.machine_id) }" :style="{ gridRow: mIdx + 2 }">
-                                <div class="machine-info">
-                                    <div class="machine-title">
-                                        <span class="machine-id">{{ machine.machine_id }}</span>
-                                        <span class="machine-gg-badge">{{ machine.machine_gg }}</span>
+                            <div class="gantt-machine-cell" :class="{ 'machine-disabled': !isMachineCompatible(machine.machine_id), 'machine-cell-zoom': isZoomedOut }" :style="{ gridRow: mIdx + 2 }"
+                                 :title="isZoomedOut ? `${machine.machine_id} — ${machine.machine_name} (${machine.machine_gg})` : ''">
+                                <template v-if="isZoomedOut">
+                                    <span class="machine-id-zoom">{{ machine.machine_id }}</span>
+                                </template>
+                                <template v-else>
+                                    <div class="machine-info">
+                                        <div class="machine-title">
+                                            <span class="machine-id">{{ machine.machine_id }}</span>
+                                            <span class="machine-gg-badge">{{ machine.machine_gg }}</span>
+                                        </div>
+                                        <span class="machine-name">{{ machine.machine_name }}</span>
                                     </div>
-                                    <span class="machine-name">{{ machine.machine_name }}</span>
-                                </div>
+                                </template>
                             </div>
 
                             <!-- Date cells (drop targets) -->
@@ -267,7 +273,7 @@
                     <label>Item: {{ pendingDrop.item }}</label>
                 </div>
                 <div class="form-group">
-                    <label>Target: {{ pendingDrop.machineId }} &middot; {{ pendingDrop.dateStr }}</label>
+                    <label>Target: {{ pendingDrop.machineId }} &middot; {{ fmtDate(pendingDrop.dateStr) }}</label>
                 </div>
                 <div class="form-group">
                     <label>Available on this day: {{ pendingDrop.availableCapacityQty }} units</label>
@@ -324,9 +330,9 @@
                                 <td>{{ grp.item }}</td>
                                 <td>{{ grp.order }}</td>
                                 <td>{{ grp.dayCount }}</td>
-                                <td>{{ grp.oldStart }} to {{ grp.oldEnd }}</td>
+                                <td>{{ fmtDate(grp.oldStart) }} to {{ fmtDate(grp.oldEnd) }}</td>
                                 <td>&rarr;</td>
-                                <td>{{ grp.newStart && grp.newEnd ? `${grp.newStart} to ${grp.newEnd}` : 'Out of range' }}</td>
+                                <td>{{ grp.newStart && grp.newEnd ? `${fmtDate(grp.newStart)} to ${fmtDate(grp.newEnd)}` : 'Out of range' }}</td>
                                 <td>+{{ grp.pushDays }}d</td>
                             </tr>
                         </tbody>
@@ -349,9 +355,9 @@
                                 <td>{{ entry.allocation.item }}</td>
                                 <td>{{ entry.allocation.process }}</td>
                                 <td>{{ entry.allocation.quantity }}</td>
-                                <td>{{ entry.currentDate }}</td>
+                                <td>{{ fmtDate(entry.currentDate) }}</td>
                                 <td>&rarr;</td>
-                                <td>{{ entry.newDate }}</td>
+                                <td>{{ fmtDate(entry.newDate) }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -391,9 +397,9 @@
                                 <td>{{ entry.allocation.item }}</td>
                                 <td>{{ entry.allocation.process }}</td>
                                 <td>{{ entry.allocation.quantity }}</td>
-                                <td>{{ entry.currentDate }}</td>
+                                <td>{{ fmtDate(entry.currentDate) }}</td>
                                 <td>&larr;</td>
-                                <td>{{ entry.newDate }}</td>
+                                <td>{{ fmtDate(entry.newDate) }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -414,7 +420,7 @@
                     <label>Item: {{ selectedGroup.item }}</label>
                 </div>
                 <div class="form-group">
-                    <label>Dates: {{ selectedGroup.start_date }} to {{ selectedGroup.end_date }} ({{ selectedGroup.allocs.length }} days)</label>
+                    <label>Dates: {{ fmtDate(selectedGroup.start_date) }} to {{ fmtDate(selectedGroup.end_date) }} ({{ selectedGroup.allocs.length }} days)</label>
                 </div>
                 <div class="form-group">
                     <label>Current Total: {{ selectedGroup.total_quantity }}</label>
@@ -441,7 +447,7 @@
                     <label>Split before date</label>
                     <select v-model="splitGroupDate" class="form-control">
                         <option v-for="alloc in selectedGroup.allocs.slice(1)" :key="alloc.operation_date" :value="alloc.operation_date">
-                            {{ alloc.operation_date }}
+                            {{ fmtDate(alloc.operation_date) }}
                         </option>
                     </select>
                 </div>
@@ -457,7 +463,7 @@
             <div class="shift-modal" @click.stop>
                 <h4>Shift Group by Days</h4>
                 <div class="form-group">
-                    <label>{{ selectedGroup.item }} &mdash; {{ selectedGroup.start_date }} to {{ selectedGroup.end_date }} ({{ selectedGroup.allocs.length }} days)</label>
+                    <label>{{ selectedGroup.item }} &mdash; {{ fmtDate(selectedGroup.start_date) }} to {{ fmtDate(selectedGroup.end_date) }} ({{ selectedGroup.allocs.length }} days)</label>
                 </div>
                 <div class="form-group">
                     <label>Number of days to shift</label>
@@ -470,7 +476,7 @@
                     </div>
                     <template v-else>
                         <div class="shift-explanation">
-                            <p>Group moves from <strong>{{ selectedGroup.start_date }}</strong> &rarr; <strong>{{ shiftByDaysPreview.newStart }}</strong></p>
+                            <p>Group moves from <strong>{{ fmtDate(selectedGroup.start_date) }}</strong> &rarr; <strong>{{ fmtDate(shiftByDaysPreview.newStart) }}</strong></p>
                             <p v-if="shiftByDaysPreview.affectedGroups && shiftByDaysPreview.affectedGroups.length > 0">
                                 <strong>{{ shiftByDaysPreview.affectedGroups.length }}</strong> subsequent group(s) will cascade forward.
                             </p>
@@ -494,9 +500,9 @@
                                         <td>{{ grp.item }}</td>
                                         <td>{{ grp.order }}</td>
                                         <td>{{ grp.dayCount }}</td>
-                                        <td>{{ grp.oldStart }} to {{ grp.oldEnd }}</td>
+                                        <td>{{ fmtDate(grp.oldStart) }} to {{ fmtDate(grp.oldEnd) }}</td>
                                         <td>&rarr;</td>
-                                        <td>{{ grp.newStart && grp.newEnd ? `${grp.newStart} to ${grp.newEnd}` : 'Out of range' }}</td>
+                                        <td>{{ grp.newStart && grp.newEnd ? `${fmtDate(grp.newStart)} to ${fmtDate(grp.newEnd)}` : 'Out of range' }}</td>
                                         <td>+{{ grp.pushDays }}d</td>
                                     </tr>
                                 </tbody>
@@ -528,7 +534,7 @@
         <div v-if="showActionChoice" class="modal-overlay" @click="closeActionChoice">
             <div class="modal-content action-choice-modal" @click.stop>
                 <h4>What would you like to do?</h4>
-                <p class="action-choice-date">{{ actionChoiceContext.date }} {{ actionChoiceContext.machine ? '(' + actionChoiceContext.machine + ')' : '(All Machines)' }}</p>
+                <p class="action-choice-date">{{ fmtDate(actionChoiceContext.date) }} {{ actionChoiceContext.machine ? '(' + actionChoiceContext.machine + ')' : '(All Machines)' }}</p>
                 <div class="action-choice-buttons">
                     <button class="btn btn-primary action-choice-btn" @click="chooseUpdateShift">
                         <span class="action-icon">&#9200;</span>
@@ -719,7 +725,7 @@
                 <span class="tooltip-label">Process</span>
                 <span class="tooltip-value">{{ tooltip.data.process }}</span>
                 <span class="tooltip-label">Dates</span>
-                <span class="tooltip-value">{{ tooltip.data.start_date }} &rarr; {{ tooltip.data.end_date }}</span>
+                <span class="tooltip-value">{{ fmtDate(tooltip.data.start_date) }} &rarr; {{ fmtDate(tooltip.data.end_date) }}</span>
                 <span class="tooltip-label">Days</span>
                 <span class="tooltip-value">{{ tooltip.data.days }}</span>
                 <span class="tooltip-label">Quantity</span>
@@ -761,6 +767,7 @@ const orderData = ref(null);
 // Workload panel collapse
 const workloadCollapsed = ref(false);
 const isZoomedOut = ref(false);
+const applyZoom = ref(false);
 
 // Template refs for Frappe fields
 const customerFieldRef = ref(null);
@@ -872,6 +879,8 @@ endDate.value = nextMonth.toISOString().split('T')[0];
 const MIN_BATCH_SIZE = 1;
 const COL_WIDTH = 120;
 const COL_WIDTH_ZOOM = 48;
+const MACHINE_COL_WIDTH = 180;
+const MACHINE_COL_WIDTH_ZOOM = 120;
 const BAR_HEIGHT = 68;
 const BAR_HEIGHT_ZOOM = 22;
 const BAR_GAP = 4;
@@ -942,7 +951,7 @@ const dateRange = computed(() => {
 const colWidth = computed(() => isZoomedOut.value ? COL_WIDTH_ZOOM : COL_WIDTH);
 
 const ganttGridStyle = computed(() => ({
-    gridTemplateColumns: `${isZoomedOut.value ? 120 : 180}px repeat(${dateRange.value.length}, ${colWidth.value}px)`,
+    gridTemplateColumns: `${isZoomedOut.value ? MACHINE_COL_WIDTH_ZOOM : MACHINE_COL_WIDTH}px repeat(${dateRange.value.length}, ${colWidth.value}px)`,
 }));
 
 const selectedShiftsTotalMinutes = computed(() => {
@@ -1157,6 +1166,13 @@ function formatDayName(dateStr) {
 function formatDate(dateStr) {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function fmtDate(dateStr) {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
 }
 
 function getCalendarForDate(dateStr) {
@@ -5174,6 +5190,9 @@ function onKeyDown(e) {
 onMounted(async () => {
     await nextTick();
     initFrappeControls();
+    frappe.db.get_single_value('Albion Settings', 'apply_zoom').then(val => {
+        applyZoom.value = !!val;
+    });
     await loadShiftAllocations();
     loadAllShifts();
     loadAllAllocations();
@@ -6251,27 +6270,22 @@ defineExpose({
     text-overflow: ellipsis;
 }
 
-.gantt-grid-zoom .gantt-machine-cell {
-    padding: 4px 8px;
+.machine-cell-zoom {
+    padding: 4px 6px !important;
+    align-items: center;
+    width: 120px;
+    min-width: 120px;
+    cursor: default;
 }
 
-.gantt-grid-zoom .gantt-machine-cell .machine-name {
-    display: none;
-}
-
-.gantt-grid-zoom .gantt-machine-cell .machine-id {
-    font-size: 12px;
+.machine-id-zoom {
+    font-size: 11px;
     font-weight: 700;
-}
-
-.gantt-grid-zoom .gantt-machine-cell .machine-title {
+    color: #334155;
+    line-height: 1;
     white-space: nowrap;
     overflow: hidden;
-}
-
-.gantt-grid-zoom .gantt-machine-cell .machine-gg-badge {
-    font-size: 10px;
-    padding: 0 4px;
+    text-overflow: ellipsis;
 }
 
 .gantt-grid-zoom .gantt-date-cell {
@@ -6284,8 +6298,10 @@ defineExpose({
 }
 
 .gantt-grid-zoom .gantt-corner-cell {
-    padding: 4px 8px;
-    font-size: 11px;
+    padding: 4px 6px;
+    font-size: 10px;
+    width: 120px;
+    min-width: 120px;
 }
 
 /* ===== Modals ===== */
