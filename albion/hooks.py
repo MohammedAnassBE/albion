@@ -28,6 +28,10 @@ app_license = "mit"
 # app_include_css = "/assets/albion/css/albion.css"
 app_include_js = "albion.bundle.js"
 
+website_route_rules = [
+	{"from_route": "/web/<path:app_path>", "to_route": "web"},
+]
+
 # include js, css files in header of web template
 # web_include_css = "/assets/albion/css/albion.css"
 # web_include_js = "/assets/albion/js/albion.js"
