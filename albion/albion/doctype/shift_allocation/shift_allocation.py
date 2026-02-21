@@ -11,6 +11,9 @@ class ShiftAllocation(Document):
     def validate(self):
         self.validate_dates()
         self.validate_is_default_unique()
+        self.validate_machine_field()
+        self.validate_no_alterations_on_machine_calendar()
+        self.validate_machine_overlap()
         self.validate_alteration_dates()
         self.validate_shift_overlaps()
         self.calculate_total_duration()
@@ -30,6 +33,35 @@ class ShiftAllocation(Document):
                 frappe.throw(
                     _("Shift Allocation {0} is already set as default. Only one default calendar is allowed.").format(existing)
                 )
+
+    def validate_machine_field(self):
+        if self.is_default and self.machine:
+            frappe.throw(_("Default calendar cannot have a machine assigned. Remove the machine or uncheck Is Default."))
+
+    def validate_no_alterations_on_machine_calendar(self):
+        if self.machine and self.alterations:
+            frappe.throw(_("Machine-specific calendars cannot have alterations. Alterations belong on general calendars."))
+
+    def validate_machine_overlap(self):
+        if not self.machine or not self.start_date or not self.end_date:
+            return
+        overlap = frappe.db.get_value(
+            "Shift Allocation",
+            {
+                "machine": self.machine,
+                "start_date": ["<=", self.end_date],
+                "end_date": [">=", self.start_date],
+                "name": ["!=", self.name],
+                "is_default": 0
+            },
+            "name"
+        )
+        if overlap:
+            frappe.throw(
+                _("Shift Allocation {0} already covers this machine ({1}) in the same date range.").format(
+                    overlap, self.machine
+                )
+            )
 
     def validate_alteration_dates(self):
         start = getdate(self.start_date)

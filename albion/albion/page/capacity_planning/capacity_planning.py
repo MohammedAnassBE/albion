@@ -118,6 +118,7 @@ def _get_calendar_data(calendar_name):
         "start_date": str(doc.start_date),
         "end_date": str(doc.end_date),
         "is_default": doc.is_default,
+        "machine": doc.machine or None,
         "total_duration_minutes": doc.total_duration_minutes or 0,
         "shifts": shifts,
         "alterations": alterations,
@@ -131,34 +132,65 @@ def _get_calendar_data(calendar_name):
     }
 
 
-def _get_best_calendar_for_date(date):
-    """Find the best Shift Allocation for a date.
-    Priority: single-day calendar (start==end==date) > range calendar > default.
+def _get_best_calendar_for_date(date, machine=None):
+    """Find the best Shift Allocation for a date, optionally for a specific machine.
+    Priority:
+      1. Machine-specific single-day (if machine)
+      2. General single-day
+      3. Machine-specific range (if machine)
+      4. General range
+      5. Default
     Returns (calendar_name, source) where source is 'single', 'range', or 'default'.
     """
-    # 1. Single-day calendar exact match
-    single = frappe.db.get_value(
+    if machine:
+        # 1. Machine-specific single-day
+        machine_single = frappe.db.get_value(
+            "Shift Allocation",
+            {"start_date": date, "end_date": date, "is_default": 0, "machine": machine},
+            "name"
+        )
+        if machine_single:
+            return machine_single, "single"
+
+    # 2. General single-day (no machine)
+    general_single = frappe.db.get_value(
         "Shift Allocation",
-        {"start_date": date, "end_date": date, "is_default": 0},
+        {"start_date": date, "end_date": date, "is_default": 0, "machine": ["is", "not set"]},
         "name"
     )
-    if single:
-        return single, "single"
+    if general_single:
+        return general_single, "single"
 
-    # 2. Range calendar covering this date
-    range_cal = frappe.db.get_value(
+    if machine:
+        # 3. Machine-specific range
+        machine_range = frappe.db.get_value(
+            "Shift Allocation",
+            {
+                "start_date": ["<=", date],
+                "end_date": [">=", date],
+                "is_default": 0,
+                "machine": machine
+            },
+            "name"
+        )
+        if machine_range:
+            return machine_range, "range"
+
+    # 4. General range (no machine)
+    general_range = frappe.db.get_value(
         "Shift Allocation",
         {
             "start_date": ["<=", date],
             "end_date": [">=", date],
-            "is_default": 0
+            "is_default": 0,
+            "machine": ["is", "not set"]
         },
         "name"
     )
-    if range_cal:
-        return range_cal, "range"
+    if general_range:
+        return general_range, "range"
 
-    # 3. Default calendar
+    # 5. Default calendar
     default_name = frappe.db.get_value("Shift Allocation", {"is_default": 1}, "name")
     if default_name:
         return default_name, "default"
@@ -178,9 +210,10 @@ def get_all_shifts():
 
 
 @frappe.whitelist()
-def update_date_shift(date, shifts):
+def update_date_shift(date, shifts, machine=None):
     """Update the shifts for a specific date by creating/updating a single-day calendar.
     shifts: JSON list of Shift record names, e.g. ["Morning Shift", "Evening Shift"]
+    machine: optional Machine name for machine-specific calendar
     """
     import json
     if isinstance(shifts, str):
@@ -189,7 +222,11 @@ def update_date_shift(date, shifts):
     if not shifts:
         frappe.throw(_("Please select at least one shift"))
 
-    cal_name, source = _get_best_calendar_for_date(date)
+    # Normalize empty machine to None
+    if not machine:
+        machine = None
+
+    cal_name, source = _get_best_calendar_for_date(date, machine)
 
     # Build shift rows and compute total minutes
     shift_rows = []
@@ -203,51 +240,70 @@ def update_date_shift(date, shifts):
         })
         total_minutes += (shift_doc.duration_minutes or 0)
 
-    if source == "single":
-        # Single-day calendar exists — update its shifts
-        doc = frappe.get_doc("Shift Allocation", cal_name)
-        old_minutes = doc.total_duration_minutes or 0
-
-        doc.shifts = []
-        for row in shift_rows:
-            doc.append("shifts", row)
-        doc.total_duration_minutes = total_minutes
-        doc.save(ignore_permissions=True)
-
-        return {"old_minutes": old_minutes, "new_minutes": doc.total_duration_minutes}
+    # For old_minutes: resolve from the calendar this machine was previously using
+    if machine:
+        # What did this machine use before? Its own calendar or the general one?
+        old_cal_name, _ = _get_best_calendar_for_date(date, machine)
+        old_doc = frappe.get_doc("Shift Allocation", old_cal_name) if old_cal_name else None
+        old_minutes = old_doc.total_duration_minutes if old_doc else 0
     else:
-        # Create a new single-day calendar
+        old_minutes = 0  # will be set below per branch
+
+    if source == "single" and cal_name:
+        doc = frappe.get_doc("Shift Allocation", cal_name)
+        # Only update if this calendar matches the same machine context
+        is_same_machine = (doc.machine or None) == machine
+        if is_same_machine:
+            if not machine:
+                old_minutes = doc.total_duration_minutes or 0
+            doc.shifts = []
+            for row in shift_rows:
+                doc.append("shifts", row)
+            doc.total_duration_minutes = total_minutes
+            doc.save(ignore_permissions=True)
+            return {"old_minutes": old_minutes, "new_minutes": doc.total_duration_minutes}
+
+    # Create a new single-day calendar
+    # For general calendars, get source from general resolution
+    if machine:
+        source_doc = None
+        # Get the general calendar for working day flags
+        gen_cal_name, _ = _get_best_calendar_for_date(date, None)
+        if gen_cal_name:
+            source_doc = frappe.get_doc("Shift Allocation", gen_cal_name)
+    else:
         source_doc = frappe.get_doc("Shift Allocation", cal_name) if cal_name else None
-
-        new_cal = frappe.new_doc("Shift Allocation")
-        new_cal.start_date = date
-        new_cal.end_date = date
-        new_cal.is_default = 0
-
-        # Copy working day flags from source
-        if source_doc:
-            for day in ("sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"):
-                setattr(new_cal, day, getattr(source_doc, day, 0))
         old_minutes = source_doc.total_duration_minutes if source_doc else 0
 
-        for row in shift_rows:
-            new_cal.append("shifts", row)
-        new_cal.total_duration_minutes = total_minutes
+    new_cal = frappe.new_doc("Shift Allocation")
+    new_cal.start_date = date
+    new_cal.end_date = date
+    new_cal.is_default = 0
+    new_cal.machine = machine
 
-        # Copy alterations for this date from source calendar
-        if source_doc and source_doc.alterations:
-            for alt in source_doc.alterations:
-                if str(alt.date) == str(date):
-                    new_cal.append("alterations", {
-                        "date": alt.date,
-                        "alteration_type": alt.alteration_type,
-                        "minutes": alt.minutes,
-                        "machine": alt.machine,
-                        "reason": alt.reason
-                    })
+    # Copy working day flags from source
+    if source_doc:
+        for day in ("sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"):
+            setattr(new_cal, day, getattr(source_doc, day, 0))
 
-        new_cal.insert(ignore_permissions=True)
-        return {"old_minutes": old_minutes, "new_minutes": new_cal.total_duration_minutes}
+    for row in shift_rows:
+        new_cal.append("shifts", row)
+    new_cal.total_duration_minutes = total_minutes
+
+    # Copy alterations only for general calendars (machine-specific calendars have no alterations)
+    if not machine and source_doc and source_doc.alterations:
+        for alt in source_doc.alterations:
+            if str(alt.date) == str(date):
+                new_cal.append("alterations", {
+                    "date": alt.date,
+                    "alteration_type": alt.alteration_type,
+                    "minutes": alt.minutes,
+                    "machine": alt.machine,
+                    "reason": alt.reason
+                })
+
+    new_cal.insert(ignore_permissions=True)
+    return {"old_minutes": old_minutes, "new_minutes": new_cal.total_duration_minutes}
 
 
 @frappe.whitelist()
