@@ -1,19 +1,17 @@
 <template>
-	<Textarea
-		:modelValue="modelValue"
+	<textarea
+		class="field-input"
+		:value="modelValue"
 		:placeholder="placeholder"
 		:disabled="disabled"
 		:readonly="readonly"
 		rows="6"
-		fluid
-		@update:modelValue="$emit('update:modelValue', $event)"
+		@input="$emit('update:modelValue', $event.target.value)"
 		@blur="$emit('blur', $event)"
 	/>
 </template>
 
 <script setup>
-import Textarea from "primevue/textarea"
-
 defineProps({
 	modelValue: { type: [String, null], default: "" },
 	placeholder: { type: String, default: "" },

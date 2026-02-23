@@ -25,7 +25,7 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/albion/css/albion.css"
+app_include_css = "/assets/albion/css/albion.css"
 app_include_js = "albion.bundle.js"
 
 website_route_rules = [

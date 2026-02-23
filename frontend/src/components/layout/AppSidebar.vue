@@ -6,11 +6,23 @@
 				<span v-if="!collapsed" class="logo-text">ALBION</span>
 			</div>
 			<button class="collapse-btn" @click="$emit('toggle')">
-				<i :class="collapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
+				<AppIcon :name="collapsed ? 'chevron-right' : 'chevron-left'" :size="16" />
 			</button>
 		</div>
 
 		<nav class="sidebar-nav">
+			<!-- Tools -->
+			<div class="nav-group">
+				<router-link to="/dashboard" class="nav-item" active-class="active">
+					<AppIcon name="grid" :size="16" />
+					<span v-if="!collapsed">Dashboard</span>
+				</router-link>
+				<router-link to="/capacity-planning" class="nav-item" active-class="active">
+					<AppIcon name="bar-chart" :size="16" />
+					<span v-if="!collapsed">Capacity Planning</span>
+				</router-link>
+			</div>
+
 			<!-- DocType groups from static registry -->
 			<div v-for="group in sidebarGroups" :key="group.group" class="nav-group">
 				<span v-if="!collapsed" class="nav-group-label">{{ group.group }}</span>
@@ -21,35 +33,22 @@
 					class="nav-item"
 					active-class="active"
 				>
-					<i :class="item.icon" />
+					<AppIcon :name="item.icon" :size="16" />
 					<span v-if="!collapsed">{{ item.label }}</span>
-				</router-link>
-			</div>
-
-			<!-- Tools (hardcoded) -->
-			<div class="nav-group">
-				<span v-if="!collapsed" class="nav-group-label">Tools</span>
-				<router-link to="/dashboard" class="nav-item" active-class="active">
-					<i class="pi pi-th-large" />
-					<span v-if="!collapsed">Dashboard</span>
-				</router-link>
-				<router-link to="/capacity-planning" class="nav-item" active-class="active">
-					<i class="pi pi-chart-bar" />
-					<span v-if="!collapsed">Capacity Planning</span>
 				</router-link>
 			</div>
 		</nav>
 
 		<div class="sidebar-footer">
 			<a href="/app" class="nav-item back-link">
-				<i class="pi pi-arrow-left" />
+				<AppIcon name="arrow-left" :size="16" />
 				<span v-if="!collapsed">Back to Desk</span>
 			</a>
 			<div class="user-row" v-if="!collapsed || true">
 				<div class="user-avatar">{{ initials }}</div>
 				<div v-if="!collapsed" class="user-meta">
 					<span class="user-name-text">{{ fullName }}</span>
-					<span class="user-role">Full access</span>
+					<span class="user-role">{{ accessLabel }}</span>
 				</div>
 			</div>
 		</div>
@@ -59,7 +58,9 @@
 <script setup>
 import { computed } from "vue"
 import { useAuth } from "@/composables/useAuth"
+import { usePermissions } from "@/composables/usePermissions"
 import { getSidebarGroups } from "@/config/doctypes"
+import AppIcon from "@/components/shared/AppIcon.vue"
 
 defineProps({
 	collapsed: Boolean,
@@ -68,7 +69,17 @@ defineProps({
 defineEmits(["toggle"])
 
 const { fullName } = useAuth()
-const sidebarGroups = getSidebarGroups()
+const { canRead, accessLabel } = usePermissions()
+const _allGroups = getSidebarGroups()
+
+const sidebarGroups = computed(() =>
+	_allGroups
+		.map((g) => ({
+			...g,
+			items: g.items.filter((item) => canRead(item.doctype)),
+		}))
+		.filter((g) => g.items.length > 0)
+)
 
 const initials = computed(() => {
 	if (!fullName.value) return "U"
@@ -194,14 +205,6 @@ const initials = computed(() => {
 	white-space: nowrap;
 }
 
-.nav-item i {
-	font-size: 16px;
-	width: 20px;
-	text-align: center;
-	flex-shrink: 0;
-	color: inherit;
-}
-
 .nav-item:hover {
 	background: #F8FAFC;
 	color: #334155;
@@ -273,10 +276,6 @@ const initials = computed(() => {
 .collapsed .nav-item {
 	justify-content: center;
 	padding: 10px;
-}
-
-.collapsed .nav-item i {
-	margin: 0;
 }
 
 .collapsed .user-row {

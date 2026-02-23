@@ -1,22 +1,21 @@
 <template>
-	<AutoComplete
-		v-model="selected"
+	<SearchInput
+		:modelValue="selected"
 		:suggestions="suggestions"
-		:loading="searching"
 		optionLabel="_label"
 		:placeholder="placeholder"
 		:disabled="disabled"
 		forceSelection
+		:loading="searching"
 		@complete="search"
 		@item-select="onSelect"
 		@clear="onClear"
-		:inputClass="inputClass"
 	/>
 </template>
 
 <script setup>
 import { ref, watch } from "vue"
-import AutoComplete from "primevue/autocomplete"
+import SearchInput from "./SearchInput.vue"
 import { searchLink } from "@/api/client"
 
 const props = defineProps({

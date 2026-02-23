@@ -12,6 +12,23 @@ class Order(Document):
 	def before_submit(self):
 		self.validate_order_details()
 
+	def before_cancel(self):
+		self.validate_no_machine_operations()
+
+	def validate_no_machine_operations(self):
+		operations = frappe.get_all(
+			"Machine Operation",
+			filters={"order": self.name},
+			fields=["name", "machine", "process_name", "operation_date"],
+			limit=5,
+		)
+		if operations:
+			op_list = ", ".join([op.name for op in operations])
+			frappe.throw(
+				f"Cannot cancel this Order because it has Machine Operation allocations: <b>{op_list}</b>."
+				" Please remove the allocations from Capacity Planning first."
+			)
+
 	def validate_items(self):
 		if not self.items:
 			frappe.throw("Please add at least one Item before saving.")

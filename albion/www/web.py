@@ -1,3 +1,4 @@
+import json
 import os
 import glob
 
@@ -46,6 +47,7 @@ def _resolve_frontend_assets():
 def get_boot():
 	return {
 		"site_name": frappe.local.site,
+		"user": json.loads(frappe.as_json(frappe.get_user().load_user())),
 	}
 
 

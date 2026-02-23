@@ -1,5 +1,5 @@
 import { ref, readonly } from 'vue'
-import { getDoc, createDoc, updateDoc, deleteDoc, submitDoc, cancelDoc } from '@/api/client'
+import { getDoc, createDoc, updateDoc, deleteDoc, submitDoc, cancelDoc, amendDoc } from '@/api/client'
 
 export function useDoc(doctype) {
   const doc = ref(null)
@@ -84,6 +84,20 @@ export function useDoc(doctype) {
     }
   }
 
+  async function amend(name = null) {
+    saving.value = true
+    error.value = null
+    try {
+      const result = await amendDoc(doctype, name || doc.value?.name)
+      return result
+    } catch (e) {
+      error.value = e.message || 'Failed to amend'
+      throw e
+    } finally {
+      saving.value = false
+    }
+  }
+
   function reset() {
     doc.value = null
     error.value = null
@@ -99,6 +113,7 @@ export function useDoc(doctype) {
     remove,
     submit,
     cancel,
+    amend,
     reset
   }
 }

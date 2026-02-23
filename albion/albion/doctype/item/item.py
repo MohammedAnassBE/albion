@@ -6,8 +6,14 @@ from frappe.model.document import Document
 
 class Item(Document):
     def validate(self):
+        self.validate_process_minutes()
         if self.size_range:
             self.fetch_sizes_from_range()
+
+    def validate_process_minutes(self):
+        for row in self.processes or []:
+            if not row.minutes:
+                frappe.throw(f"Row {row.idx}: Minutes cannot be 0 for Process <b>{row.process_name}</b>.")
 
     def fetch_sizes_from_range(self):
         if self.size_range:

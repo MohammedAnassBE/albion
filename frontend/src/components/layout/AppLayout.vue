@@ -3,7 +3,7 @@
 		<AppSidebar :collapsed="sidebarCollapsed" @toggle="sidebarCollapsed = !sidebarCollapsed" />
 		<div :class="['app-main', { 'sidebar-collapsed': sidebarCollapsed }]">
 			<AppTopbar />
-			<main class="app-content">
+			<main :class="['app-content', { 'no-pad': $route.path === '/capacity-planning' }]">
 				<router-view />
 			</main>
 		</div>
@@ -40,7 +40,7 @@ onMounted(() => {
 	transition: margin-left var(--transition-normal);
 	display: flex;
 	flex-direction: column;
-	min-height: 100vh;
+	height: 100vh;
 }
 
 .app-main.sidebar-collapsed {
@@ -51,5 +51,10 @@ onMounted(() => {
 .app-content {
 	flex: 1;
 	padding: var(--space-lg);
+	overflow-y: auto;
+}
+
+.app-content.no-pad {
+	padding: 0;
 }
 </style>

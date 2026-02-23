@@ -1,10 +1,10 @@
 <template>
-	<Toast position="top-right" />
-	<ConfirmDialog />
+	<BaseToast />
+	<BaseConfirm />
 	<router-view />
 </template>
 
 <script setup>
-import Toast from "primevue/toast"
-import ConfirmDialog from "primevue/confirmdialog"
+import BaseToast from "@/components/shared/BaseToast.vue"
+import BaseConfirm from "@/components/shared/BaseConfirm.vue"
 </script>

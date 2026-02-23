@@ -3,19 +3,19 @@
 		<PageHeader :title="registry?.label || docRoute">
 			<template #actions>
 				<span class="search-box">
-					<i class="pi pi-search" />
-					<InputText
+					<AppIcon name="search" :size="14" />
+					<input
+						type="text"
 						v-model="searchQuery"
 						placeholder="Search..."
-						size="small"
+						class="search-input-field"
 						@keyup.enter="onSearch"
 					/>
 				</span>
-				<Button
-					label="New"
-					icon="pi pi-plus"
-					@click="$router.push(`/${docRoute}/new`)"
-				/>
+				<button v-if="permCanCreate(doctype)" class="btn btn-primary" @click="$router.push(`/${docRoute}/new`)">
+					<AppIcon name="plus" :size="14" />
+					New
+				</button>
 			</template>
 		</PageHeader>
 
@@ -32,98 +32,113 @@
 			</button>
 		</div>
 
+		<!-- Advanced Filters -->
+		<FilterBar
+			v-if="fieldMeta"
+			:key="docRoute"
+			:fields="filterableFields"
+			@apply="onFiltersApply"
+		/>
+
 		<!-- Error Banner -->
 		<div v-if="errorMsg" class="list-error">
-			<i class="pi pi-exclamation-triangle" />
+			<AppIcon name="alert-triangle" :size="16" />
 			<span>{{ errorMsg }}</span>
-			<Button label="Retry" text size="small" @click="listState?.refresh()" />
+			<button class="btn btn-text btn-sm" @click="listState?.refresh()">Retry</button>
 		</div>
 
 		<!-- Data Table -->
 		<div class="list-card">
-			<DataTable
-				:value="rows"
-				:loading="loading"
-				:rowHover="true"
-				size="small"
-				dataKey="name"
-				@row-click="onRowClick"
-				class="clickable-table"
-				stripedRows
-			>
-				<!-- Name column always first -->
-				<Column field="name" header="Name" sortable>
-					<template #body="{ data }">
-						<span class="row-name">{{ data.name }}</span>
-					</template>
-				</Column>
-
-				<!-- Dynamic columns from config/meta -->
-				<Column
-					v-for="col in listColumns"
-					:key="col.fieldname"
-					:field="col.fieldname"
-					:header="col.label"
-					sortable
-				>
-					<template #body="{ data }">
-						<StatusBadge
-							v-if="col.fieldname === 'docstatus'"
-							:docstatus="data.docstatus"
-						/>
-						<span v-else-if="col.fieldtype === 'Date'">
-							{{ data[col.fieldname] || '\u2014' }}
-						</span>
-						<i
-							v-else-if="col.fieldtype === 'Check'"
-							:class="data[col.fieldname] ? 'pi pi-check-circle check-on' : 'pi pi-circle check-off'"
-						/>
-						<span v-else>{{ data[col.fieldname] ?? '' }}</span>
-					</template>
-				</Column>
-
-				<!-- Docstatus column for submittable (if not already in list columns) -->
-				<Column
-					v-if="isSubmittable && !hasDocstatusColumn"
-					field="docstatus"
-					header="Status"
-					style="width: 120px"
-				>
-					<template #body="{ data }">
-						<StatusBadge :docstatus="data.docstatus" />
-					</template>
-				</Column>
-
-				<template #empty>
-					<div class="table-empty">
-						<i class="pi pi-inbox" />
-						<p>No records found</p>
-					</div>
-				</template>
-			</DataTable>
+			<div v-if="loading" class="table-loading">Loading...</div>
+			<div class="table-wrap">
+				<table class="list-table">
+					<thead>
+						<tr>
+							<th class="sortable-th" @click="toggleSort('name')">
+								Name
+								<span class="sort-arrows">
+									<span :class="{ active: sortField === 'name' && sortDir === 'asc' }">&#9650;</span>
+									<span :class="{ active: sortField === 'name' && sortDir === 'desc' }">&#9660;</span>
+								</span>
+							</th>
+							<th
+								v-for="col in listColumns"
+								:key="col.fieldname"
+								class="sortable-th"
+								@click="toggleSort(col.fieldname)"
+							>
+								{{ col.label }}
+								<span class="sort-arrows">
+									<span :class="{ active: sortField === col.fieldname && sortDir === 'asc' }">&#9650;</span>
+									<span :class="{ active: sortField === col.fieldname && sortDir === 'desc' }">&#9660;</span>
+								</span>
+							</th>
+							<th v-if="isSubmittable && !hasDocstatusColumn" style="width: 120px">Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr
+							v-for="row in rows"
+							:key="row.name"
+							class="clickable-row"
+							@click="onRowClick(row)"
+						>
+							<td><span class="row-name">{{ row.name }}</span></td>
+							<td v-for="col in listColumns" :key="col.fieldname">
+								<StatusBadge
+									v-if="col.fieldname === 'docstatus'"
+									:docstatus="row.docstatus"
+								/>
+								<span v-else-if="col.fieldtype === 'Date'">
+									{{ row[col.fieldname] || '\u2014' }}
+								</span>
+								<template v-else-if="col.fieldtype === 'Check'">
+									<AppIcon
+										v-if="row[col.fieldname]"
+										name="check-circle"
+										:size="14"
+										class="check-on"
+									/>
+									<AppIcon v-else name="circle" :size="14" class="check-off" />
+								</template>
+								<span v-else>{{ row[col.fieldname] ?? '' }}</span>
+							</td>
+							<td v-if="isSubmittable && !hasDocstatusColumn">
+								<StatusBadge :docstatus="row.docstatus" />
+							</td>
+						</tr>
+						<tr v-if="rows.length === 0 && !loading">
+							<td :colspan="1 + listColumns.length + (isSubmittable && !hasDocstatusColumn ? 1 : 0)" class="table-empty-cell">
+								<div class="table-empty">
+									<AppIcon name="inbox" :size="28" style="opacity: 0.4" />
+									<p>No records found</p>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 
 			<!-- Pagination -->
 			<div v-if="totalPages > 1" class="pagination">
-				<Button
-					icon="pi pi-chevron-left"
-					severity="secondary"
-					text
-					size="small"
+				<button
+					class="btn btn-secondary btn-text btn-icon"
 					:disabled="page === 1"
 					@click="goToPage(page - 1)"
-				/>
+				>
+					<AppIcon name="chevron-left" :size="14" />
+				</button>
 				<span class="pagination-info">
 					Page {{ page }} of {{ totalPages }}
 					<small>({{ totalCount }} total)</small>
 				</span>
-				<Button
-					icon="pi pi-chevron-right"
-					severity="secondary"
-					text
-					size="small"
+				<button
+					class="btn btn-secondary btn-text btn-icon"
 					:disabled="page >= totalPages"
 					@click="goToPage(page + 1)"
-				/>
+				>
+					<AppIcon name="chevron-right" :size="14" />
+				</button>
 			</div>
 		</div>
 	</div>
@@ -132,14 +147,14 @@
 <script setup>
 import { computed, ref, shallowRef, watch } from "vue"
 import { useRouter } from "vue-router"
-import DataTable from "primevue/datatable"
-import Column from "primevue/column"
-import Button from "primevue/button"
-import InputText from "primevue/inputtext"
 import PageHeader from "@/components/shared/PageHeader.vue"
 import StatusBadge from "@/components/shared/StatusBadge.vue"
+import AppIcon from "@/components/shared/AppIcon.vue"
+import FilterBar from "@/components/shared/FilterBar.vue"
+import { NON_FILTERABLE_FIELDTYPES } from "@/utils/filterOperators"
 import { useDocList } from "@/composables/useDocList"
 import { useFrontendConfig } from "@/composables/useFrontendConfig"
+import { usePermissions } from "@/composables/usePermissions"
 import { getRegistryByRoute } from "@/config/doctypes"
 
 const props = defineProps({
@@ -148,6 +163,7 @@ const props = defineProps({
 
 const router = useRouter()
 const { getFieldsForDoctype } = useFrontendConfig()
+const { canCreate: permCanCreate } = usePermissions()
 
 // Instant lookup — no async needed
 const registry = computed(() => getRegistryByRoute(props.docRoute))
@@ -173,6 +189,28 @@ const hasDocstatusColumn = computed(() =>
 	listColumns.value.some((c) => c.fieldname === "docstatus")
 )
 
+const filterableFields = computed(() => {
+	if (!fieldMeta.value?.fields) return []
+	return fieldMeta.value.fields.filter(
+		(f) =>
+			!NON_FILTERABLE_FIELDTYPES.has(f.fieldtype) &&
+			!f.hidden &&
+			f.fieldname !== 'name'
+	)
+})
+
+const SEARCHABLE_TYPES = new Set(['Data', 'Small Text', 'Text', 'Long Text', 'Link', 'Select'])
+
+const searchableFields = computed(() => {
+	const fields = ['name']
+	for (const col of listColumns.value) {
+		if (SEARCHABLE_TYPES.has(col.fieldtype) && !fields.includes(col.fieldname)) {
+			fields.push(col.fieldname)
+		}
+	}
+	return fields
+})
+
 // Fields to fetch from the API
 const fetchFields = computed(() => {
 	const fields = ["name"]
@@ -197,22 +235,30 @@ const statusTabs = [
 const activeTab = ref("all")
 const searchQuery = ref("")
 
+// Sort state
+const sortField = ref("modified")
+const sortDir = ref("desc")
+
 const listState = shallowRef(null)
 
 async function initList() {
 	if (!doctype.value) return
 	activeTab.value = "all"
 	searchQuery.value = ""
+	sortField.value = "modified"
+	sortDir.value = "desc"
 
 	// Load field metadata first
 	await loadFieldMeta()
 
-	listState.value = useDocList(doctype.value, {
+	const newList = useDocList(doctype.value, {
 		fields: fetchFields.value,
 		orderBy: "modified desc",
 		pageSize: 20,
 		immediate: true,
 	})
+	newList.clearOrFilters()
+	listState.value = newList
 }
 
 // Re-init when docRoute changes
@@ -245,6 +291,18 @@ const totalPages = computed(() => {
 	return Math.max(1, Math.ceil(totalCount.value / ps))
 })
 
+function toggleSort(fieldname) {
+	if (sortField.value === fieldname) {
+		sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+	} else {
+		sortField.value = fieldname
+		sortDir.value = 'desc'
+	}
+	if (listState.value) {
+		listState.value.setOrderBy(`${sortField.value} ${sortDir.value}`)
+	}
+}
+
 function onTabChange(value) {
 	activeTab.value = value
 	if (!listState.value) return
@@ -256,12 +314,26 @@ function onTabChange(value) {
 	listState.value.fetch()
 }
 
+function onFiltersApply(advancedFilters) {
+	if (!listState.value) return
+	// Clear all non-managed keys, then apply new advanced filters
+	listState.value.clearFilters(['docstatus', 'name'])
+	for (const [key, val] of Object.entries(advancedFilters)) {
+		listState.value.setFilter(key, val)
+	}
+	listState.value.fetch()
+}
+
 function onSearch() {
 	if (!listState.value) return
-	if (searchQuery.value.trim()) {
-		listState.value.setFilter("name", ["like", `%${searchQuery.value.trim()}%`])
-	} else {
+	const q = searchQuery.value.trim()
+	if (q) {
 		listState.value.setFilter("name", null)
+		listState.value.setOrFilters(
+			searchableFields.value.map(f => [f, 'like', `%${q}%`])
+		)
+	} else {
+		listState.value.setOrFilters(null)
 	}
 	listState.value.fetch()
 }
@@ -270,10 +342,9 @@ function goToPage(p) {
 	if (listState.value) listState.value.setPage(p)
 }
 
-function onRowClick(event) {
-	const name = event.data?.name
-	if (name) {
-		router.push(`/${props.docRoute}/${encodeURIComponent(name)}`)
+function onRowClick(row) {
+	if (row?.name) {
+		router.push(`/${props.docRoute}/${encodeURIComponent(row.name)}`)
 	}
 }
 </script>
@@ -281,7 +352,6 @@ function onRowClick(event) {
 <style scoped>
 .dynamic-list-page {
 	padding: var(--space-lg);
-	max-width: 1100px;
 }
 
 .search-box {
@@ -294,16 +364,23 @@ function onRowClick(event) {
 	padding: 0 var(--space-sm);
 }
 
-.search-box i {
+.search-box .app-icon {
 	color: var(--color-text-muted);
-	font-size: 14px;
 }
 
-.search-box :deep(.p-inputtext) {
+.search-input-field {
 	border: none;
 	background: none;
-	box-shadow: none;
-	padding-left: 0;
+	outline: none;
+	font-size: 13px;
+	color: var(--color-text);
+	padding: 7px 4px;
+	width: 140px;
+	font-family: inherit;
+}
+
+.search-input-field::placeholder {
+	color: var(--color-text-muted);
 }
 
 /* ── Filter Tabs ──────────────────────────────────────────── */
@@ -347,24 +424,101 @@ function onRowClick(event) {
 	overflow: hidden;
 }
 
+.table-wrap {
+	overflow-x: auto;
+}
+
+.table-loading {
+	padding: var(--space-md);
+	text-align: center;
+	font-size: 13px;
+	color: var(--color-text-muted);
+}
+
+.list-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.list-table thead th {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: var(--color-text-secondary);
+	padding: 6px 14px;
+	text-align: left;
+	background: var(--color-surface);
+	border-bottom: 1px solid var(--color-border);
+	white-space: nowrap;
+}
+
+.list-table tbody td {
+	padding: 6px 14px;
+	font-size: 13px;
+	border-bottom: 1px solid var(--color-bg);
+}
+
+.list-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.clickable-row {
+	cursor: pointer;
+	transition: background var(--transition-fast);
+}
+
+.clickable-row:hover {
+	background: var(--color-surface-hover);
+}
+
 .row-name {
 	font-weight: 500;
 	font-size: 0.8125rem;
 	color: var(--color-primary);
 }
 
-.clickable-table :deep(.p-datatable-tbody > tr) {
-	cursor: pointer;
-}
-
 .check-on {
 	color: #059669;
-	font-size: 14px;
 }
 
 .check-off {
 	color: #CBD5E1;
-	font-size: 14px;
+}
+
+.table-empty-cell {
+	padding: 0 !important;
+	border: none !important;
+}
+
+/* ── Sortable Column Headers ─────────────────────────────── */
+.sortable-th {
+	cursor: pointer;
+	user-select: none;
+}
+
+.sortable-th:hover {
+	color: var(--color-text);
+}
+
+.sort-arrows {
+	display: inline-flex;
+	flex-direction: column;
+	vertical-align: middle;
+	margin-left: 4px;
+	line-height: 1;
+	gap: 0;
+}
+
+.sort-arrows span {
+	font-size: 7px;
+	line-height: 7px;
+	color: var(--color-border-strong, #cbd5e1);
+	transition: color var(--transition-fast);
+}
+
+.sort-arrows span.active {
+	color: var(--color-primary);
 }
 
 /* ── Pagination ───────────────────────────────────────────── */
@@ -401,8 +555,7 @@ function onRowClick(event) {
 	font-size: 0.8125rem;
 }
 
-.list-error i {
-	font-size: 16px;
+.list-error .app-icon {
 	color: #dc2626;
 	flex-shrink: 0;
 }
@@ -419,11 +572,6 @@ function onRowClick(event) {
 	gap: var(--space-sm);
 	padding: var(--space-xl) 0;
 	color: var(--color-text-muted);
-}
-
-.table-empty i {
-	font-size: 28px;
-	opacity: 0.4;
 }
 
 .table-empty p {

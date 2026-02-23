@@ -1,23 +1,15 @@
-import { useToast as usePrimeToast } from 'primevue/usetoast'
+import { inject } from 'vue'
 
 export function useAppToast() {
-  const toast = usePrimeToast()
-
-  function success(summary, detail = '') {
-    toast.add({ severity: 'success', summary, detail, life: 3000 })
+  const toast = inject('toast')
+  if (!toast) {
+    console.warn('useAppToast: no toast provider found. Ensure BaseToast is in App.vue.')
+    return {
+      success() {},
+      error() {},
+      warn() {},
+      info() {},
+    }
   }
-
-  function error(summary, detail = '') {
-    toast.add({ severity: 'error', summary, detail, life: 5000 })
-  }
-
-  function warn(summary, detail = '') {
-    toast.add({ severity: 'warn', summary, detail, life: 4000 })
-  }
-
-  function info(summary, detail = '') {
-    toast.add({ severity: 'info', summary, detail, life: 3000 })
-  }
-
-  return { success, error, warn, info }
+  return toast
 }

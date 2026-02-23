@@ -1323,6 +1323,22 @@ function isOffDay(dateStr) {
     if (!cal) return false;
     const dayIndex = new Date(dateStr).getDay(); // 0=Sun..6=Sat
     const dayFields = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    if (!cal[dayFields[dayIndex]]) {
+        // Check if a single-day general calendar was explicitly created for this date
+        const hasExplicitCal = shiftAllocations.value.some(
+            sa => sa.start_date === dateStr && sa.end_date === dateStr && !sa.machine
+        );
+        if (hasExplicitCal) return false;
+        return true;
+    }
+    return false;
+}
+
+function isDefaultWeekdayOff(dateStr) {
+    const cal = defaultAllocation.value;
+    if (!cal) return false;
+    const dayIndex = new Date(dateStr).getDay();
+    const dayFields = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     return !cal[dayFields[dayIndex]];
 }
 
@@ -1483,7 +1499,7 @@ function isNextDay(dateA, dateB) {
     let cursor = fmt(new Date(y, m - 1, d + 1));
     // Skip over off days between dateA and dateB
     while (cursor < dateB) {
-        if (!isOffDay(cursor)) return false;
+        if (!isOffDay(cursor) && !isDefaultWeekdayOff(cursor)) return false;
         const [cy, cm, cd] = cursor.split('-').map(Number);
         cursor = fmt(new Date(cy, cm - 1, cd + 1));
     }
@@ -2854,10 +2870,11 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
     for (const mId of affectedMachines) {
         const cellAllocs = getAllocations(mId, dateStr);
         if (cellAllocs.length === 0) {
-            // Off-day with new overtime: pull from subsequent groups
-            // Only pull if the date is a genuine off-day (0 base shift minutes),
-            // not just a working day where this machine has no allocations.
-            if (alterationType === 'Add' && getShiftMinutes(dateStr, mId) === 0 && getEffectiveMinutes(dateStr, mId) > 0) {
+            // Off-day with new capacity: pull from subsequent groups
+            // Only pull if the date is a genuine off-day (0 base shift minutes or
+            // naturally off weekday per default calendar), not just a working day
+            // where this machine has no allocations.
+            if (alterationType === 'Add' && (getShiftMinutes(dateStr, mId) === 0 || isDefaultWeekdayOff(dateStr)) && getEffectiveMinutes(dateStr, mId) > 0) {
                 let searchDate = getNextDate(dateStr);
                 let refAlloc = null;
                 while (searchDate && !refAlloc) {
@@ -5254,6 +5271,10 @@ async function confirmShiftUpdate() {
                 autoReflowAfterAlteration(form.date, form.machine || null, 'Add', delta);
             } else if (delta < 0) {
                 autoReflowAfterAlteration(form.date, form.machine || null, 'Reduce', Math.abs(delta));
+            } else if (isDefaultWeekdayOff(form.date) && (result.new_minutes || 0) > 0) {
+                // Off-day: API reports same old/new (both from calendar total_duration_minutes)
+                // but effective old capacity was 0. Force pull-back.
+                autoReflowAfterAlteration(form.date, form.machine || null, 'Add', result.new_minutes);
             }
         }
     } catch (e) {

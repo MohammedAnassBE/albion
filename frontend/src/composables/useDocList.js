@@ -16,6 +16,8 @@ export function useDocList(doctype, options = {}) {
   const error = ref(null)
   const page = ref(1)
   const filters = reactive({ ...defaultFilters })
+  const orFilters = ref(null)
+  const currentOrderBy = ref(orderBy)
 
   async function fetch() {
     loading.value = true
@@ -24,16 +26,17 @@ export function useDocList(doctype, options = {}) {
       const params = {
         fields,
         filters: { ...filters },
-        order_by: orderBy,
+        order_by: currentOrderBy.value,
         limit_start: (page.value - 1) * pageSize,
         limit_page_length: pageSize
       }
+      if (orFilters.value) params.or_filters = orFilters.value
       const listResult = await getList(doctype, params)
       data.value = listResult.data || []
       totalCount.value = listResult.total_count ?? 0
       // Count separately — don't let it break data fetch
       try {
-        totalCount.value = await getCount(doctype, { ...filters })
+        totalCount.value = await getCount(doctype, { ...filters }, orFilters.value)
       } catch (_) { /* pagination degrades gracefully */ }
     } catch (e) {
       error.value = e.message || 'Failed to fetch'
@@ -51,8 +54,35 @@ export function useDocList(doctype, options = {}) {
     page.value = 1
   }
 
+  function removeFilter(key) {
+    delete filters[key]
+    page.value = 1
+  }
+
+  function clearFilters(preserveKeys = []) {
+    for (const key of Object.keys(filters)) {
+      if (!preserveKeys.includes(key)) delete filters[key]
+    }
+    page.value = 1
+  }
+
+  function setOrFilters(val) {
+    orFilters.value = val
+    page.value = 1
+  }
+
+  function clearOrFilters() {
+    orFilters.value = null
+  }
+
   function setPage(p) {
     page.value = p
+    fetch()
+  }
+
+  function setOrderBy(val) {
+    currentOrderBy.value = val
+    page.value = 1
     fetch()
   }
 
@@ -72,9 +102,16 @@ export function useDocList(doctype, options = {}) {
     page,
     pageSize,
     filters,
+    orFilters,
+    currentOrderBy,
     fetch,
     setFilter,
+    removeFilter,
+    clearFilters,
+    setOrFilters,
+    clearOrFilters,
     setPage,
+    setOrderBy,
     refresh
   }
 }

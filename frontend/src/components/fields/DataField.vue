@@ -1,18 +1,17 @@
 <template>
-	<InputText
-		:modelValue="modelValue"
+	<input
+		type="text"
+		class="field-input"
+		:value="modelValue"
 		:placeholder="placeholder"
 		:disabled="disabled"
 		:readonly="readonly"
-		fluid
-		@update:modelValue="$emit('update:modelValue', $event)"
+		@input="$emit('update:modelValue', $event.target.value)"
 		@blur="$emit('blur', $event)"
 	/>
 </template>
 
 <script setup>
-import InputText from "primevue/inputtext"
-
 defineProps({
 	modelValue: { type: [String, null], default: "" },
 	placeholder: { type: String, default: "" },

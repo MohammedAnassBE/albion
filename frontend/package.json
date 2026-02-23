@@ -8,10 +8,7 @@
 		"build": "vite build --base=/assets/albion/frontend/"
 	},
 	"dependencies": {
-		"@primevue/themes": "^4.5.4",
 		"@vueuse/core": "^14.2.1",
-		"primeicons": "^7.0.0",
-		"primevue": "^4.5.4",
 		"vue": "^3.4.0",
 		"vue-router": "^4.3.0"
 	},

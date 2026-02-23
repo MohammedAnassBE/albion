@@ -45,7 +45,19 @@ async function request(url, options = {}) {
 
   if (response.status === 403) {
     const body = await response.json().catch(() => ({}))
-    throw new Error(body._server_messages || body.message || 'Permission denied')
+    let msg = 'Permission denied'
+    if (body._server_messages) {
+      try {
+        msg = JSON.parse(body._server_messages).map((m) => {
+          try { return JSON.parse(m).message || m } catch { return m }
+        }).join('\n')
+      } catch { /* keep default */ }
+    } else if (body.message) {
+      msg = body.message
+    }
+    // Strip HTML tags for clean display
+    msg = msg.replace(/<[^>]*>/g, '')
+    throw new Error(msg)
   }
 
   if (response.status === 404) {
@@ -91,10 +103,11 @@ async function request(url, options = {}) {
  * Fetch a list of documents.
  * @returns {{ data: object[], total_count: number }}
  */
-export async function getList(doctype, { fields, filters, order_by, limit_start, limit_page_length } = {}) {
+export async function getList(doctype, { fields, filters, or_filters, order_by, limit_start, limit_page_length } = {}) {
   const params = {}
   if (fields) params.fields = fields
   if (filters) params.filters = filters
+  if (or_filters) params.or_filters = or_filters
   if (order_by) params.order_by = order_by
   if (limit_start !== undefined) params.limit_start = limit_start
   if (limit_page_length !== undefined) params.limit_page_length = limit_page_length
@@ -172,8 +185,10 @@ export async function callMethod(method, args = {}) {
 /**
  * Get the count of documents matching filters.
  */
-export async function getCount(doctype, filters = {}) {
-  const result = await callMethod('frappe.client.get_count', { doctype, filters })
+export async function getCount(doctype, filters = {}, or_filters = null) {
+  const args = { doctype, filters }
+  if (or_filters) args.or_filters = or_filters
+  const result = await callMethod('frappe.client.get_count', args)
   return result
 }
 
@@ -217,8 +232,34 @@ export async function cancelDoc(doctype, name) {
 }
 
 /**
- * Amend a cancelled document (creates a new amended version).
+ * Amend a cancelled document (creates a new amended copy as draft).
+ * Fetches the cancelled doc, strips system fields, sets amended_from, and creates a new doc.
  */
 export async function amendDoc(doctype, name) {
-  return callMethod('frappe.client.amend', { doctype, name })
+  const orig = await getDoc(doctype, name)
+  const systemFields = new Set([
+    'name', 'creation', 'modified', 'modified_by', 'owner', 'docstatus',
+    '_user_tags', '_comments', '_assign', '_liked_by',
+  ])
+  const childSystemFields = new Set([
+    'name', 'creation', 'modified', 'modified_by', 'owner', 'docstatus',
+    'parent', 'parentfield', 'parenttype',
+  ])
+  const newDoc = {}
+  for (const [key, value] of Object.entries(orig)) {
+    if (systemFields.has(key)) continue
+    if (Array.isArray(value)) {
+      newDoc[key] = value.map(row => {
+        const clean = {}
+        for (const [k, v] of Object.entries(row)) {
+          if (!childSystemFields.has(k)) clean[k] = v
+        }
+        return clean
+      })
+    } else {
+      newDoc[key] = value
+    }
+  }
+  newDoc.amended_from = name
+  return createDoc(doctype, newDoc)
 }

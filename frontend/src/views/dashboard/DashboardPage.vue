@@ -6,7 +6,7 @@
 				<p class="dash-subtitle">Production overview</p>
 			</div>
 			<button class="refresh-btn" :class="{ spinning: loading }" @click="load">
-				<i class="pi pi-refresh" />
+				<AppIcon name="refresh-cw" :size="16" />
 			</button>
 		</header>
 
@@ -25,14 +25,11 @@
 				<div class="card-top-bar" />
 				<div class="card-content">
 					<div class="card-icon">
-						<i :class="card.icon" />
+						<AppIcon :name="card.icon" :size="16" />
 					</div>
 					<div class="card-number">{{ card.value }}</div>
 					<div class="card-label">{{ card.label }}</div>
-					<div class="card-trend" :class="card.trendClass">
-						{{ card.trend }}
 					</div>
-				</div>
 			</div>
 		</div>
 
@@ -60,7 +57,7 @@
 				</div>
 			</div>
 			<div v-else class="panel-empty">
-				<i class="pi pi-inbox" />
+				<AppIcon name="inbox" :size="24" style="opacity: 0.4" />
 				<span>No orders yet</span>
 			</div>
 		</div>
@@ -70,6 +67,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue"
 import { callMethod } from "@/api/client"
+import AppIcon from "@/components/shared/AppIcon.vue"
 
 const loading = ref(false)
 const data = ref({})
@@ -92,55 +90,38 @@ onMounted(load)
 
 const statCards = computed(() => {
 	const d = data.value
-	const orderPct = d.order_pct ?? 0
-	const allocPct = d.alloc_pct ?? 0
-
 	return [
 		{
 			label: "ACTIVE ORDERS",
 			value: d.active_orders ?? 0,
-			icon: "pi pi-file-edit",
+			icon: "file-edit",
 			color: "#10b981",
 			lightColor: "rgba(16, 185, 129, 0.06)",
-			trend: orderPct >= 0
-				? `\u2191 ${orderPct}% this month`
-				: `\u2193 ${Math.abs(orderPct)}% this month`,
-			trendClass: orderPct >= 0 ? "trend-up" : "trend-down",
 			route: "/orders",
 		},
 		{
 			label: "ITEMS",
 			value: d.total_items ?? 0,
-			icon: "pi pi-box",
+			icon: "box",
 			color: "#2563eb",
 			lightColor: "rgba(37, 99, 235, 0.06)",
-			trend: (d.new_items ?? 0) > 0
-				? `\u2191 ${d.new_items} new items`
-				: "No new items",
-			trendClass: (d.new_items ?? 0) > 0 ? "trend-up" : "trend-neutral",
 			route: "/items",
 		},
 		{
 			label: "MACHINES",
 			value: d.total_machines ?? 0,
-			icon: "pi pi-cog",
+			icon: "settings",
 			color: "#7c3aed",
 			lightColor: "rgba(124, 58, 237, 0.06)",
-			trend: "All operational",
-			trendClass: "trend-up",
 			route: "/machines",
 		},
 		{
-			label: "THIS WEEK\u2019S ALLOCATIONS",
-			value: d.allocs_this_week ?? 0,
-			icon: "pi pi-calendar",
+			label: "CUSTOMERS",
+			value: d.total_customers ?? 0,
+			icon: "users",
 			color: "#f59e0b",
 			lightColor: "rgba(245, 158, 11, 0.06)",
-			trend: allocPct >= 0
-				? `\u2191 ${allocPct}% vs last week`
-				: `\u2193 ${Math.abs(allocPct)}% vs last week`,
-			trendClass: allocPct >= 0 ? "trend-up" : "trend-down",
-			route: null,
+			route: "/customers",
 		},
 	]
 })
@@ -206,7 +187,7 @@ function badgeLabel(ds) {
 	border-color: var(--color-border-strong);
 }
 
-.refresh-btn.spinning i {
+.refresh-btn.spinning svg {
 	animation: spin 0.8s linear infinite;
 }
 
@@ -273,7 +254,6 @@ function badgeLabel(ds) {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 16px;
 	margin-bottom: var(--space-md);
 }
 
@@ -294,22 +274,6 @@ function badgeLabel(ds) {
 	margin-bottom: var(--space-sm);
 }
 
-.card-trend {
-	font-size: 0.75rem;
-	font-weight: 500;
-}
-
-.trend-up {
-	color: #10b981;
-}
-
-.trend-down {
-	color: #ef4444;
-}
-
-.trend-neutral {
-	color: var(--color-text-muted);
-}
 
 /* ── Recent Orders Panel ───────────────────────────────── */
 .panel {
@@ -414,11 +378,6 @@ function badgeLabel(ds) {
 	padding: var(--space-xl) 0;
 	color: var(--color-text-muted);
 	font-size: 0.8125rem;
-}
-
-.panel-empty i {
-	font-size: 24px;
-	opacity: 0.4;
 }
 
 /* ── Responsive ────────────────────────────────────────── */

@@ -67,8 +67,8 @@ defineProps({
 	border-left-color: var(--color-danger);
 }
 
-.has-error :deep(.p-inputtext),
-.has-error :deep(.p-select) {
+.has-error :deep(.field-input),
+.has-error :deep(.field-select) {
 	border-color: var(--color-danger);
 }
 
@@ -77,10 +77,8 @@ defineProps({
 	border-left-color: transparent;
 }
 
-.is-readonly :deep(.p-inputtext),
-.is-readonly :deep(.p-select),
-.is-readonly :deep(.p-datepicker),
-.is-readonly :deep(.p-inputnumber) {
+.is-readonly :deep(.field-input),
+.is-readonly :deep(.field-select) {
 	background: var(--color-surface-hover, #f8fafc);
 	opacity: 0.8;
 	cursor: default;
@@ -88,9 +86,8 @@ defineProps({
 
 /* ── Global field width ───────────────────────────────────── */
 .form-field :deep(input),
-.form-field :deep(.p-inputtext),
-.form-field :deep(.p-select),
-.form-field :deep(.p-datepicker) {
+.form-field :deep(.field-input),
+.form-field :deep(.field-select) {
 	width: 100%;
 }
 </style>

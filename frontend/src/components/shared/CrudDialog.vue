@@ -1,27 +1,29 @@
 <template>
-	<Dialog
-		v-model:visible="visible"
+	<BaseModal
+		:visible="modelValue"
 		:header="isEdit ? `Edit ${entityName}` : `New ${entityName}`"
-		:modal="true"
-		:style="{ width: dialogWidth }"
+		:width="dialogWidth"
+		@update:visible="(val) => emit('update:modelValue', val)"
 		@hide="onHide"
 	>
 		<slot :data="formData" :update="updateField" />
 		<template #footer>
-			<Button label="Cancel" severity="secondary" text @click="visible = false" />
-			<Button
-				:label="isEdit ? 'Update' : 'Create'"
-				:loading="saving"
+			<button class="btn btn-secondary btn-text" @click="emit('update:modelValue', false)">Cancel</button>
+			<button
+				class="btn btn-primary"
+				:class="{ 'btn-loading': saving }"
+				:disabled="saving"
 				@click="handleSave"
-			/>
+			>
+				{{ isEdit ? 'Update' : 'Create' }}
+			</button>
 		</template>
-	</Dialog>
+	</BaseModal>
 </template>
 
 <script setup>
 import { ref, watch, computed } from "vue"
-import Dialog from "primevue/dialog"
-import Button from "primevue/button"
+import BaseModal from "./BaseModal.vue"
 
 const props = defineProps({
 	modelValue: { type: Boolean, default: false },
@@ -31,11 +33,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(["update:modelValue", "save"])
-
-const visible = computed({
-	get: () => props.modelValue,
-	set: (val) => emit("update:modelValue", val),
-})
 
 const formData = ref({})
 const saving = ref(false)

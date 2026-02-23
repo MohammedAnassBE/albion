@@ -1,0 +1,31 @@
+export default {
+	doctype: 'Shift Allocation',
+	icon: 'calendar',
+	subtitle: 'Shift schedule and working day assignment',
+	fields: [
+		{ fieldname: 'is_default', fieldtype: 'Check', label: 'Is Default' },
+		{ fieldname: 'machine', fieldtype: 'Link', label: 'Machine', options: 'Machine' },
+		{ fieldname: 'start_date', fieldtype: 'Date', label: 'Start Date' },
+		{ fieldname: 'end_date', fieldtype: 'Date', label: 'End Date' },
+		{ fieldname: 'total_duration_minutes', fieldtype: 'Int', label: 'Total Duration (Minutes)', read_only: 1 },
+		{ fieldname: 'sunday', fieldtype: 'Check', label: 'Sunday', depends_on: 'is_default' },
+		{ fieldname: 'monday', fieldtype: 'Check', label: 'Monday', depends_on: 'is_default' },
+		{ fieldname: 'tuesday', fieldtype: 'Check', label: 'Tuesday', depends_on: 'is_default' },
+		{ fieldname: 'wednesday', fieldtype: 'Check', label: 'Wednesday', depends_on: 'is_default' },
+		{ fieldname: 'thursday', fieldtype: 'Check', label: 'Thursday', depends_on: 'is_default' },
+		{ fieldname: 'friday', fieldtype: 'Check', label: 'Friday', depends_on: 'is_default' },
+		{ fieldname: 'saturday', fieldtype: 'Check', label: 'Saturday', depends_on: 'is_default' },
+		{ fieldname: 'shifts', fieldtype: 'Table', label: 'Shifts', options: 'Shift Allocation Item', reqd: 1, columns: [
+			{ field: 'shift', header: 'Shift', type: 'link', options: 'Shift' },
+			{ field: 'shift_name', header: 'Shift Name', type: 'text', read_only: 1 },
+			{ field: 'duration_minutes', header: 'Duration (Minutes)', type: 'int', read_only: 1 },
+		]},
+		{ fieldname: 'alterations', fieldtype: 'Table', label: 'Alterations', options: 'Shift Alteration', read_only: 1, columns: [
+			{ field: 'date', header: 'Date', type: 'date' },
+			{ field: 'alteration_type', header: 'Type', type: 'select', options: 'Add\nReduce' },
+			{ field: 'minutes', header: 'Minutes', type: 'int' },
+			{ field: 'machine', header: 'Machine', type: 'link', options: 'Machine' },
+			{ field: 'reason', header: 'Reason', type: 'text' },
+		]},
+	],
+}

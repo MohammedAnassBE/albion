@@ -1,21 +1,19 @@
 <template>
-	<InputNumber
-		:modelValue="modelValue"
+	<input
+		type="number"
+		class="field-input"
+		:value="modelValue"
 		:placeholder="placeholder"
 		:disabled="disabled"
 		:readonly="readonly"
-		:min="0"
-		:minFractionDigits="2"
-		:maxFractionDigits="2"
-		fluid
-		@update:modelValue="$emit('update:modelValue', $event)"
+		min="0"
+		step="0.01"
+		@input="$emit('update:modelValue', $event.target.value === '' ? 0 : parseFloat($event.target.value))"
 		@blur="$emit('blur', $event)"
 	/>
 </template>
 
 <script setup>
-import InputNumber from "primevue/inputnumber"
-
 defineProps({
 	modelValue: { type: [Number, null], default: 0 },
 	placeholder: { type: String, default: "" },
