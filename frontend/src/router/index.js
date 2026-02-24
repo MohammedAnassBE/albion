@@ -72,6 +72,10 @@ const routes = [
 			{ path: "users/new", component: () => import("@/views/users/UserForm.vue") },
 			{ path: "users/:id", component: () => import("@/views/users/UserForm.vue"), props: true },
 
+			// ── Reports ────────────────────────────────────────────
+			{ path: "production-report", name: "ProductionReport", component: () => import("@/views/reports/ProductionReportPage.vue") },
+			{ path: "machine-availability", name: "MachineAvailability", component: () => import("@/views/reports/MachineAvailabilityPage.vue") },
+
 			// ── Dynamic list (catch-all) ────────────────────────────
 			{
 				path: ":docRoute",

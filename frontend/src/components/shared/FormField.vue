@@ -35,8 +35,8 @@ defineProps({
 
 .form-field-label {
 	display: block;
-	font-size: 11px;
-	font-weight: 700;
+	font-size: 12px;
+	font-weight: 800;
 	color: var(--color-text-secondary);
 	margin-bottom: 6px;
 	text-transform: uppercase;

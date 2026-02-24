@@ -4,25 +4,33 @@
  */
 
 const DOCTYPES = [
+  // ── Dashboard ──
+  { route: 'dashboard', label: 'Dashboard', icon: 'grid', group: 'Dashboard', sortOrder: 0, hideSidebar: false },
+  { route: 'capacity-planning', label: 'Capacity Planning', icon: 'bar-chart', group: 'Dashboard', sortOrder: 1, hideSidebar: false },
+
   // ── Production ──
-  { doctype: 'Machine', route: 'machines', label: 'Machines', icon: 'settings', group: 'Production', sortOrder: 1, isSubmittable: false, isSingle: false },
-  { doctype: 'Machine GG', route: 'machine-gg', label: 'Machine GG', icon: 'grid', group: 'Production', sortOrder: 2, isSubmittable: false, isSingle: false },
-  { doctype: 'Machine Operation', route: 'machine-operations', label: 'Machine Operations', icon: 'sliders', group: 'Production', sortOrder: 3, isSubmittable: false, isSingle: false, hideSidebar: true },
-  { doctype: 'Process', route: 'processes', label: 'Processes', icon: 'network', group: 'Production', sortOrder: 4, isSubmittable: false, isSingle: false },
+  { doctype: 'Process', route: 'processes', label: 'Processes', icon: 'network', group: 'Production', sortOrder: 1, isSubmittable: false, isSingle: false },
+  { doctype: 'Machine', route: 'machines', label: 'Machines', icon: 'settings', group: 'Production', sortOrder: 2, isSubmittable: false, isSingle: false },
+  { doctype: 'Machine GG', route: 'machine-gg', label: 'Machine GG', icon: 'grid', group: 'Production', sortOrder: 3, isSubmittable: false, isSingle: false },
+  { doctype: 'Machine Operation', route: 'machine-operations', label: 'Machine Operations', icon: 'sliders', group: 'Production', sortOrder: 4, isSubmittable: false, isSingle: false, hideSidebar: true },
   { doctype: 'Shift', route: 'shifts', label: 'Shifts', icon: 'clock', group: 'Production', sortOrder: 5, isSubmittable: false, isSingle: false },
   { doctype: 'Shift Allocation', route: 'shift-allocations', label: 'Shift Allocations', icon: 'calendar', group: 'Production', sortOrder: 6, isSubmittable: false, isSingle: false },
 
   // ── Masters ──
   { doctype: 'Item', route: 'items', label: 'Items', icon: 'box', group: 'Masters', sortOrder: 10, isSubmittable: false, isSingle: false },
-  { doctype: 'Colour', route: 'colours', label: 'Colours', icon: 'palette', group: 'Masters', sortOrder: 11, isSubmittable: false, isSingle: false },
-  { doctype: 'Size', route: 'sizes', label: 'Sizes', icon: 'expand', group: 'Masters', sortOrder: 12, isSubmittable: false, isSingle: false },
-  { doctype: 'Size Range', route: 'size-ranges', label: 'Size Ranges', icon: 'list', group: 'Masters', sortOrder: 13, isSubmittable: false, isSingle: false },
-  { doctype: 'Customer', route: 'customers', label: 'Customers', icon: 'users', group: 'Masters', sortOrder: 14, isSubmittable: false, isSingle: false },
+  { doctype: 'Customer', route: 'customers', label: 'Customers', icon: 'users', group: 'Masters', sortOrder: 11, isSubmittable: false, isSingle: false },
+  { doctype: 'Colour', route: 'colours', label: 'Colours', icon: 'palette', group: 'Masters', sortOrder: 12, isSubmittable: false, isSingle: false },
+  { doctype: 'Size', route: 'sizes', label: 'Sizes', icon: 'expand', group: 'Masters', sortOrder: 13, isSubmittable: false, isSingle: false },
+  { doctype: 'Size Range', route: 'size-ranges', label: 'Size Ranges', icon: 'list', group: 'Masters', sortOrder: 14, isSubmittable: false, isSingle: false },
 
   // ── Orders ──
   { doctype: 'Order', route: 'orders', label: 'Orders', icon: 'shopping-cart', group: 'Orders', sortOrder: 20, isSubmittable: true, isSingle: false },
   { doctype: 'Order Tracking', route: 'order-tracking', label: 'Order Tracking', icon: 'check-circle', group: 'Orders', sortOrder: 21, isSubmittable: false, isSingle: false, dateTabs: 'completion_date' },
   { doctype: 'Albion Import', route: 'albion-imports', label: 'Albion Import', icon: 'upload', group: 'Orders', sortOrder: 22, isSubmittable: true, isSingle: false, hideSidebar: true },
+
+  // ── Reports ──
+  { route: 'production-report', label: 'Production Report', icon: 'file-text', group: 'Reports', sortOrder: 15, hideSidebar: true },
+  { route: 'machine-availability', label: 'Machine Availability', icon: 'calendar', group: 'Reports', sortOrder: 16, hideSidebar: true },
 
   // ── Admin ──
   { doctype: 'User', route: 'users', label: 'Users', icon: 'user', group: 'Admin', sortOrder: 25, isSubmittable: false, isSingle: false },
@@ -31,7 +39,7 @@ const DOCTYPES = [
   { doctype: 'Albion Settings', route: 'settings', label: 'Settings', icon: 'wrench', group: 'System', sortOrder: 30, isSubmittable: false, isSingle: true, hideSidebar: true },
 ]
 
-const GROUP_ORDER = ['Production', 'Masters', 'Orders', 'Admin', 'System']
+const GROUP_ORDER = ['Dashboard', 'Orders', 'Production', 'Masters', 'Reports', 'Admin', 'System']
 
 export function getRegistryByRoute(slug) {
   return DOCTYPES.find((d) => d.route === slug) || null

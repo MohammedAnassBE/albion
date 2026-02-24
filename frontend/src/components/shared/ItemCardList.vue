@@ -43,8 +43,8 @@
 
 				<div class="row-fields">
 					<template v-for="col in columns" :key="col.field">
-						<template v-if="readonly || col.readonly">
-							<span class="row-field-text">{{ row[col.field] || '—' }}</span>
+						<template v-if="readonly || col.read_only || col.readonly">
+							<span class="row-field-text">{{ col.type === 'date' ? formatDate(row[col.field]) : (row[col.field] || '—') }}</span>
 						</template>
 						<template v-else-if="col.type === 'link'">
 							<LinkField
@@ -126,6 +126,12 @@ function updateCell(index, field, value) {
 	const updated = [...props.modelValue]
 	updated[index] = { ...updated[index], [field]: value }
 	emit('update:modelValue', updated)
+}
+
+function formatDate(val) {
+	if (!val) return '—'
+	const [y, m, d] = val.split('-')
+	return (y && m && d) ? `${d}-${m}-${y}` : val
 }
 </script>
 
@@ -213,7 +219,7 @@ function updateCell(index, field, value) {
 }
 
 .col-header-grip {
-	width: 10px;
+	width: 14px;
 	flex-shrink: 0;
 }
 
@@ -223,7 +229,7 @@ function updateCell(index, field, value) {
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 	color: var(--color-text-muted);
-	min-width: 18px;
+	width: 22px;
 	flex-shrink: 0;
 }
 
@@ -278,6 +284,7 @@ function updateCell(index, field, value) {
 	color: var(--color-text-muted);
 	opacity: 0.4;
 	cursor: grab;
+	width: 14px;
 	flex-shrink: 0;
 	display: flex;
 	align-items: center;
@@ -293,7 +300,7 @@ function updateCell(index, field, value) {
 	font-weight: 600;
 	color: var(--color-blue-stat, #2563EB);
 	opacity: 0.6;
-	min-width: 18px;
+	width: 22px;
 	flex-shrink: 0;
 	font-variant-numeric: tabular-nums;
 }
@@ -312,15 +319,17 @@ function updateCell(index, field, value) {
 }
 
 .row-field-text {
-	font-size: 13px;
+	font-size: 14px;
+	font-weight: 600;
 	color: var(--color-text);
+	padding: 8px 12px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
 .card-list-number-input {
-	max-width: 100px;
+	text-align: right;
 }
 
 /* ── Delete button ──────────────────────────────────────── */

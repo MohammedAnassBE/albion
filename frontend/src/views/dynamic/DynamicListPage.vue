@@ -103,7 +103,7 @@
 									:docstatus="row.docstatus"
 								/>
 								<span v-else-if="col.fieldtype === 'Date'">
-									{{ row[col.fieldname] || '\u2014' }}
+									{{ formatDate(row[col.fieldname]) }}
 								</span>
 								<template v-else-if="col.fieldtype === 'Check'">
 									<AppIcon
@@ -406,6 +406,12 @@ function goToPage(p) {
 	if (listState.value) listState.value.setPage(p)
 }
 
+function formatDate(val) {
+	if (!val) return '\u2014'
+	const [y, m, d] = val.split('-')
+	return (y && m && d) ? `${d}-${m}-${y}` : val
+}
+
 function onRowClick(row) {
 	if (row?.name) {
 		router.push(`/${props.docRoute}/${encodeURIComponent(row.name)}`)
@@ -505,12 +511,12 @@ function onRowClick(row) {
 }
 
 .list-table thead th {
-	font-size: 11px;
-	font-weight: 600;
+	font-size: 12px;
+	font-weight: 800;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 	color: var(--color-text-secondary);
-	padding: 6px 14px;
+	padding: 12px 14px;
 	text-align: left;
 	background: var(--color-surface);
 	border-bottom: 1px solid var(--color-border);
@@ -518,8 +524,9 @@ function onRowClick(row) {
 }
 
 .list-table tbody td {
-	padding: 6px 14px;
-	font-size: 13px;
+	padding: 12px 14px;
+	font-size: 14px;
+	font-weight: 500;
 	border-bottom: 1px solid var(--color-bg);
 }
 
@@ -537,8 +544,8 @@ function onRowClick(row) {
 }
 
 .row-name {
-	font-weight: 500;
-	font-size: 0.8125rem;
+	font-weight: 700;
+	font-size: 14px;
 	color: var(--color-primary);
 }
 

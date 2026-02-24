@@ -10,6 +10,7 @@
   "purchase_order",
   "order_date",
   "delivery_date",
+  "total_quantity",
   "items",
   "section_break_matrix",
   "order_matrix_html",
@@ -42,6 +43,13 @@
    "fieldname": "delivery_date",
    "fieldtype": "Date",
    "label": "Delivery Date"
+  },
+  {
+   "fieldname": "total_quantity",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Total Quantity",
+   "read_only": 1
   },
   {
    "fieldname": "items",

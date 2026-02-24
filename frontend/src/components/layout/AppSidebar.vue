@@ -11,18 +11,6 @@
 		</div>
 
 		<nav class="sidebar-nav">
-			<!-- Tools -->
-			<div class="nav-group">
-				<router-link to="/dashboard" class="nav-item" active-class="active">
-					<AppIcon name="grid" :size="16" />
-					<span v-if="!collapsed">Dashboard</span>
-				</router-link>
-				<router-link to="/capacity-planning" class="nav-item" active-class="active">
-					<AppIcon name="bar-chart" :size="16" />
-					<span v-if="!collapsed">Capacity Planning</span>
-				</router-link>
-			</div>
-
 			<!-- DocType groups from static registry -->
 			<div v-for="group in sidebarGroups" :key="group.group" class="nav-group">
 				<span v-if="!collapsed" class="nav-group-label">{{ group.group }}</span>
@@ -76,7 +64,7 @@ const sidebarGroups = computed(() =>
 	_allGroups
 		.map((g) => ({
 			...g,
-			items: g.items.filter((item) => canRead(item.doctype)),
+			items: g.items.filter((item) => !item.doctype || canRead(item.doctype)),
 		}))
 		.filter((g) => g.items.length > 0)
 )

@@ -8,6 +8,7 @@ from frappe.model.document import Document
 class Order(Document):
 	def validate(self):
 		self.validate_items()
+		self.total_quantity = sum((d.quantity or 0) for d in self.order_details or [])
 
 	def before_submit(self):
 		self.validate_order_details()
@@ -44,6 +45,21 @@ class Order(Document):
 				frappe.throw(
 					f"Please enter colour and size wise quantities for Item <b>{row.item}</b> in the Order Matrix."
 				)
+
+
+@frappe.whitelist()
+def get_order_completion(order):
+    """Aggregated completed qty from Order Tracking, grouped by item+colour+size."""
+    rows = frappe.get_all(
+        "Order Tracking",
+        filters={"order": order},
+        fields=["item", "colour", "size", "sum(quantity) as completed_qty"],
+        group_by="item, colour, size",
+    )
+    result = {}
+    for r in rows:
+        result.setdefault(r.item, {}).setdefault(r.colour or "", {})[r.size or ""] = r.completed_qty
+    return result
 
 
 @frappe.whitelist()

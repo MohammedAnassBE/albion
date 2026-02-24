@@ -160,31 +160,14 @@
 
 			<!-- Tab 2: Roles & Permissions -->
 			<div v-show="activeTab === 'roles'" class="form-surface">
-				<div class="roles-header">
-					<FormField label="Role Profile">
-						<select class="field-select" v-model="form.role_profile_name" @change="onRoleProfileChange">
-							<option value="">-- None --</option>
-							<option v-for="rp in roleProfileOptions" :key="rp" :value="rp">{{ rp }}</option>
-						</select>
-					</FormField>
-					<div class="roles-actions">
-						<button class="btn btn-secondary btn-sm" @click="selectAllRoles">Select All</button>
-						<button class="btn btn-secondary btn-sm" @click="unselectAllRoles">Unselect All</button>
-					</div>
-				</div>
-
 				<div class="roles-grid">
-					<label
-						v-for="role in allRoles"
-						:key="role"
-						class="role-checkbox"
-					>
+					<label class="role-checkbox">
 						<input
 							type="checkbox"
-							:checked="selectedRoles.has(role)"
-							@change="toggleRole(role, $event.target.checked)"
+							:checked="selectedRoles.has('System Manager')"
+							@change="toggleRole('System Manager', $event.target.checked)"
 						/>
-						<span>{{ role }}</span>
+						<span>System Manager</span>
 					</label>
 				</div>
 			</div>

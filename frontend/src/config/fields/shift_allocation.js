@@ -5,8 +5,8 @@ export default {
 	fields: [
 		{ fieldname: 'is_default', fieldtype: 'Check', label: 'Is Default' },
 		{ fieldname: 'machine', fieldtype: 'Link', label: 'Machine', options: 'Machine' },
-		{ fieldname: 'start_date', fieldtype: 'Date', label: 'Start Date' },
-		{ fieldname: 'end_date', fieldtype: 'Date', label: 'End Date' },
+		{ fieldname: 'start_date', fieldtype: 'Date', label: 'Start Date', hide_when: 'is_default' },
+		{ fieldname: 'end_date', fieldtype: 'Date', label: 'End Date', hide_when: 'is_default' },
 		{ fieldname: 'total_duration_minutes', fieldtype: 'Int', label: 'Total Duration (Minutes)', read_only: 1 },
 		{ fieldname: 'sunday', fieldtype: 'Check', label: 'Sunday', depends_on: 'is_default' },
 		{ fieldname: 'monday', fieldtype: 'Check', label: 'Monday', depends_on: 'is_default' },

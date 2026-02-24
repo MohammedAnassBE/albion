@@ -79,13 +79,15 @@
 						<!-- Table fields rendered outside grid -->
 						<template v-if="field.fieldtype === 'Table'" />
 						<template v-else-if="field.depends_on && !form[field.depends_on]" />
+						<template v-else-if="field.hide_when && form[field.hide_when]" />
 
 						<FormField
 							v-else
-							:label="field.label"
+							:label="field.fieldtype === 'Check' ? '' : field.label"
 							:required="!!field.reqd"
 							:error="validationErrors[field.fieldname]"
 							:readonly="isReadonly || !!field.read_only"
+							:class="{ 'form-field--check': field.fieldtype === 'Check' }"
 						>
 							<!-- Link -->
 							<LinkField
@@ -158,14 +160,16 @@
 							/>
 
 							<!-- Check -->
-							<input
-								v-else-if="field.fieldtype === 'Check'"
-								type="checkbox"
-								class="field-checkbox"
-								:checked="!!form[field.fieldname]"
-								:disabled="isReadonly"
-								@change="form[field.fieldname] = $event.target.checked ? 1 : 0"
-							/>
+							<label v-else-if="field.fieldtype === 'Check'" class="check-inline">
+								<input
+									type="checkbox"
+									class="field-checkbox"
+									:checked="!!form[field.fieldname]"
+									:disabled="isReadonly"
+									@change="form[field.fieldname] = $event.target.checked ? 1 : 0"
+								/>
+								<span class="check-inline-label">{{ field.label }}</span>
+							</label>
 
 							<!-- Textarea types -->
 							<textarea
@@ -635,6 +639,41 @@ async function handleDelete() {
 .child-table-animated {
 	margin-bottom: var(--space-lg);
 	animation: surfaceReveal 0.35s ease both;
+}
+
+/* -- Checkbox inline layout ---------------------------------------- */
+.form-field--check {
+	display: flex;
+	align-items: center;
+	padding-top: var(--space-sm);
+}
+
+.form-field--check :deep(.form-field-label) {
+	display: none;
+}
+
+.check-inline {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	cursor: pointer;
+	user-select: none;
+}
+
+.check-inline .field-checkbox {
+	width: 20px;
+	height: 20px;
+	accent-color: var(--color-primary);
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.check-inline-label {
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--color-text);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 }
 
 @keyframes surfaceReveal {

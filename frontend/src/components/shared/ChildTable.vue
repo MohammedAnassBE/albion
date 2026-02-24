@@ -25,7 +25,7 @@
 					<tr v-for="(data, index) in rows" :key="index">
 						<td v-for="col in columns" :key="col.field">
 							<template v-if="readonly || col.readonly">
-								{{ data[col.field] }}
+								{{ col.type === 'date' ? formatDate(data[col.field]) : data[col.field] }}
 							</template>
 							<template v-else-if="col.type === 'link'">
 								<LinkField
@@ -112,6 +112,12 @@ function updateCell(index, field, value) {
 	const updated = [...props.modelValue]
 	updated[index] = { ...updated[index], [field]: value }
 	emit("update:modelValue", updated)
+}
+
+function formatDate(val) {
+	if (!val) return '\u2014'
+	const [y, m, d] = val.split('-')
+	return (y && m && d) ? `${d}-${m}-${y}` : val
 }
 </script>
 

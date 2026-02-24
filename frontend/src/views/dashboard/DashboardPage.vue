@@ -10,26 +10,27 @@
 			</button>
 		</header>
 
-		<!-- Stat Cards -->
+		<!-- Report Cards -->
 		<div class="stat-grid">
 			<div
-				v-for="card in statCards"
+				v-for="card in reportCards"
 				:key="card.label"
 				class="stat-card"
 				:style="{
 					'--card-accent': card.color,
 					'--card-accent-light': card.lightColor,
 				}"
-				@click="card.route && $router.push(card.route)"
+				@click="$router.push(card.route)"
 			>
 				<div class="card-top-bar" />
 				<div class="card-content">
 					<div class="card-icon">
 						<AppIcon :name="card.icon" :size="16" />
 					</div>
-					<div class="card-number">{{ card.value }}</div>
 					<div class="card-label">{{ card.label }}</div>
-					</div>
+					<div v-if="card.value !== undefined" class="card-value">{{ card.value }}<span class="card-unit">{{ card.unit }}</span></div>
+					<div class="card-desc">{{ card.desc }}</div>
+				</div>
 			</div>
 		</div>
 
@@ -48,7 +49,7 @@
 						<span class="recent-customer">{{ order.customer || '\u2014' }}</span>
 					</div>
 					<div class="recent-meta">
-						<span class="recent-date">{{ order.order_date || '' }}</span>
+						<span class="recent-date">{{ formatDate(order.order_date) }}</span>
 						<span
 							class="recent-badge"
 							:class="badgeClass(order.docstatus)"
@@ -88,43 +89,28 @@ async function load() {
 
 onMounted(load)
 
-const statCards = computed(() => {
-	const d = data.value
-	return [
-		{
-			label: "ACTIVE ORDERS",
-			value: d.active_orders ?? 0,
-			icon: "file-edit",
-			color: "#10b981",
-			lightColor: "rgba(16, 185, 129, 0.06)",
-			route: "/orders",
-		},
-		{
-			label: "ITEMS",
-			value: d.total_items ?? 0,
-			icon: "box",
-			color: "#2563eb",
-			lightColor: "rgba(37, 99, 235, 0.06)",
-			route: "/items",
-		},
-		{
-			label: "MACHINES",
-			value: d.total_machines ?? 0,
-			icon: "settings",
-			color: "#7c3aed",
-			lightColor: "rgba(124, 58, 237, 0.06)",
-			route: "/machines",
-		},
-		{
-			label: "CUSTOMERS",
-			value: d.total_customers ?? 0,
-			icon: "users",
-			color: "#f59e0b",
-			lightColor: "rgba(245, 158, 11, 0.06)",
-			route: "/customers",
-		},
-	]
-})
+const reportCards = computed(() => [
+	{
+		label: "PRODUCTION REPORT",
+		desc: "pcs this week",
+		value: data.value.production_qty ?? "—",
+		unit: "",
+		icon: "bar-chart",
+		color: "#10b981",
+		lightColor: "rgba(16, 185, 129, 0.06)",
+		route: "/production-report",
+	},
+	{
+		label: "MACHINE AVAILABILITY",
+		desc: "avg utilisation this week",
+		value: data.value.avg_utilisation !== undefined ? data.value.avg_utilisation + "%" : "—",
+		unit: "",
+		icon: "calendar",
+		color: "#2563eb",
+		lightColor: "rgba(37, 99, 235, 0.06)",
+		route: "/machine-availability",
+	},
+])
 
 function badgeClass(ds) {
 	if (ds === 1) return "badge-blue"
@@ -136,6 +122,12 @@ function badgeLabel(ds) {
 	if (ds === 1) return "Submitted"
 	if (ds === 2) return "Cancelled"
 	return "Draft"
+}
+
+function formatDate(val) {
+	if (!val) return ''
+	const [y, m, d] = val.split('-')
+	return (y && m && d) ? `${d}-${m}-${y}` : val
 }
 </script>
 
@@ -198,7 +190,7 @@ function badgeLabel(ds) {
 /* ── Stat Grid ─────────────────────────────────────────── */
 .stat-grid {
 	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	grid-template-columns: repeat(2, 1fr);
 	gap: var(--space-md);
 	margin-bottom: var(--space-lg);
 }
@@ -257,21 +249,35 @@ function badgeLabel(ds) {
 	margin-bottom: var(--space-md);
 }
 
-.card-number {
-	font-size: 2rem;
-	font-weight: 700;
+.card-label {
+	font-size: 0.8125rem;
 	color: var(--color-text);
-	line-height: 1;
+	text-transform: uppercase;
+	letter-spacing: 0.8px;
+	font-weight: 700;
 	margin-bottom: 4px;
 }
 
-.card-label {
-	font-size: 0.6875rem;
+.card-value {
+	font-size: 1.75rem;
+	font-weight: 800;
+	color: var(--card-accent);
+	letter-spacing: -0.03em;
+	line-height: 1.1;
+	margin-bottom: 2px;
+}
+
+.card-unit {
+	font-size: 0.75rem;
+	font-weight: 500;
 	color: var(--color-text-muted);
-	text-transform: uppercase;
-	letter-spacing: 0.8px;
-	font-weight: 600;
-	margin-bottom: var(--space-sm);
+	margin-left: 4px;
+}
+
+.card-desc {
+	font-size: 0.75rem;
+	color: var(--color-text-muted);
+	line-height: 1.4;
 }
 
 
@@ -383,7 +389,7 @@ function badgeLabel(ds) {
 /* ── Responsive ────────────────────────────────────────── */
 @media (max-width: 900px) {
 	.stat-grid {
-		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: repeat(1, 1fr);
 	}
 }
 </style>

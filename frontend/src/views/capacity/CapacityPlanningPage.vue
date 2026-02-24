@@ -1500,16 +1500,16 @@ function hasConflict(alloc) {
 }
 
 const _colorPairs = [
-    { border: '#2563eb', bg: '#bfdbfe' },
-    { border: '#dc2626', bg: '#fecaca' },
-    { border: '#059669', bg: '#a7f3d0' },
-    { border: '#d97706', bg: '#fde68a' },
-    { border: '#7c3aed', bg: '#ddd6fe' },
-    { border: '#0891b2', bg: '#a5f3fc' },
-    { border: '#db2777', bg: '#fbcfe8' },
-    { border: '#4f46e5', bg: '#c7d2fe' },
-    { border: '#ca8a04', bg: '#fef08a' },
-    { border: '#0d9488', bg: '#99f6e4' },
+    { border: '#2563eb', bg: '#bfdbfe', bgDone: '#93c5fd' },
+    { border: '#dc2626', bg: '#fecaca', bgDone: '#fca5a5' },
+    { border: '#059669', bg: '#a7f3d0', bgDone: '#6ee7b7' },
+    { border: '#d97706', bg: '#fde68a', bgDone: '#fcd34d' },
+    { border: '#7c3aed', bg: '#ddd6fe', bgDone: '#c4b5fd' },
+    { border: '#0891b2', bg: '#a5f3fc', bgDone: '#67e8f9' },
+    { border: '#db2777', bg: '#fbcfe8', bgDone: '#f9a8d4' },
+    { border: '#4f46e5', bg: '#c7d2fe', bgDone: '#a5b4fc' },
+    { border: '#ca8a04', bg: '#fef08a', bgDone: '#fde047' },
+    { border: '#0d9488', bg: '#99f6e4', bgDone: '#5eead4' },
 ];
 const _colorMap = new Map();
 
@@ -1700,7 +1700,7 @@ function getBarStyle(group) {
 
     const colors = getAllocationColor(group);
 
-    return {
+    const style = {
         position: 'absolute',
         left: left + 'px',
         top: top + 'px',
@@ -1711,6 +1711,14 @@ function getBarStyle(group) {
         borderRadius: '4px',
         pointerEvents: 'auto',
     };
+
+    const completed = getCompletedQty(group);
+    if (completed > 0 && group.total_quantity > 0) {
+        const pct = Math.min(100, Math.round((completed / group.total_quantity) * 100));
+        style.backgroundImage = `linear-gradient(to right, ${colors.bgDone} ${pct}%, ${colors.bg} ${pct}%)`;
+    }
+
+    return style;
 }
 
 let tooltipTimer = null;
@@ -6302,13 +6310,13 @@ select.form-control {
 }
 
 @keyframes snapIn {
-    0%   { transform: scale(0.90); opacity: 0.5; box-shadow: 0 0 0 rgba(0,0,0,0); }
-    60%  { transform: scale(1.04); opacity: 1; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
-    100% { transform: scale(1); box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06); }
+    0%   { opacity: 0; box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+    40%  { opacity: 1; box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.25); }
+    100% { opacity: 1; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06); }
 }
 
 .gantt-bar.snap-in {
-    animation: snapIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation: snapIn 0.4s ease-out forwards;
 }
 
 /* --- Bar Row: Top (Item + Qty) --- */
@@ -6486,6 +6494,7 @@ select.form-control {
 .gantt-grid-zoom .gantt-date-cell {
     min-height: 30px;
     padding: 2px 4px;
+    contain-intrinsic-size: auto 30px;
 }
 
 .gantt-grid-zoom .gantt-date-cell:hover {
