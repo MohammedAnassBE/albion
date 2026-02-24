@@ -21,18 +21,20 @@ def get_order_data(order_name):
                 "quantity": detail.quantity
             })
 
+    # Build process map from Order's snapshot
+    process_map = {}
+    for op in order.order_processes or []:
+        process_map.setdefault(op.item, []).append({
+            "process_name": op.process_name,
+            "minutes": op.minutes,
+        })
+
     # Get items with their process details
     items = []
     if order.items:
         for item in order.items:
             item_doc = frappe.get_doc("Item", item.item)
-            processes = []
-            if item_doc.processes:
-                for proc in item_doc.processes:
-                    processes.append({
-                        "process_name": proc.process_name,
-                        "minutes": proc.minutes
-                    })
+            processes = process_map.get(item.item, [])
 
             items.append({
                 "item": item.item,

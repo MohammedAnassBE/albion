@@ -12,6 +12,18 @@ class Order(Document):
 
 	def before_submit(self):
 		self.validate_order_details()
+		self.populate_order_processes()
+
+	def populate_order_processes(self):
+		self.order_processes = []
+		for row in self.items:
+			item_doc = frappe.get_doc("Item", row.item)
+			for proc in item_doc.processes or []:
+				self.append("order_processes", {
+					"item": row.item,
+					"process_name": proc.process_name,
+					"minutes": proc.minutes,
+				})
 
 	def before_cancel(self):
 		self.validate_no_machine_operations()

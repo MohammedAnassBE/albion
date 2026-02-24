@@ -142,7 +142,18 @@
 				@update:orderDetails="(details) => form.order_details = details"
 			/>
 
-			<!-- Completion Status (submitted orders only) -->
+			<!-- Order Processes (submitted orders only) -->
+		<ChildTable
+			v-if="doc?.docstatus === 1 && (form.order_processes || []).length > 0"
+			class="child-table-animated"
+			:style="{ animationDelay: '0.08s' }"
+			title="Order Processes"
+			:modelValue="form.order_processes || []"
+			:columns="processColumns"
+			:readonly="true"
+		/>
+
+		<!-- Completion Status (submitted orders only) -->
 			<div v-if="doc?.docstatus === 1 && (form.order_details || []).length > 0" class="completion-section">
 				<div class="completion-header">
 					<div class="completion-header-icon">
@@ -177,6 +188,7 @@ import ItemCardList from '@/components/shared/ItemCardList.vue'
 import AppIcon from '@/components/shared/AppIcon.vue'
 import OrderMatrix from '@/components/shared/OrderMatrix.vue'
 import OrderCompletionMatrix from '@/components/shared/OrderCompletionMatrix.vue'
+import ChildTable from '@/components/shared/ChildTable.vue'
 import { useDoc } from '@/composables/useDoc'
 import { useAppToast } from '@/composables/useToast'
 import { useAppConfirm } from '@/composables/useConfirm'
@@ -198,6 +210,11 @@ const cardIcon = computed(() => config.icon || 'shopping-cart')
 const cardSubtitle = computed(() => config.subtitle || 'Customer order with items and quantities')
 
 const itemColumns = [{ field: 'item', header: 'Item', type: 'link', options: 'Item' }]
+const processColumns = [
+	{ field: 'item', header: 'Item', type: 'data' },
+	{ field: 'process_name', header: 'Process', type: 'data' },
+	{ field: 'minutes', header: 'Minutes', type: 'float' },
+]
 
 // Doc composable
 const docState = shallowRef(null)

@@ -17,5 +17,10 @@ export default {
 			{ field: 'size', header: 'Size', type: 'data' },
 			{ field: 'quantity', header: 'Quantity', type: 'float' },
 		]},
+		{ fieldname: 'order_processes', fieldtype: 'Table', label: 'Order Processes', options: 'Order Process', read_only: 1, columns: [
+			{ field: 'item', header: 'Item', type: 'link', options: 'Item' },
+			{ field: 'process_name', header: 'Process', type: 'link', options: 'Process' },
+			{ field: 'minutes', header: 'Minutes', type: 'float' },
+		]},
 	],
 }

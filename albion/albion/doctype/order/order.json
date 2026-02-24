@@ -15,6 +15,7 @@
   "section_break_matrix",
   "order_matrix_html",
   "order_details",
+  "order_processes",
   "amended_from"
  ],
  "fields": [
@@ -73,6 +74,13 @@
    "hidden": 1,
    "label": "Order Details",
    "options": "Order Detail"
+  },
+  {
+   "fieldname": "order_processes",
+   "fieldtype": "Table",
+   "read_only": 1,
+   "label": "Order Processes",
+   "options": "Order Process"
   },
   {
    "fieldname": "amended_from",
