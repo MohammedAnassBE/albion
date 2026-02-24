@@ -10,16 +10,13 @@ app_license = "mit"
 
 # required_apps = []
 
-# Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "albion",
-# 		"logo": "/assets/albion/logo.png",
-# 		"title": "Albion",
-# 		"route": "/albion",
-# 		"has_permission": "albion.api.permission.has_app_permission"
-# 	}
-# ]
+add_to_apps_screen = [
+	{
+		"name": "albion",
+		"title": "Albion",
+		"route": "/web",
+	}
+]
 
 # Includes in <head>
 # ------------------
@@ -201,7 +198,7 @@ website_route_rules = [
 # Request Events
 # ----------------
 # before_request = ["albion.utils.before_request"]
-# after_request = ["albion.utils.after_request"]
+after_request = ["albion.overrides.override_home_page"]
 
 # Job Events
 # ----------
