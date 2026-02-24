@@ -62,6 +62,11 @@ const routes = [
 			// Order
 			{ path: "orders/new", component: () => import("@/views/forms/OrderForm.vue") },
 			{ path: "orders/:id", component: () => import("@/views/forms/OrderForm.vue"), props: true },
+			// Order Tracking — dedicated list
+			{ path: "order-tracking", component: () => import("@/views/order-tracking/OrderTrackingListPage.vue") },
+			// Order Tracking — form
+			{ path: "order-tracking/new", component: () => import("@/views/forms/OrderTrackingForm.vue") },
+			{ path: "order-tracking/:id", component: () => import("@/views/forms/OrderTrackingForm.vue"), props: true },
 			// User
 			{ path: "users", component: () => import("@/views/users/UserListPage.vue") },
 			{ path: "users/new", component: () => import("@/views/users/UserForm.vue") },

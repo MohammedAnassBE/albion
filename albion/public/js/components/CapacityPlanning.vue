@@ -250,13 +250,13 @@
                                         <div class="bar-row-zoom">
                                             <span v-if="group.order" class="bar-tag order-tag"><b>O:</b> {{ group.order }}</span>
                                             <span class="bar-item">{{ group.item }}</span>
-                                            <span class="bar-qty">{{ group.total_quantity }}</span>
+                                            <span class="bar-qty"><template v-if="getCompletedQty(group)">{{ getCompletedQty(group) }}/</template>{{ group.total_quantity }}</span>
                                         </div>
                                     </template>
                                     <template v-else>
                                         <div class="bar-row-top">
                                             <span class="bar-item">{{ group.item }}</span>
-                                            <span class="bar-qty">{{ group.total_quantity }}</span>
+                                            <span class="bar-qty"><template v-if="getCompletedQty(group)">{{ getCompletedQty(group) }}/</template>{{ group.total_quantity }}</span>
                                         </div>
                                         <div class="bar-row-mid">
                                             <span class="bar-process">{{ group.process }}</span>
@@ -745,6 +745,10 @@
                 <span class="tooltip-value">{{ tooltip.data.days }}</span>
                 <span class="tooltip-label">Quantity</span>
                 <span class="tooltip-value tooltip-qty">{{ tooltip.data.total_quantity }}</span>
+                <template v-if="tooltip.data.completed_qty">
+                    <span class="tooltip-label">Completed</span>
+                    <span class="tooltip-value tooltip-completed">{{ tooltip.data.completed_qty }}</span>
+                </template>
                 <span class="tooltip-label">Minutes</span>
                 <span class="tooltip-value">{{ tooltip.data.total_minutes }}m</span>
                 <template v-if="tooltip.data.colour">
@@ -764,6 +768,57 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 
 const emit = defineEmits(['saveAllocations']);
+
+// Order tracking completion maps at different granularities
+const trackingByItem = ref({});     // "order|item" -> sum
+const trackingByColour = ref({});   // "order|item|colour" -> sum
+const trackingBySize = ref({});     // "order|item|size" -> sum
+const trackingByFull = ref({});     // "order|item|colour|size" -> sum
+
+async function fetchTrackingData() {
+    try {
+        const response = await frappe.call({
+            method: 'albion.albion.page.capacity_planning.capacity_planning.get_order_tracking_summary',
+        });
+        const byItem = {}, byColour = {}, bySize = {}, byFull = {};
+        if (response.message) {
+            for (const row of response.message) {
+                const o = row.order || '', i = row.item || '';
+                const c = row.colour || '', s = row.size || '';
+                const qty = row.completed_qty || 0;
+                const itemKey = `${o}|${i}`;
+                byItem[itemKey] = (byItem[itemKey] || 0) + qty;
+                if (c) {
+                    const colourKey = `${o}|${i}|${c}`;
+                    byColour[colourKey] = (byColour[colourKey] || 0) + qty;
+                }
+                if (s) {
+                    const sizeKey = `${o}|${i}|${s}`;
+                    bySize[sizeKey] = (bySize[sizeKey] || 0) + qty;
+                }
+                if (c && s) {
+                    const fullKey = `${o}|${i}|${c}|${s}`;
+                    byFull[fullKey] = (byFull[fullKey] || 0) + qty;
+                }
+            }
+        }
+        trackingByItem.value = byItem;
+        trackingByColour.value = byColour;
+        trackingBySize.value = bySize;
+        trackingByFull.value = byFull;
+    } catch (e) {
+        console.error('Error fetching tracking data:', e);
+    }
+}
+
+function getCompletedQty(group) {
+    const o = group.order || '', i = group.item || '';
+    const c = group.colour || '', s = group.size || '';
+    if (c && s) return trackingByFull.value[`${o}|${i}|${c}|${s}`] || 0;
+    if (c)      return trackingByColour.value[`${o}|${i}|${c}`] || 0;
+    if (s)      return trackingBySize.value[`${o}|${i}|${s}`] || 0;
+    return trackingByItem.value[`${o}|${i}`] || 0;
+}
 
 // State - internal refs that can be updated via load_data
 const processes = ref([]);
@@ -1658,6 +1713,7 @@ function showTooltip(event, group) {
                 end_date: group.end_date,
                 days: group.allocs.length,
                 total_quantity: group.total_quantity,
+                completed_qty: getCompletedQty(group),
                 total_minutes: group.total_minutes,
                 colour: group.colour,
                 size: group.size
@@ -4743,6 +4799,7 @@ async function onProcessChange() {
 async function refreshCalendar() {
     await loadShiftAllocations();
     await loadAllAllocations();
+    fetchTrackingData();
 }
 
 async function loadShiftAllocations() {
@@ -4945,6 +5002,7 @@ async function saveAllocations() {
             actionHistory.value = [];
             redoHistory.value = [];
             await loadAllAllocations();
+            fetchTrackingData();
             emit('saveAllocations', allocations.value);
         }
     } catch (e) {
@@ -5476,6 +5534,7 @@ onMounted(async () => {
     await loadShiftAllocations();
     loadAllShifts();
     loadAllAllocations();
+    fetchTrackingData();
     document.addEventListener('click', closeContextMenu);
     document.addEventListener('keydown', onKeyDown);
     window.addEventListener('beforeunload', onBeforeUnload);
@@ -5539,6 +5598,7 @@ watch([startDate, endDate], () => {
     if (suppressDateWatch.value) return;
     loadShiftAllocations();
     loadAllAllocations();
+    fetchTrackingData();
 });
 
 watch(availableProcesses, () => {
@@ -6922,6 +6982,10 @@ defineExpose({
 
 .tooltip-qty {
     color: #67e8f9;
+}
+
+.tooltip-completed {
+    color: #4ade80;
 }
 
 /* ===== Shift Modal ===== */

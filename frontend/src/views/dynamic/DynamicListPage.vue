@@ -32,6 +32,19 @@
 			</button>
 		</div>
 
+		<!-- Date Filter Tabs -->
+		<div v-if="dateTabField" class="filter-tabs">
+			<button
+				v-for="tab in dateTabOptions"
+				:key="tab.value"
+				class="filter-tab"
+				:class="{ active: activeDateTab === tab.value }"
+				@click="onDateTabChange(tab.value)"
+			>
+				{{ tab.label }}
+			</button>
+		</div>
+
 		<!-- Advanced Filters -->
 		<FilterBar
 			v-if="fieldMeta"
@@ -169,6 +182,7 @@ const { canCreate: permCanCreate } = usePermissions()
 const registry = computed(() => getRegistryByRoute(props.docRoute))
 const doctype = computed(() => registry.value?.doctype || "")
 const isSubmittable = computed(() => registry.value?.isSubmittable || false)
+const dateTabField = computed(() => registry.value?.dateTabs || null)
 
 // Field metadata (loaded async, config → meta fallback)
 const fieldMeta = ref(null)
@@ -233,7 +247,42 @@ const statusTabs = [
 ]
 
 const activeTab = ref("all")
+const activeDateTab = ref("all")
 const searchQuery = ref("")
+
+const dateTabOptions = [
+	{ label: "Today", value: "today" },
+	{ label: "This Week", value: "week" },
+	{ label: "This Month", value: "month" },
+	{ label: "All", value: "all" },
+]
+
+function getDateRange(tab) {
+	const now = new Date()
+	const yyyy = (d) => d.getFullYear()
+	const mm = (d) => String(d.getMonth() + 1).padStart(2, '0')
+	const dd = (d) => String(d.getDate()).padStart(2, '0')
+	const fmt = (d) => `${yyyy(d)}-${mm(d)}-${dd(d)}`
+
+	if (tab === 'today') {
+		const today = fmt(now)
+		return [today, today]
+	}
+	if (tab === 'week') {
+		const day = now.getDay() // 0=Sun
+		const monday = new Date(now)
+		monday.setDate(now.getDate() - ((day + 6) % 7))
+		const sunday = new Date(monday)
+		sunday.setDate(monday.getDate() + 6)
+		return [fmt(monday), fmt(sunday)]
+	}
+	if (tab === 'month') {
+		const first = new Date(now.getFullYear(), now.getMonth(), 1)
+		const last = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+		return [fmt(first), fmt(last)]
+	}
+	return null
+}
 
 // Sort state
 const sortField = ref("modified")
@@ -244,6 +293,7 @@ const listState = shallowRef(null)
 async function initList() {
 	if (!doctype.value) return
 	activeTab.value = "all"
+	activeDateTab.value = "all"
 	searchQuery.value = ""
 	sortField.value = "modified"
 	sortDir.value = "desc"
@@ -314,10 +364,24 @@ function onTabChange(value) {
 	listState.value.fetch()
 }
 
+function onDateTabChange(value) {
+	activeDateTab.value = value
+	if (!listState.value || !dateTabField.value) return
+	const range = getDateRange(value)
+	if (range) {
+		listState.value.setFilter(dateTabField.value, ['between', range])
+	} else {
+		listState.value.setFilter(dateTabField.value, null)
+	}
+	listState.value.fetch()
+}
+
 function onFiltersApply(advancedFilters) {
 	if (!listState.value) return
 	// Clear all non-managed keys, then apply new advanced filters
-	listState.value.clearFilters(['docstatus', 'name'])
+	const preserve = ['docstatus', 'name']
+	if (dateTabField.value) preserve.push(dateTabField.value)
+	listState.value.clearFilters(preserve)
 	for (const [key, val] of Object.entries(advancedFilters)) {
 		listState.value.setFilter(key, val)
 	}

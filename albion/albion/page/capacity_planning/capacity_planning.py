@@ -640,3 +640,20 @@ def get_orders():
         order_by="creation desc"
     )
     return orders
+
+
+@frappe.whitelist()
+def get_order_tracking_summary():
+    """Get aggregated completed quantities from Order Tracking, grouped by order+item+colour+size"""
+    data = frappe.get_all(
+        "Order Tracking",
+        fields=[
+            "order",
+            "item",
+            "colour",
+            "size",
+            "sum(quantity) as completed_qty",
+        ],
+        group_by="`order`, `item`, `colour`, `size`",
+    )
+    return data

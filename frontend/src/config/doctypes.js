@@ -21,7 +21,8 @@ const DOCTYPES = [
 
   // ── Orders ──
   { doctype: 'Order', route: 'orders', label: 'Orders', icon: 'shopping-cart', group: 'Orders', sortOrder: 20, isSubmittable: true, isSingle: false },
-  { doctype: 'Albion Import', route: 'albion-imports', label: 'Albion Import', icon: 'upload', group: 'Orders', sortOrder: 21, isSubmittable: true, isSingle: false, hideSidebar: true },
+  { doctype: 'Order Tracking', route: 'order-tracking', label: 'Order Tracking', icon: 'check-circle', group: 'Orders', sortOrder: 21, isSubmittable: false, isSingle: false, dateTabs: 'completion_date' },
+  { doctype: 'Albion Import', route: 'albion-imports', label: 'Albion Import', icon: 'upload', group: 'Orders', sortOrder: 22, isSubmittable: true, isSingle: false, hideSidebar: true },
 
   // ── Admin ──
   { doctype: 'User', route: 'users', label: 'Users', icon: 'user', group: 'Admin', sortOrder: 25, isSubmittable: false, isSingle: false },

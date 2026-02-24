@@ -100,3 +100,7 @@ export function getProcesses() {
 export function getCapOrders() {
   return callMethod(`${BASE}.get_orders`)
 }
+
+export function getOrderTrackingSummary() {
+  return callMethod(`${BASE}.get_order_tracking_summary`)
+}
