@@ -28,7 +28,7 @@
 		</nav>
 
 		<div class="sidebar-footer">
-			<a href="/app" class="nav-item back-link">
+			<a v-if="user === 'Administrator'" href="/app" class="nav-item back-link">
 				<AppIcon name="arrow-left" :size="16" />
 				<span v-if="!collapsed">Back to Desk</span>
 			</a>
