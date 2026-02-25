@@ -12,6 +12,9 @@
 						@keyup.enter="onSearch"
 					/>
 				</span>
+				<button class="btn btn-secondary btn-icon" title="Customize Columns" @click="showColumnsModal = true">
+					<AppIcon name="sliders" :size="14" />
+				</button>
 				<button class="btn btn-primary" @click="$router.push('/order-tracking/new')">
 					<AppIcon name="plus" :size="14" />
 					New
@@ -39,6 +42,121 @@
 			<button class="btn btn-text btn-sm" @click="listState?.refresh()">Retry</button>
 		</div>
 
+		<!-- Inline Form (only on Today tab) -->
+		<div v-if="activeDateTab === 'today'" class="inline-form-card">
+			<div class="inline-form-header">
+				<h3>{{ editingRow ? `Edit ${editingRow.name}` : 'Quick Add' }}</h3>
+			</div>
+			<div class="form-grid--inline">
+				<!-- Completion Date -->
+				<div class="inline-field">
+					<label>Completion Date <span class="req">*</span></label>
+					<input
+						type="date"
+						class="field-input"
+						v-model="inlineForm.completion_date"
+					/>
+				</div>
+
+				<!-- Order (only allocated in Machine Operation) -->
+				<div class="inline-field">
+					<label>Order <span class="req">*</span></label>
+					<select
+						class="field-select"
+						:value="inlineForm.order"
+						@change="onInlineOrderChange($event.target.value)"
+					>
+						<option value="">Select Order</option>
+						<option v-for="o in allocatedOrders" :key="o" :value="o">{{ o }}</option>
+					</select>
+				</div>
+
+				<!-- Item -->
+				<div class="inline-field">
+					<label>Item <span class="req">*</span></label>
+					<select
+						class="field-select"
+						v-model="inlineForm.item"
+						:disabled="!inlineForm.order || orderLoading"
+						@change="onInlineItemChange(inlineForm.item)"
+					>
+						<option value="">{{ !inlineForm.order ? 'Select Order first' : orderLoading ? 'Loading...' : 'Select Item' }}</option>
+						<option v-for="it in availableItems" :key="it" :value="it">{{ it }}</option>
+					</select>
+				</div>
+
+				<!-- Colour -->
+				<div class="inline-field">
+					<label>Colour <span class="req">*</span></label>
+					<select
+						class="field-select"
+						v-model="inlineForm.colour"
+						:disabled="!inlineForm.item"
+					>
+						<option value="">{{ !inlineForm.item ? 'Select Item first' : 'Select Colour' }}</option>
+						<option v-for="c in availableColours" :key="c" :value="c">{{ c }}</option>
+					</select>
+				</div>
+
+				<!-- Size -->
+				<div class="inline-field">
+					<label>Size <span class="req">*</span></label>
+					<select
+						class="field-select"
+						v-model="inlineForm.size"
+						:disabled="!inlineForm.item"
+					>
+						<option value="">{{ !inlineForm.item ? 'Select Item first' : 'Select Size' }}</option>
+						<option v-for="s in availableSizes" :key="s" :value="s">{{ s }}</option>
+					</select>
+				</div>
+
+				<!-- Quantity -->
+				<div class="inline-field">
+					<label>Quantity <span class="req">*</span></label>
+					<input
+						type="number"
+						class="field-input"
+						v-model.number="inlineForm.quantity"
+						min="1"
+						step="1"
+					/>
+				</div>
+
+				<!-- Knitter -->
+				<div class="inline-field">
+					<label>Knitter <span class="req">*</span></label>
+					<LinkField
+						:modelValue="inlineForm.knitter || ''"
+						doctype="Knitter"
+						placeholder="Select Knitter"
+						@update:modelValue="val => inlineForm.knitter = val"
+					/>
+				</div>
+			</div>
+
+			<!-- Validation Error -->
+			<div v-if="formError" class="form-error">{{ formError }}</div>
+
+			<!-- Actions -->
+			<div class="inline-form-actions">
+				<button
+					class="btn btn-primary"
+					:disabled="formSaving"
+					@click="handleSubmit"
+				>
+					{{ editingRow ? 'Update' : 'Add' }}
+				</button>
+				<button
+					v-if="editingRow"
+					class="btn btn-secondary"
+					@click="cancelEdit"
+				>
+					Cancel
+				</button>
+			</div>
+		</div>
+
 		<!-- Data Table -->
 		<div class="list-card">
 			<div v-if="loading" class="table-loading">Loading...</div>
@@ -53,38 +171,19 @@
 									<span :class="{ active: sortField === 'name' && sortDir === 'desc' }">&#9660;</span>
 								</span>
 							</th>
-							<th class="sortable-th" @click="toggleSort('order')">
-								Order
+							<th
+								v-for="col in listColumns"
+								:key="col.fieldname"
+								class="sortable-th"
+								@click="toggleSort(col.fieldname)"
+							>
+								{{ col.label }}
 								<span class="sort-arrows">
-									<span :class="{ active: sortField === 'order' && sortDir === 'asc' }">&#9650;</span>
-									<span :class="{ active: sortField === 'order' && sortDir === 'desc' }">&#9660;</span>
+									<span :class="{ active: sortField === col.fieldname && sortDir === 'asc' }">&#9650;</span>
+									<span :class="{ active: sortField === col.fieldname && sortDir === 'desc' }">&#9660;</span>
 								</span>
 							</th>
-							<th class="sortable-th" @click="toggleSort('item')">
-								Item
-								<span class="sort-arrows">
-									<span :class="{ active: sortField === 'item' && sortDir === 'asc' }">&#9650;</span>
-									<span :class="{ active: sortField === 'item' && sortDir === 'desc' }">&#9660;</span>
-								</span>
-							</th>
-							<th>Colour</th>
-							<th>Size</th>
-							<th class="sortable-th" @click="toggleSort('quantity')">
-								Quantity
-								<span class="sort-arrows">
-									<span :class="{ active: sortField === 'quantity' && sortDir === 'asc' }">&#9650;</span>
-									<span :class="{ active: sortField === 'quantity' && sortDir === 'desc' }">&#9660;</span>
-								</span>
-							</th>
-							<th class="sortable-th" @click="toggleSort('completion_date')">
-								Completion Date
-								<span class="sort-arrows">
-									<span :class="{ active: sortField === 'completion_date' && sortDir === 'asc' }">&#9650;</span>
-									<span :class="{ active: sortField === 'completion_date' && sortDir === 'desc' }">&#9660;</span>
-								</span>
-							</th>
-							<th>User</th>
-							<th style="width: 70px"></th>
+							<th style="width: 120px"></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -95,25 +194,43 @@
 							@click="onRowClick(row)"
 						>
 							<td><span class="row-name">{{ row.name }}</span></td>
-							<td>{{ row.order || '' }}</td>
-							<td>{{ row.item || '' }}</td>
-							<td>{{ row.colour || '' }}</td>
-							<td>{{ row.size || '' }}</td>
-							<td>{{ row.quantity ?? '' }}</td>
-							<td>{{ row.completion_date || '\u2014' }}</td>
-							<td>{{ row.user || '' }}</td>
+							<td v-for="col in listColumns" :key="col.fieldname">
+								<template v-if="col.fieldtype === 'Check'">
+									<AppIcon
+										v-if="row[col.fieldname]"
+										name="check-circle"
+										:size="14"
+										class="check-on"
+									/>
+									<AppIcon v-else name="circle" :size="14" class="check-off" />
+								</template>
+								<span v-else-if="col.fieldtype === 'Date'">
+									{{ formatDate(row[col.fieldname]) }}
+								</span>
+								<span v-else-if="col.fieldtype === 'Int' || col.fieldtype === 'Float'">
+									{{ row[col.fieldname] ?? '' }}
+								</span>
+								<span v-else>{{ row[col.fieldname] || '' }}</span>
+							</td>
 							<td>
-								<button
-									v-if="row.owner === currentUser"
-									class="btn btn-secondary btn-xs"
-									@click.stop="startEdit(row)"
-								>
-									Edit
-								</button>
+								<div v-if="row.owner === currentUser" class="row-actions">
+									<button
+										class="btn btn-secondary btn-xs"
+										@click.stop="startEdit(row)"
+									>
+										Edit
+									</button>
+									<button
+										class="btn btn-danger btn-xs"
+										@click.stop="confirmDelete(row)"
+									>
+										Delete
+									</button>
+								</div>
 							</td>
 						</tr>
 						<tr v-if="rows.length === 0 && !loading">
-							<td colspan="9" class="table-empty-cell">
+							<td :colspan="2 + listColumns.length" class="table-empty-cell">
 								<div class="table-empty">
 									<AppIcon name="inbox" :size="28" style="opacity: 0.4" />
 									<p>No records found</p>
@@ -147,107 +264,13 @@
 			</div>
 		</div>
 
-		<!-- Inline Form -->
-		<div class="inline-form-card">
-			<div class="inline-form-header">
-				<h3>{{ editingRow ? `Edit ${editingRow.name}` : 'Quick Add' }}</h3>
-			</div>
-			<div class="form-grid--inline">
-				<!-- Completion Date -->
-				<div class="inline-field">
-					<label>Completion Date <span class="req">*</span></label>
-					<input
-						type="date"
-						class="field-input"
-						v-model="inlineForm.completion_date"
-					/>
-				</div>
-
-				<!-- Order (LinkField) -->
-				<div class="inline-field">
-					<label>Order <span class="req">*</span></label>
-					<LinkField
-						:modelValue="inlineForm.order || ''"
-						doctype="Order"
-						placeholder="Select Order"
-						@update:modelValue="onInlineOrderChange"
-					/>
-				</div>
-
-				<!-- Item -->
-				<div class="inline-field">
-					<label>Item <span class="req">*</span></label>
-					<select
-						class="field-select"
-						v-model="inlineForm.item"
-						:disabled="!inlineForm.order || orderLoading"
-						@change="onInlineItemChange(inlineForm.item)"
-					>
-						<option value="">{{ !inlineForm.order ? 'Select Order first' : orderLoading ? 'Loading...' : 'Select Item' }}</option>
-						<option v-for="it in availableItems" :key="it" :value="it">{{ it }}</option>
-					</select>
-				</div>
-
-				<!-- Colour -->
-				<div class="inline-field">
-					<label>Colour</label>
-					<select
-						class="field-select"
-						v-model="inlineForm.colour"
-						:disabled="!inlineForm.item"
-					>
-						<option value="">{{ !inlineForm.item ? 'Select Item first' : 'Select Colour' }}</option>
-						<option v-for="c in availableColours" :key="c" :value="c">{{ c }}</option>
-					</select>
-				</div>
-
-				<!-- Size -->
-				<div class="inline-field">
-					<label>Size</label>
-					<select
-						class="field-select"
-						v-model="inlineForm.size"
-						:disabled="!inlineForm.item"
-					>
-						<option value="">{{ !inlineForm.item ? 'Select Item first' : 'Select Size' }}</option>
-						<option v-for="s in availableSizes" :key="s" :value="s">{{ s }}</option>
-					</select>
-				</div>
-
-				<!-- Quantity -->
-				<div class="inline-field">
-					<label>Quantity <span class="req">*</span></label>
-					<input
-						type="number"
-						class="field-input"
-						v-model.number="inlineForm.quantity"
-						min="1"
-						step="1"
-					/>
-				</div>
-			</div>
-
-			<!-- Validation Error -->
-			<div v-if="formError" class="form-error">{{ formError }}</div>
-
-			<!-- Actions -->
-			<div class="inline-form-actions">
-				<button
-					class="btn btn-primary"
-					:disabled="formSaving"
-					@click="handleSubmit"
-				>
-					{{ editingRow ? 'Update' : 'Add' }}
-				</button>
-				<button
-					v-if="editingRow"
-					class="btn btn-secondary"
-					@click="cancelEdit"
-				>
-					Cancel
-				</button>
-			</div>
-		</div>
+		<!-- Customize Columns Modal -->
+		<ColumnCustomizerModal
+			v-model:visible="showColumnsModal"
+			doctype="Order Tracking"
+			:fields="fieldMeta?.fields || []"
+			@saved="initList()"
+		/>
 	</div>
 </template>
 
@@ -257,18 +280,50 @@ import { useRouter } from "vue-router"
 import PageHeader from "@/components/shared/PageHeader.vue"
 import AppIcon from "@/components/shared/AppIcon.vue"
 import LinkField from "@/components/shared/LinkField.vue"
+import ColumnCustomizerModal from "@/components/shared/ColumnCustomizerModal.vue"
 import { useDocList } from "@/composables/useDocList"
+import { useFrontendConfig } from "@/composables/useFrontendConfig"
 import { useAuth } from "@/composables/useAuth"
 import { useAppToast } from "@/composables/useToast"
-import { createDoc, updateDoc, getDoc } from "@/api/client"
+import { useAppConfirm } from "@/composables/useConfirm"
+import { createDoc, updateDoc, deleteDoc, getDoc, getList } from "@/api/client"
 
 const router = useRouter()
 const toast = useAppToast()
+const confirm = useAppConfirm()
+const { getFieldsForDoctype } = useFrontendConfig()
 
 const DOCTYPE = 'Order Tracking'
 const DATE_FIELD = 'completion_date'
 
 const { user: currentUser } = useAuth()
+
+// ── Field Metadata & Dynamic Columns ────────────────────────
+const fieldMeta = ref(null)
+const showColumnsModal = ref(false)
+
+const listColumns = computed(() => {
+	if (!fieldMeta.value?.fields) return []
+	return fieldMeta.value.fields.filter(
+		(f) => f.show_in_list && f.fieldname !== "name"
+	)
+})
+
+// Always fetch 'owner' for permission checks on Edit/Delete buttons
+const REQUIRED_FIELDS = ['owner']
+
+const fetchFields = computed(() => {
+	const fields = ["name"]
+	for (const col of listColumns.value) {
+		if (!fields.includes(col.fieldname)) {
+			fields.push(col.fieldname)
+		}
+	}
+	for (const f of REQUIRED_FIELDS) {
+		if (!fields.includes(f)) fields.push(f)
+	}
+	return fields
+})
 
 // ── List State ──────────────────────────────────────────────
 const listState = shallowRef(null)
@@ -324,9 +379,16 @@ const totalPages = computed(() => {
 	return Math.max(1, Math.ceil(totalCount.value / ps))
 })
 
-function initList() {
+async function initList() {
+	activeDateTab.value = "today"
+	searchQuery.value = ""
+	sortField.value = "modified"
+	sortDir.value = "desc"
+
+	fieldMeta.value = await getFieldsForDoctype(DOCTYPE)
+
 	const ls = useDocList(DOCTYPE, {
-		fields: ['name', 'order', 'item', 'colour', 'size', 'quantity', 'completion_date', 'user', 'owner'],
+		fields: fetchFields.value,
 		orderBy: 'modified desc',
 		pageSize: 20,
 		immediate: false,
@@ -354,13 +416,25 @@ function onDateTabChange(value) {
 	listState.value.fetch()
 }
 
+const SEARCHABLE_TYPES = new Set(['Data', 'Small Text', 'Text', 'Long Text', 'Link', 'Select'])
+
+const searchableFields = computed(() => {
+	const fields = ['name']
+	for (const col of listColumns.value) {
+		if (SEARCHABLE_TYPES.has(col.fieldtype) && !fields.includes(col.fieldname)) {
+			fields.push(col.fieldname)
+		}
+	}
+	return fields
+})
+
 function onSearch() {
 	if (!listState.value) return
 	const q = searchQuery.value.trim()
 	if (q) {
 		listState.value.setFilter('name', null)
 		listState.value.setOrFilters(
-			['name', 'order', 'item', 'colour', 'size', 'user'].map(f => [f, 'like', `%${q}%`])
+			searchableFields.value.map(f => [f, 'like', `%${q}%`])
 		)
 	} else {
 		listState.value.setOrFilters(null)
@@ -384,6 +458,12 @@ function goToPage(p) {
 	if (listState.value) listState.value.setPage(p)
 }
 
+function formatDate(val) {
+	if (!val) return '\u2014'
+	const [y, m, d] = val.split('-')
+	return (y && m && d) ? `${d}-${m}-${y}` : val
+}
+
 function onRowClick(row) {
 	if (row?.name) {
 		router.push(`/order-tracking/${encodeURIComponent(row.name)}`)
@@ -395,14 +475,48 @@ const editingRow = ref(null)
 const formSaving = ref(false)
 const formError = ref('')
 
+function todayStr() {
+	const d = new Date()
+	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 const inlineForm = reactive({
-	completion_date: '',
+	completion_date: todayStr(),
 	order: '',
 	item: '',
 	colour: '',
 	size: '',
 	quantity: 0,
+	knitter: '',
 })
+
+// Allocated orders from Machine Operation
+const allocatedOrders = ref([])
+
+async function fetchAllocatedOrders() {
+	try {
+		const { data } = await getList('Machine Operation', {
+			fields: ['distinct `order` as `order`'],
+			filters: { order: ['is', 'set'] },
+			limit_page_length: 0,
+		})
+		const allOrders = data.map(r => r.order)
+		// Exclude closed orders
+		if (allOrders.length > 0) {
+			const { data: closedData } = await getList('Order', {
+				fields: ['name'],
+				filters: { name: ['in', allOrders], status: 'Closed' },
+				limit_page_length: 0,
+			})
+			const closedSet = new Set(closedData.map(r => r.name))
+			allocatedOrders.value = allOrders.filter(o => !closedSet.has(o)).sort()
+		} else {
+			allocatedOrders.value = []
+		}
+	} catch {
+		allocatedOrders.value = []
+	}
+}
 
 // Cascading dropdown data
 const orderDetails = ref([])
@@ -465,12 +579,13 @@ function onInlineItemChange(val) {
 }
 
 function resetForm() {
-	inlineForm.completion_date = ''
+	inlineForm.completion_date = todayStr()
 	inlineForm.order = ''
 	inlineForm.item = ''
 	inlineForm.colour = ''
 	inlineForm.size = ''
 	inlineForm.quantity = 0
+	inlineForm.knitter = ''
 	orderDetails.value = []
 	editingRow.value = null
 	formError.value = ''
@@ -484,6 +599,7 @@ function startEdit(row) {
 	inlineForm.colour = row.colour || ''
 	inlineForm.size = row.size || ''
 	inlineForm.quantity = row.quantity || 0
+	inlineForm.knitter = row.knitter || ''
 	formError.value = ''
 
 	if (row.order) {
@@ -499,7 +615,10 @@ function validate() {
 	if (!inlineForm.completion_date) return 'Completion Date is required'
 	if (!inlineForm.order) return 'Order is required'
 	if (!inlineForm.item) return 'Item is required'
+	if (!inlineForm.colour) return 'Colour is required'
+	if (!inlineForm.size) return 'Size is required'
 	if (!inlineForm.quantity || inlineForm.quantity <= 0) return 'Quantity must be greater than 0'
+	if (!inlineForm.knitter) return 'Knitter is required'
 	return ''
 }
 
@@ -515,9 +634,10 @@ async function handleSubmit() {
 	const payload = {
 		order: inlineForm.order,
 		item: inlineForm.item,
-		colour: inlineForm.colour || null,
-		size: inlineForm.size || null,
+		colour: inlineForm.colour,
+		size: inlineForm.size,
 		quantity: inlineForm.quantity,
+		knitter: inlineForm.knitter,
 		completion_date: inlineForm.completion_date,
 	}
 
@@ -538,8 +658,28 @@ async function handleSubmit() {
 	}
 }
 
+function confirmDelete(row) {
+	confirm.require({
+		message: `Delete ${row.name}? This cannot be undone.`,
+		header: 'Confirm Delete',
+		acceptLabel: 'Delete',
+		acceptProps: { severity: 'danger' },
+		rejectLabel: 'Cancel',
+		accept: async () => {
+			try {
+				await deleteDoc(DOCTYPE, row.name)
+				toast.success('Deleted', `${row.name} deleted`)
+				listState.value?.refresh()
+			} catch (e) {
+				toast.error('Delete Failed', e.message || 'Could not delete')
+			}
+		},
+	})
+}
+
 onMounted(() => {
 	initList()
+	fetchAllocatedOrders()
 })
 </script>
 
@@ -673,6 +813,19 @@ onMounted(() => {
 	color: var(--color-primary);
 }
 
+.check-on {
+	color: #059669;
+}
+
+.check-off {
+	color: #CBD5E1;
+}
+
+.row-actions {
+	display: flex;
+	gap: 4px;
+}
+
 .table-empty-cell {
 	padding: 0 !important;
 	border: none !important;
@@ -767,7 +920,7 @@ onMounted(() => {
 
 /* ── Inline Form Card ────────────────────────────────────── */
 .inline-form-card {
-	margin-top: var(--space-lg);
+	margin-bottom: var(--space-lg);
 	background: var(--color-surface);
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius-lg);
@@ -893,6 +1046,16 @@ onMounted(() => {
 
 .btn-secondary:hover {
 	background: var(--color-surface-hover);
+}
+
+.btn-danger {
+	background: #dc2626;
+	color: #fff;
+	border-color: #dc2626;
+}
+
+.btn-danger:hover {
+	background: #b91c1c;
 }
 
 .btn-text {

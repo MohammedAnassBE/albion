@@ -7,6 +7,9 @@ from frappe.model.document import Document
 
 class OrderTracking(Document):
 	def before_validate(self):
+		order_status = frappe.db.get_value("Order", self.order, "status")
+		if order_status == "Closed":
+			frappe.throw("Cannot create Order Tracking for a Closed Order. Please reopen the Order first.")
 		mo_list = frappe.get_all("Machine Operation", filters={
 			"order": self.order
 		}, pluck="name")

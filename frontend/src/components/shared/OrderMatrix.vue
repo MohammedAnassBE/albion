@@ -56,6 +56,8 @@
 					<thead>
 						<tr>
 							<th class="th-colour">Colour</th>
+							<th class="th-rate">Rate</th>
+							<th class="th-delivery-date">Delivery</th>
 							<th v-for="size in itemData.sizes" :key="size" class="th-size">{{ size }}</th>
 							<th class="th-total">Total</th>
 						</tr>
@@ -63,6 +65,28 @@
 					<tbody>
 						<tr v-for="colour in itemData.colours" :key="colour">
 							<td class="td-colour">{{ colour }}</td>
+							<td class="td-rate">
+								<input
+									type="number"
+									class="rate-input"
+									v-model="itemData.rates[colour]"
+									@change="onQuantityChange"
+									@focus="$event.target.select()"
+									min="0"
+									step="0.01"
+									:readonly="readonly"
+									placeholder="0"
+								/>
+							</td>
+							<td class="td-delivery-date">
+								<input
+									type="date"
+									class="date-input"
+									v-model="itemData.deliveryDates[colour]"
+									@change="onQuantityChange"
+									:readonly="readonly"
+								/>
+							</td>
 							<td v-for="size in itemData.sizes" :key="size" class="td-qty">
 								<input
 									type="number"
@@ -84,6 +108,8 @@
 					<tfoot>
 						<tr>
 							<td class="tf-label">Total</td>
+							<td class="tf-spacer"></td>
+							<td class="tf-spacer"></td>
 							<td v-for="size in itemData.sizes" :key="size" class="tf-col-total">
 								{{ getColumnTotal(itemData, size) }}
 							</td>
@@ -139,6 +165,8 @@ async function initMatrix(items = null, orderDetails = null) {
 			sizes: [],
 			colours: [],
 			quantities: {},
+			rates: {},
+			deliveryDates: {},
 		}
 	})
 
@@ -170,6 +198,8 @@ function loadOrderDetails(orderDetails = null) {
 		if (!item.colours.includes(detail.colour)) {
 			item.colours.push(detail.colour)
 			item.quantities[detail.colour] = {}
+			item.rates[detail.colour] = 0
+			item.deliveryDates[detail.colour] = ''
 		}
 
 		if (!item.sizes.includes(detail.size)) {
@@ -177,6 +207,14 @@ function loadOrderDetails(orderDetails = null) {
 		}
 
 		item.quantities[detail.colour][detail.size] = detail.quantity
+
+		// Pick rate and delivery_date from first row for this item+colour
+		if (detail.rate && !item.rates[detail.colour]) {
+			item.rates[detail.colour] = detail.rate
+		}
+		if (detail.delivery_date && !item.deliveryDates[detail.colour]) {
+			item.deliveryDates[detail.colour] = detail.delivery_date
+		}
 	})
 
 	// Ensure all selected colours have entries for all sizes
@@ -238,12 +276,16 @@ function toggleColour(itemName, colour) {
 	if (idx === -1) {
 		itemData.colours.push(colour)
 		itemData.quantities[colour] = {}
+		itemData.rates[colour] = 0
+		itemData.deliveryDates[colour] = ''
 		itemData.sizes.forEach(size => {
 			itemData.quantities[colour][size] = 0
 		})
 	} else {
 		itemData.colours.splice(idx, 1)
 		delete itemData.quantities[colour]
+		delete itemData.rates[colour]
+		delete itemData.deliveryDates[colour]
 	}
 
 	emitData()
@@ -253,6 +295,8 @@ async function refreshItem(itemName) {
 	const itemData = matrixData.value[itemName]
 	const prevColours = [...itemData.colours]
 	const prevQuantities = JSON.parse(JSON.stringify(itemData.quantities))
+	const prevRates = JSON.parse(JSON.stringify(itemData.rates || {}))
+	const prevDeliveryDates = JSON.parse(JSON.stringify(itemData.deliveryDates || {}))
 
 	itemData.availableColours = []
 	itemData.sizes = []
@@ -261,8 +305,12 @@ async function refreshItem(itemName) {
 
 	itemData.colours = prevColours.filter(c => itemData.availableColours.includes(c))
 	itemData.quantities = {}
+	itemData.rates = {}
+	itemData.deliveryDates = {}
 	itemData.colours.forEach(colour => {
 		itemData.quantities[colour] = {}
+		itemData.rates[colour] = prevRates[colour] || 0
+		itemData.deliveryDates[colour] = prevDeliveryDates[colour] || ''
 		itemData.sizes.forEach(size => {
 			itemData.quantities[colour][size] = (prevQuantities[colour] && prevQuantities[colour][size] !== undefined)
 				? prevQuantities[colour][size]
@@ -318,7 +366,14 @@ function getData() {
 			itemData.sizes.forEach(size => {
 				const quantity = parseFloat(itemData.quantities[colour][size]) || 0
 				if (quantity > 0) {
-					details.push({ item, colour, size, quantity })
+					details.push({
+						item,
+						colour,
+						size,
+						quantity,
+						rate: parseFloat(itemData.rates[colour]) || 0,
+						delivery_date: itemData.deliveryDates[colour] || '',
+					})
 				}
 			})
 		})
@@ -515,6 +570,14 @@ defineExpose({ getData, matrixData, initMatrix, refreshItem })
 	width: 140px;
 	border-right: 1px solid var(--color-border);
 }
+.th-rate {
+	text-align: right;
+	width: 100px;
+}
+.th-delivery-date {
+	text-align: left;
+	width: 130px;
+}
 .th-size {
 	text-align: right;
 	padding-right: 20px;
@@ -547,6 +610,79 @@ defineExpose({ getData, matrixData, initMatrix, refreshItem })
 	padding: 10px 16px;
 	white-space: nowrap;
 	border-right: 1px solid var(--color-border);
+}
+
+.td-rate {
+	padding: 4px 8px;
+}
+.td-delivery-date {
+	padding: 4px 8px;
+}
+
+.rate-input {
+	width: 100%;
+	max-width: 90px;
+	display: block;
+	padding: 7px 12px;
+	text-align: right;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
+	background: var(--color-surface-alt);
+	color: var(--color-text);
+	transition: all 0.15s ease;
+	-moz-appearance: textfield;
+}
+.rate-input::-webkit-outer-spin-button,
+.rate-input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+.rate-input:focus {
+	outline: none;
+	border-color: var(--color-accent);
+	background: var(--color-surface);
+	box-shadow: 0 0 0 2px var(--color-accent-muted);
+}
+.rate-input::placeholder {
+	color: var(--color-text-muted);
+	opacity: 0.5;
+}
+.rate-input[readonly] {
+	cursor: default;
+	background: transparent;
+	border-color: transparent;
+	font-weight: 600;
+	color: var(--color-text);
+}
+
+.date-input {
+	width: 100%;
+	max-width: 130px;
+	display: block;
+	padding: 7px 10px;
+	font-size: 0.75rem;
+	font-weight: 500;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
+	background: var(--color-surface-alt);
+	color: var(--color-text);
+	transition: all 0.15s ease;
+}
+.date-input:focus {
+	outline: none;
+	border-color: var(--color-accent);
+	background: var(--color-surface);
+	box-shadow: 0 0 0 2px var(--color-accent-muted);
+}
+.date-input[readonly] {
+	cursor: default;
+	background: transparent;
+	border-color: transparent;
+	font-weight: 600;
+	color: var(--color-text);
 }
 
 .td-qty {
@@ -627,6 +763,9 @@ defineExpose({ getData, matrixData, initMatrix, refreshItem })
 	letter-spacing: 0.06em;
 	font-size: 0.625rem;
 	border-right: 1px solid var(--color-border);
+}
+.tf-spacer {
+	/* empty spacer for rate/delivery columns in footer */
 }
 .tf-col-total {
 	text-align: right;

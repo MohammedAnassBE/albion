@@ -5,7 +5,7 @@
 			backRoute="/orders"
 		>
 			<template #actions>
-				<StatusBadge v-if="!isNew && doc" :docstatus="doc.docstatus" />
+				<StatusBadge v-if="!isNew && doc" :docstatus="doc.docstatus" :status="doc.status || ''" />
 				<button
 					v-if="!isReadonly"
 					class="btn btn-primary"
@@ -25,6 +25,26 @@
 				>
 					<AppIcon name="check" :size="14" />
 					Submit
+				</button>
+				<button
+					v-if="canClose"
+					class="btn btn-close-order"
+					:class="{ 'btn-loading': docSaving }"
+					:disabled="docSaving"
+					@click="handleClose"
+				>
+					<AppIcon name="lock" :size="14" />
+					Close
+				</button>
+				<button
+					v-if="canReopen"
+					class="btn btn-secondary"
+					:class="{ 'btn-loading': docSaving }"
+					:disabled="docSaving"
+					@click="handleReopen"
+				>
+					<AppIcon name="unlock" :size="14" />
+					Reopen
 				</button>
 				<button
 					v-if="canCancel"
@@ -250,7 +270,9 @@ const isReadonly = computed(() => {
 })
 
 const canSubmit = computed(() => !isNew.value && doc.value?.docstatus === 0 && permCanSubmit('Order'))
-const canCancel = computed(() => !isNew.value && doc.value?.docstatus === 1 && permCanCancel('Order'))
+const canCancel = computed(() => !isNew.value && doc.value?.docstatus === 1 && doc.value?.status !== 'Closed' && permCanCancel('Order'))
+const canClose = computed(() => !isNew.value && doc.value?.docstatus === 1 && doc.value?.status !== 'Closed')
+const canReopen = computed(() => !isNew.value && doc.value?.docstatus === 1 && doc.value?.status === 'Closed')
 const canDelete = computed(() => !isNew.value && doc.value?.docstatus === 0 && permCanDelete('Order'))
 const canAmend = computed(() => !isNew.value && doc.value?.docstatus === 2 && permCanAmend('Order'))
 
@@ -427,6 +449,44 @@ async function handleSubmit() {
 	})
 }
 
+async function handleClose() {
+	confirm.require({
+		message: 'Close this Order? Closed orders cannot be cancelled or allocated.',
+		header: 'Confirm Close',
+		acceptLabel: 'Close Order',
+		acceptProps: { severity: 'warning' },
+		rejectLabel: 'Keep Open',
+		accept: async () => {
+			try {
+				await callMethod('albion.albion.doctype.order.order.close_order', { order_name: props.id })
+				toast.success('Closed', 'Order has been closed')
+				await docState.value.load(props.id)
+			} catch (e) {
+				showError('Close Failed', e)
+			}
+		},
+	})
+}
+
+async function handleReopen() {
+	confirm.require({
+		message: 'Reopen this Order?',
+		header: 'Confirm Reopen',
+		acceptLabel: 'Reopen',
+		acceptProps: { severity: 'info' },
+		rejectLabel: 'Keep Closed',
+		accept: async () => {
+			try {
+				await callMethod('albion.albion.doctype.order.order.reopen_order', { order_name: props.id })
+				toast.success('Reopened', 'Order has been reopened')
+				await docState.value.load(props.id)
+			} catch (e) {
+				showError('Reopen Failed', e)
+			}
+		},
+	})
+}
+
 async function handleCancel() {
 	confirm.require({
 		message: 'Cancel this Order? This action cannot be undone.',
@@ -577,6 +637,18 @@ async function handleDelete() {
 		opacity: 1;
 		transform: translateY(0);
 	}
+}
+
+/* -- Close Order Button -------------------------------------------- */
+.btn-close-order {
+	background: #D97706;
+	color: #fff;
+	border-color: #D97706;
+}
+
+.btn-close-order:hover {
+	background: #B45309;
+	border-color: #B45309;
 }
 
 /* -- Completion Section --------------------------------------------- */

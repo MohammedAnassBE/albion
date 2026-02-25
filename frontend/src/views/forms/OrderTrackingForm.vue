@@ -61,6 +61,7 @@
 							doctype="Order"
 							placeholder="Select Order"
 							:disabled="isReadonly"
+							:filters="{ docstatus: 1, status: ['!=', 'Closed'] }"
 							@update:modelValue="onOrderChange"
 						/>
 					</FormField>
@@ -79,7 +80,7 @@
 					</FormField>
 
 					<!-- Colour (cascading select) -->
-					<FormField label="Colour" :error="validationErrors.colour" :readonly="isReadonly">
+					<FormField label="Colour" :required="true" :error="validationErrors.colour" :readonly="isReadonly">
 						<select
 							class="field-select"
 							:value="form.colour"
@@ -92,7 +93,7 @@
 					</FormField>
 
 					<!-- Size (cascading select) -->
-					<FormField label="Size" :error="validationErrors.size" :readonly="isReadonly">
+					<FormField label="Size" :required="true" :error="validationErrors.size" :readonly="isReadonly">
 						<select
 							class="field-select"
 							:value="form.size"
@@ -114,6 +115,17 @@
 							step="1"
 							:disabled="isReadonly"
 							@input="form.quantity = parseInt($event.target.value, 10) || 0"
+						/>
+					</FormField>
+
+					<!-- Knitter -->
+					<FormField label="Knitter" :required="true" :error="validationErrors.knitter" :readonly="isReadonly">
+						<LinkField
+							:modelValue="form.knitter || ''"
+							doctype="Knitter"
+							placeholder="Select Knitter"
+							:disabled="isReadonly"
+							@update:modelValue="val => form.knitter = val"
 						/>
 					</FormField>
 
@@ -182,13 +194,17 @@ const form = reactive({
 	colour: '',
 	size: '',
 	quantity: 0,
+	knitter: '',
 	completion_date: '',
 	user: '',
 })
 const validationErrors = reactive({
 	order: '',
 	item: '',
+	colour: '',
+	size: '',
 	quantity: '',
+	knitter: '',
 	completion_date: '',
 })
 
@@ -264,7 +280,7 @@ function onItemChange(val) {
 // Validation
 function validate() {
 	let valid = true
-	const required = { order: 'Order', item: 'Item', quantity: 'Quantity', completion_date: 'Completion Date' }
+	const required = { order: 'Order', item: 'Item', colour: 'Colour', size: 'Size', quantity: 'Quantity', knitter: 'Knitter', completion_date: 'Completion Date' }
 	for (const [field, label] of Object.entries(required)) {
 		const val = form[field]
 		const empty = val === null || val === undefined || val === '' || (typeof val === 'string' && !val.trim())
@@ -285,6 +301,7 @@ function buildPayload() {
 		colour: form.colour,
 		size: form.size,
 		quantity: form.quantity,
+		knitter: form.knitter,
 		completion_date: form.completion_date,
 	}
 }
@@ -349,6 +366,7 @@ function populateForm(data) {
 	form.colour = data.colour || ''
 	form.size = data.size || ''
 	form.quantity = data.quantity || 0
+	form.knitter = data.knitter || ''
 	form.completion_date = data.completion_date || ''
 	form.user = data.user || ''
 

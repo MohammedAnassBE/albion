@@ -10,6 +10,7 @@
   "purchase_order",
   "order_date",
   "delivery_date",
+  "status",
   "total_quantity",
   "items",
   "section_break_matrix",
@@ -44,6 +45,18 @@
    "fieldname": "delivery_date",
    "fieldtype": "Date",
    "label": "Delivery Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Open",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "\nOpen\nClosed",
+   "read_only": 1,
+   "search_index": 1
   },
   {
    "fieldname": "total_quantity",

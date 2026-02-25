@@ -5377,7 +5377,7 @@ function initFrappeControls() {
                 // Update Order control query to filter by customer
                 if (orderControl) {
                     orderControl.df.get_query = () => {
-                        const filters = { docstatus: 1 };
+                        const filters = { docstatus: 1, status: ['!=', 'Closed'] };
                         if (selectedCustomer.value) filters.customer = selectedCustomer.value;
                         return { filters };
                     };
@@ -5403,7 +5403,7 @@ function initFrappeControls() {
             options: 'Order',
             placeholder: 'Select Order',
             get_query() {
-                const filters = { docstatus: 1 };
+                const filters = { docstatus: 1, status: ['!=', 'Closed'] };
                 if (selectedCustomer.value) filters.customer = selectedCustomer.value;
                 return { filters };
             },

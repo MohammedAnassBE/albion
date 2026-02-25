@@ -12,6 +12,9 @@
 						@keyup.enter="onSearch"
 					/>
 				</span>
+				<button class="btn btn-secondary btn-icon" title="Customize Columns" @click="showColumnsModal = true">
+					<AppIcon name="sliders" :size="14" />
+				</button>
 				<button v-if="permCanCreate(doctype)" class="btn btn-primary" @click="$router.push(`/${docRoute}/new`)">
 					<AppIcon name="plus" :size="14" />
 					New
@@ -117,7 +120,7 @@
 								<span v-else>{{ row[col.fieldname] ?? '' }}</span>
 							</td>
 							<td v-if="isSubmittable && !hasDocstatusColumn">
-								<StatusBadge :docstatus="row.docstatus" />
+								<StatusBadge :docstatus="row.docstatus" :status="row.status || ''" />
 							</td>
 						</tr>
 						<tr v-if="rows.length === 0 && !loading">
@@ -154,6 +157,14 @@
 				</button>
 			</div>
 		</div>
+
+		<!-- Customize Columns Modal -->
+		<ColumnCustomizerModal
+			v-model:visible="showColumnsModal"
+			:doctype="doctype"
+			:fields="fieldMeta?.fields || []"
+			@saved="initList()"
+		/>
 	</div>
 </template>
 
@@ -164,6 +175,7 @@ import PageHeader from "@/components/shared/PageHeader.vue"
 import StatusBadge from "@/components/shared/StatusBadge.vue"
 import AppIcon from "@/components/shared/AppIcon.vue"
 import FilterBar from "@/components/shared/FilterBar.vue"
+import ColumnCustomizerModal from "@/components/shared/ColumnCustomizerModal.vue"
 import { NON_FILTERABLE_FIELDTYPES } from "@/utils/filterOperators"
 import { useDocList } from "@/composables/useDocList"
 import { useFrontendConfig } from "@/composables/useFrontendConfig"
@@ -236,15 +248,26 @@ const fetchFields = computed(() => {
 	if (isSubmittable.value && !fields.includes("docstatus")) {
 		fields.push("docstatus")
 	}
+	if (hasCloseFeature.value && !fields.includes("status")) {
+		fields.push("status")
+	}
 	return fields
 })
 
-const statusTabs = [
-	{ label: "All", value: "all" },
-	{ label: "Draft", value: 0 },
-	{ label: "Submitted", value: 1 },
-	{ label: "Cancelled", value: 2 },
-]
+const hasCloseFeature = computed(() => registry.value?.hasCloseFeature || false)
+
+const statusTabs = computed(() => {
+	const tabs = [
+		{ label: "All", value: "all" },
+		{ label: "Draft", value: 0 },
+		{ label: "Submitted", value: 1 },
+		{ label: "Cancelled", value: 2 },
+	]
+	if (hasCloseFeature.value) {
+		tabs.push({ label: "Closed", value: "closed" })
+	}
+	return tabs
+})
 
 const activeTab = ref("all")
 const activeDateTab = ref("all")
@@ -356,10 +379,16 @@ function toggleSort(fieldname) {
 function onTabChange(value) {
 	activeTab.value = value
 	if (!listState.value) return
-	if (value === "all") {
-		listState.value.setFilter("docstatus", null)
+	if (value === "closed") {
+		listState.value.setFilter("docstatus", 1)
+		listState.value.setFilter("status", "Closed")
 	} else {
-		listState.value.setFilter("docstatus", value)
+		listState.value.setFilter("status", null)
+		if (value === "all") {
+			listState.value.setFilter("docstatus", null)
+		} else {
+			listState.value.setFilter("docstatus", value)
+		}
 	}
 	listState.value.fetch()
 }
@@ -417,6 +446,9 @@ function onRowClick(row) {
 		router.push(`/${props.docRoute}/${encodeURIComponent(row.name)}`)
 	}
 }
+
+// ── Customize Columns ──────────────────────────────────────
+const showColumnsModal = ref(false)
 </script>
 
 <style scoped>
@@ -649,4 +681,5 @@ function onRowClick(row) {
 	margin: 0;
 	font-size: 13px;
 }
+
 </style>

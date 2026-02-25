@@ -12,6 +12,9 @@
 						@keyup.enter="onSearch"
 					/>
 				</span>
+				<button class="btn btn-secondary btn-icon" title="Customize Columns" @click="showColumnsModal = true">
+					<AppIcon name="sliders" :size="14" />
+				</button>
 				<button v-if="permCanCreate('User')" class="btn btn-primary" @click="$router.push('/users/new')">
 					<AppIcon name="plus" :size="14" />
 					New
@@ -53,21 +56,18 @@
 									<span :class="{ active: sortField === 'name' && sortDir === 'desc' }">&#9660;</span>
 								</span>
 							</th>
-							<th class="sortable-th" @click="toggleSort('full_name')">
-								Full Name
+							<th
+								v-for="col in listColumns"
+								:key="col.fieldname"
+								class="sortable-th"
+								@click="toggleSort(col.fieldname)"
+							>
+								{{ col.label }}
 								<span class="sort-arrows">
-									<span :class="{ active: sortField === 'full_name' && sortDir === 'asc' }">&#9650;</span>
-									<span :class="{ active: sortField === 'full_name' && sortDir === 'desc' }">&#9660;</span>
+									<span :class="{ active: sortField === col.fieldname && sortDir === 'asc' }">&#9650;</span>
+									<span :class="{ active: sortField === col.fieldname && sortDir === 'desc' }">&#9660;</span>
 								</span>
 							</th>
-							<th class="sortable-th" @click="toggleSort('user_type')">
-								User Type
-								<span class="sort-arrows">
-									<span :class="{ active: sortField === 'user_type' && sortDir === 'asc' }">&#9650;</span>
-									<span :class="{ active: sortField === 'user_type' && sortDir === 'desc' }">&#9660;</span>
-								</span>
-							</th>
-							<th style="width: 80px">Enabled</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -78,20 +78,24 @@
 							@click="onRowClick(row)"
 						>
 							<td><span class="row-name">{{ row.name }}</span></td>
-							<td>{{ row.full_name || '\u2014' }}</td>
-							<td>{{ row.user_type || '\u2014' }}</td>
-							<td>
-								<AppIcon
-									v-if="row.enabled"
-									name="check-circle"
-									:size="14"
-									class="check-on"
-								/>
-								<AppIcon v-else name="circle" :size="14" class="check-off" />
+							<td v-for="col in listColumns" :key="col.fieldname">
+								<template v-if="col.fieldtype === 'Check'">
+									<AppIcon
+										v-if="row[col.fieldname]"
+										name="check-circle"
+										:size="14"
+										class="check-on"
+									/>
+									<AppIcon v-else name="circle" :size="14" class="check-off" />
+								</template>
+								<span v-else-if="col.fieldtype === 'Date'">
+									{{ formatDate(row[col.fieldname]) }}
+								</span>
+								<span v-else>{{ row[col.fieldname] ?? '\u2014' }}</span>
 							</td>
 						</tr>
 						<tr v-if="rows.length === 0 && !loading">
-							<td colspan="4" class="table-empty-cell">
+							<td :colspan="1 + listColumns.length" class="table-empty-cell">
 								<div class="table-empty">
 									<AppIcon name="inbox" :size="28" style="opacity: 0.4" />
 									<p>No records found</p>
@@ -124,19 +128,30 @@
 				</button>
 			</div>
 		</div>
+
+		<!-- Customize Columns Modal -->
+		<ColumnCustomizerModal
+			v-model:visible="showColumnsModal"
+			doctype="User"
+			:fields="fieldMeta?.fields || []"
+			@saved="initList()"
+		/>
 	</div>
 </template>
 
 <script setup>
-import { computed, ref, shallowRef, watch } from "vue"
+import { computed, ref, shallowRef } from "vue"
 import { useRouter } from "vue-router"
 import PageHeader from "@/components/shared/PageHeader.vue"
 import AppIcon from "@/components/shared/AppIcon.vue"
+import ColumnCustomizerModal from "@/components/shared/ColumnCustomizerModal.vue"
 import { useDocList } from "@/composables/useDocList"
+import { useFrontendConfig } from "@/composables/useFrontendConfig"
 import { usePermissions } from "@/composables/usePermissions"
 
 const router = useRouter()
 const { canCreate: permCanCreate } = usePermissions()
+const { getFieldsForDoctype } = useFrontendConfig()
 
 const filterTabs = [
 	{ label: "All", value: "all" },
@@ -149,17 +164,44 @@ const activeTab = ref("all")
 const searchQuery = ref("")
 const sortField = ref("modified")
 const sortDir = ref("desc")
+const showColumnsModal = ref(false)
 
+const fieldMeta = ref(null)
 const listState = shallowRef(null)
 
-function initList() {
+const listColumns = computed(() => {
+	if (!fieldMeta.value?.fields) return []
+	return fieldMeta.value.fields.filter(
+		(f) => f.show_in_list && f.fieldname !== "name"
+	)
+})
+
+// Always fetch these fields for tab filtering, even if not shown
+const REQUIRED_FIELDS = ['enabled', 'user_type']
+
+const fetchFields = computed(() => {
+	const fields = ["name"]
+	for (const col of listColumns.value) {
+		if (!fields.includes(col.fieldname)) {
+			fields.push(col.fieldname)
+		}
+	}
+	for (const f of REQUIRED_FIELDS) {
+		if (!fields.includes(f)) fields.push(f)
+	}
+	return fields
+})
+
+async function initList() {
 	activeTab.value = "all"
 	searchQuery.value = ""
 	sortField.value = "modified"
 	sortDir.value = "desc"
 
+	fieldMeta.value = await getFieldsForDoctype("User")
+
 	const newList = useDocList("User", {
-		fields: ["name", "full_name", "enabled", "user_type"],
+		fields: fetchFields.value,
 		orderBy: "modified desc",
 		pageSize: 20,
 		immediate: true,
@@ -227,6 +269,12 @@ function onSearch() {
 
 function goToPage(p) {
 	if (listState.value) listState.value.setPage(p)
+}
+
+function formatDate(val) {
+	if (!val) return '\u2014'
+	const [y, m, d] = val.split('-')
+	return (y && m && d) ? `${d}-${m}-${y}` : val
 }
 
 function onRowClick(row) {

@@ -22,9 +22,10 @@ const DOCTYPES = [
   { doctype: 'Colour', route: 'colours', label: 'Colours', icon: 'palette', group: 'Masters', sortOrder: 12, isSubmittable: false, isSingle: false },
   { doctype: 'Size', route: 'sizes', label: 'Sizes', icon: 'expand', group: 'Masters', sortOrder: 13, isSubmittable: false, isSingle: false },
   { doctype: 'Size Range', route: 'size-ranges', label: 'Size Ranges', icon: 'list', group: 'Masters', sortOrder: 14, isSubmittable: false, isSingle: false },
+  { doctype: 'Knitter', route: 'knitters', label: 'Knitters', icon: 'user', group: 'Masters', sortOrder: 15, isSubmittable: false, isSingle: false },
 
   // ── Orders ──
-  { doctype: 'Order', route: 'orders', label: 'Orders', icon: 'shopping-cart', group: 'Orders', sortOrder: 20, isSubmittable: true, isSingle: false },
+  { doctype: 'Order', route: 'orders', label: 'Orders', icon: 'shopping-cart', group: 'Orders', sortOrder: 20, isSubmittable: true, isSingle: false, hasCloseFeature: true },
   { doctype: 'Order Tracking', route: 'order-tracking', label: 'Order Tracking', icon: 'check-circle', group: 'Orders', sortOrder: 21, isSubmittable: false, isSingle: false, dateTabs: 'completion_date' },
   { doctype: 'Albion Import', route: 'albion-imports', label: 'Albion Import', icon: 'upload', group: 'Orders', sortOrder: 22, isSubmittable: true, isSingle: false, hideSidebar: true },
 
@@ -34,6 +35,7 @@ const DOCTYPES = [
 
   // ── Admin ──
   { doctype: 'User', route: 'users', label: 'Users', icon: 'user', group: 'Admin', sortOrder: 25, isSubmittable: false, isSingle: false },
+  { doctype: 'User Listview', route: 'user-listviews', label: 'User Listviews', icon: 'columns', group: 'Admin', sortOrder: 26, isSubmittable: false, isSingle: false, hideSidebar: true },
 
   // ── System ──
   { doctype: 'Albion Settings', route: 'settings', label: 'Settings', icon: 'wrench', group: 'System', sortOrder: 30, isSubmittable: false, isSingle: true, hideSidebar: true },

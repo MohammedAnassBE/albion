@@ -10,9 +10,11 @@ import { computed } from "vue"
 
 const props = defineProps({
 	docstatus: { type: Number, default: 0 },
+	status: { type: String, default: '' },
 })
 
 const label = computed(() => {
+	if (props.status === 'Closed') return 'Closed'
 	switch (props.docstatus) {
 		case 0: return "Draft"
 		case 1: return "Submitted"
@@ -22,6 +24,7 @@ const label = computed(() => {
 })
 
 const statusClass = computed(() => {
+	if (props.status === 'Closed') return 'closed'
 	switch (props.docstatus) {
 		case 0: return "warning"
 		case 1: return "success"
@@ -52,4 +55,5 @@ const statusClass = computed(() => {
 .status-badge.warning { color: #D97706; }
 .status-badge.danger { color: #DC2626; }
 .status-badge.secondary { color: #64748B; }
+.status-badge.closed { color: #6366F1; }
 </style>

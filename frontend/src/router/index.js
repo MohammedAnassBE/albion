@@ -56,6 +56,9 @@ const routes = [
 			// Size Range
 			{ path: "size-ranges/new", component: () => import("@/views/forms/SizeRangeForm.vue") },
 			{ path: "size-ranges/:id", component: () => import("@/views/forms/SizeRangeForm.vue"), props: true },
+			// Knitter
+			{ path: "knitters/new", component: () => import("@/views/forms/KnitterForm.vue") },
+			{ path: "knitters/:id", component: () => import("@/views/forms/KnitterForm.vue"), props: true },
 			// Customer
 			{ path: "customers/new", component: () => import("@/views/forms/CustomerForm.vue") },
 			{ path: "customers/:id", component: () => import("@/views/forms/CustomerForm.vue"), props: true },
@@ -71,6 +74,10 @@ const routes = [
 			{ path: "users", component: () => import("@/views/users/UserListPage.vue") },
 			{ path: "users/new", component: () => import("@/views/users/UserForm.vue") },
 			{ path: "users/:id", component: () => import("@/views/users/UserForm.vue"), props: true },
+
+			// User Listview
+			{ path: "user-listviews/new", component: () => import("@/views/forms/UserListviewForm.vue") },
+			{ path: "user-listviews/:id", component: () => import("@/views/forms/UserListviewForm.vue"), props: true },
 
 			// ── Reports ────────────────────────────────────────────
 			{ path: "production-report", name: "ProductionReport", component: () => import("@/views/reports/ProductionReportPage.vue") },

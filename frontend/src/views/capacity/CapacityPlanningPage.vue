@@ -176,7 +176,7 @@
                         <template v-for="(machine, mIdx) in filteredMachines" :key="machine.machine_id">
                             <!-- Machine label cell -->
                             <div class="gantt-machine-cell" :class="{ 'machine-disabled': !isMachineCompatible(machine.machine_id), 'machine-cell-zoom': isZoomedOut }" :style="{ gridRow: mIdx + 2 }"
-                                 :title="isZoomedOut ? `${machine.machine_id} — ${machine.machine_name} (${machine.machine_gg})` : ''">
+                                 :title="isZoomedOut ? `${machine.machine_id} (${machine.machine_gg})` : ''">
                                 <template v-if="isZoomedOut">
                                     <span class="machine-id-zoom">{{ machine.machine_id }}</span>
                                 </template>
@@ -186,7 +186,7 @@
                                             <span class="machine-id">{{ machine.machine_id }}</span>
                                             <span class="machine-gg-badge">{{ machine.machine_gg }}</span>
                                         </div>
-                                        <span class="machine-name">{{ machine.machine_name }}</span>
+                                        <span class="machine-name">{{ machine.machine_gg }}</span>
                                     </div>
                                 </template>
                             </div>
@@ -699,7 +699,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(row, idx) in bulkShiftMachines" :key="row.machine_id">
-                                <td>{{ row.machine_name }}</td>
+                                <td>{{ row.machine_id }}</td>
                                 <td>{{ row.shift_name }}</td>
                                 <td class="text-right">{{ row.total_minutes }}</td>
                                 <td class="text-right">{{ row.allocated_minutes }}</td>
@@ -864,7 +864,7 @@ const applyZoom = ref(false);
 
 // ── LinkField filters & handlers ──
 const orderFilters = computed(() => {
-    const f = { docstatus: 1 };
+    const f = { docstatus: 1, status: ['!=', 'Closed'] };
     if (selectedCustomer.value) f.customer = selectedCustomer.value;
     return f;
 });
@@ -5132,7 +5132,6 @@ function populateBulkShiftTable() {
     }
     bulkShiftMachines.value = machines.value.map(m => ({
         machine_id: m.machine_id,
-        machine_name: m.machine_name || m.machine_id,
         shift_name: getShiftNamesForDate(dateStr, m.machine_id),
         total_minutes: getEffectiveMinutes(dateStr, m.machine_id),
         allocated_minutes: getUsedMinutes(m.machine_id, dateStr),

@@ -7,6 +7,7 @@ export default {
 		{ fieldname: 'purchase_order', fieldtype: 'Data', label: 'Purchase Order' },
 		{ fieldname: 'order_date', fieldtype: 'Date', label: 'Order Date', reqd: 1 },
 		{ fieldname: 'delivery_date', fieldtype: 'Date', label: 'Delivery Date' },
+		{ fieldname: 'status', fieldtype: 'Data', label: 'Status', read_only: 1, hidden_if_empty: true },
 		{ fieldname: 'amended_from', fieldtype: 'Link', label: 'Amended From', options: 'Order', read_only: 1, hidden_if_empty: true },
 		{ fieldname: 'items', fieldtype: 'Table', label: 'Items', options: 'Order Item', columns: [
 			{ field: 'item', header: 'Item', type: 'link', options: 'Item' },
@@ -16,6 +17,8 @@ export default {
 			{ field: 'colour', header: 'Colour', type: 'link', options: 'Colour' },
 			{ field: 'size', header: 'Size', type: 'data' },
 			{ field: 'quantity', header: 'Quantity', type: 'float' },
+		{ field: 'rate', header: 'Rate', type: 'currency' },
+		{ field: 'delivery_date', header: 'Delivery Date', type: 'date' },
 		]},
 		{ fieldname: 'order_processes', fieldtype: 'Table', label: 'Order Processes', options: 'Order Process', read_only: 1, columns: [
 			{ field: 'item', header: 'Item', type: 'link', options: 'Item' },

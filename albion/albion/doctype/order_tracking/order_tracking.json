@@ -12,6 +12,7 @@
   "colour",
   "size",
   "quantity",
+  "knitter",
   "completion_date",
   "user"
  ],
@@ -37,20 +38,30 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Colour",
-   "options": "Colour"
+   "options": "Colour",
+   "reqd": 1
   },
   {
    "fieldname": "size",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Size",
-   "options": "Size"
+   "options": "Size",
+   "reqd": 1
   },
   {
    "fieldname": "quantity",
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "Quantity",
+   "reqd": 1
+  },
+  {
+   "fieldname": "knitter",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Knitter",
+   "options": "Knitter",
    "reqd": 1
   },
   {
