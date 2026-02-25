@@ -85,16 +85,17 @@
 					</select>
 				</div>
 
-				<!-- Colour -->
+				<!-- Colour No -->
 				<div class="inline-field">
-					<label>Colour <span class="req">*</span></label>
+					<label>Colour No <span class="req">*</span></label>
 					<select
 						class="field-select"
-						v-model="inlineForm.colour"
+						:value="inlineForm.colour"
 						:disabled="!inlineForm.style"
+						@change="inlineForm.colour = $event.target.value"
 					>
-						<option value="">{{ !inlineForm.style ? 'Select Style first' : 'Select Colour' }}</option>
-						<option v-for="c in availableColours" :key="c" :value="c">{{ c }}</option>
+						<option value="">{{ !inlineForm.style ? 'Select Style first' : 'Select Colour No' }}</option>
+						<option v-for="item in availableColourNos" :key="item.colour" :value="item.colour">{{ item.colourNo }}</option>
 					</select>
 				</div>
 
@@ -275,7 +276,7 @@
 </template>
 
 <script setup>
-import { ref, shallowRef, reactive, computed, onMounted } from "vue"
+import { ref, shallowRef, reactive, computed, watch, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import PageHeader from "@/components/shared/PageHeader.vue"
 import AppIcon from "@/components/shared/AppIcon.vue"
@@ -537,6 +538,37 @@ const availableColours = computed(() => {
 		if (row.style === inlineForm.style && row.colour) colours.add(row.colour)
 	}
 	return [...colours].sort()
+})
+
+// Colour No lookup
+const colourNoMap = ref(new Map()) // colour_name → colour_no
+
+watch(availableColours, async (colours) => {
+	colourNoMap.value = new Map()
+	if (!colours.length) return
+	try {
+		const { data } = await getList('Colour', {
+			filters: { name: ['in', colours] },
+			fields: ['name', 'colour_no'],
+			limit_page_length: 0,
+		})
+		const m = new Map()
+		for (const row of data) {
+			if (row.colour_no) m.set(row.name, row.colour_no)
+		}
+		colourNoMap.value = m
+	} catch {
+		colourNoMap.value = new Map()
+	}
+})
+
+const availableColourNos = computed(() => {
+	const result = []
+	for (const colour of availableColours.value) {
+		const colourNo = colourNoMap.value.get(colour) || colour
+		result.push({ colourNo, colour })
+	}
+	return result.sort((a, b) => a.colourNo.localeCompare(b.colourNo))
 })
 
 const availableSizes = computed(() => {

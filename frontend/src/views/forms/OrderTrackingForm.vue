@@ -79,16 +79,16 @@
 						</select>
 					</FormField>
 
-					<!-- Colour (cascading select) -->
-					<FormField label="Colour" :required="true" :error="validationErrors.colour" :readonly="isReadonly">
+					<!-- Colour No (cascading select, resolves to colour) -->
+					<FormField label="Colour No" :required="true" :error="validationErrors.colour" :readonly="isReadonly">
 						<select
 							class="field-select"
 							:value="form.colour"
 							:disabled="isReadonly || !form.style"
 							@change="form.colour = $event.target.value"
 						>
-							<option value="">{{ !form.style ? 'Select Style first' : 'Select Colour' }}</option>
-							<option v-for="c in availableColours" :key="c" :value="c">{{ c }}</option>
+							<option value="">{{ !form.style ? 'Select Style first' : 'Select Colour No' }}</option>
+							<option v-for="item in availableColourNos" :key="item.colour" :value="item.colour">{{ item.colourNo }}</option>
 						</select>
 					</FormField>
 
@@ -166,7 +166,7 @@ import { useDoc } from "@/composables/useDoc"
 import { useAppToast } from "@/composables/useToast"
 import { useAppConfirm } from "@/composables/useConfirm"
 import { usePermissions } from "@/composables/usePermissions"
-import { getDoc } from "@/api/client"
+import { getDoc, getList } from "@/api/client"
 
 const props = defineProps({
 	id: { type: String, default: null },
@@ -225,6 +225,37 @@ const availableColours = computed(() => {
 		if (row.style === form.style && row.colour) colours.add(row.colour)
 	}
 	return [...colours].sort()
+})
+
+// Colour No lookup
+const colourNoMap = ref(new Map()) // colour_name → colour_no
+
+watch(availableColours, async (colours) => {
+	colourNoMap.value = new Map()
+	if (!colours.length) return
+	try {
+		const { data } = await getList('Colour', {
+			filters: { name: ['in', colours] },
+			fields: ['name', 'colour_no'],
+			limit_page_length: 0,
+		})
+		const m = new Map()
+		for (const row of data) {
+			if (row.colour_no) m.set(row.name, row.colour_no)
+		}
+		colourNoMap.value = m
+	} catch {
+		colourNoMap.value = new Map()
+	}
+})
+
+const availableColourNos = computed(() => {
+	const result = []
+	for (const colour of availableColours.value) {
+		const colourNo = colourNoMap.value.get(colour) || colour
+		result.push({ colourNo, colour })
+	}
+	return result.sort((a, b) => a.colourNo.localeCompare(b.colourNo))
 })
 const availableSizes = computed(() => {
 	if (!form.style) return []
