@@ -8,6 +8,10 @@ no_cache = 1
 
 
 def get_context(context):
+	if frappe.session.user == "Guest":
+		frappe.local.flags.redirect_location = "/login?redirect-to=/web"
+		raise frappe.Redirect
+
 	csrf_token = frappe.sessions.get_csrf_token()
 	frappe.db.commit()
 	context.csrf_token = csrf_token
