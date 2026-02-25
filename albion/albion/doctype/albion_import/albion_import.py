@@ -104,12 +104,12 @@ class AlbionImport(Document):
 
 			# Skip empty rows
 			order_date = row[0]
-			customer = str(row[1]).strip() if row[1] else None
+			client = str(row[1]).strip() if row[1] else None
 			purchase_order = str(row[2]).strip() if row[2] else None
 			item_code = str(row[3]).strip() if row[3] else None
 			item_name = str(row[4]).strip() if row[4] else None
 			machine = str(row[5]).strip() if row[5] else None
-			machine_gg = str(row[6]).strip() if row[6] else None
+			machine_frame = str(row[6]).strip() if row[6] else None
 			colour = str(row[7]).strip() if row[7] else None
 			size_type = str(row[8]).strip().upper() if row[8] else None
 
@@ -137,7 +137,7 @@ class AlbionImport(Document):
 			# Build nested structure
 			if purchase_order not in orders:
 				orders[purchase_order] = {
-					"customer": customer,
+					"client": client,
 					"order_date": order_date,
 					"delivery_date": delivery_date,
 					"items": {}
@@ -152,7 +152,7 @@ class AlbionImport(Document):
 				order["items"][item_code] = {
 					"item_name": item_name,
 					"machine": machine,
-					"machine_gg": machine_gg,
+					"machine_frame": machine_frame,
 					"size_type": size_type,
 					"colours": {}
 				}
@@ -170,53 +170,53 @@ class AlbionImport(Document):
 	def create_all(self, data, size_maps):
 		"""Create all masters and orders from parsed data."""
 		counts = {
-			"Customer": {"created": 0, "existing": 0},
-			"Machine GG": {"created": 0, "existing": 0},
+			"Client": {"created": 0, "existing": 0},
+			"Machine Frame": {"created": 0, "existing": 0},
 			"Machine": {"created": 0, "existing": 0},
 			"Process": {"created": 0, "existing": 0},
 			"Colour": {"created": 0, "existing": 0},
 			"Size": {"created": 0, "existing": 0},
 			"Size Range": {"created": 0, "existing": 0},
-			"Item": {"created": 0, "existing": 0},
+			"Style": {"created": 0, "existing": 0},
 			"Order": {"created": 0, "existing": 0},
 		}
 
 		# Collect all unique masters across all orders
-		all_customers = set()
-		all_machine_ggs = set()
-		all_machines = {}  # machine_id -> {machine_name, machine_gg}
+		all_clients = set()
+		all_machine_frames = set()
+		all_machines = {}  # machine_id -> {machine_name, machine_frame}
 		all_colours = set()
 		all_sizes = set()
-		# item_code -> {item_name, machine_gg, colours: {colour: {size: qty}}}
-		all_items = {}
+		# style_code -> {style_name, machine_frame, colours: {colour: {size: qty}}}
+		all_styles = {}
 
 		for po, order_data in data.items():
-			if order_data.get("customer"):
-				all_customers.add(order_data["customer"])
+			if order_data.get("client"):
+				all_clients.add(order_data["client"])
 
 			for item_code, item_data in order_data["items"].items():
-				machine_gg = item_data.get("machine_gg")
+				machine_frame = item_data.get("machine_frame")
 				machine_name = item_data.get("machine")
 
-				# Machine GG — always create, including "-" as placeholder
-				if machine_gg:
-					gg_value = machine_gg.upper() if machine_gg != "-" else "-"
-					all_machine_ggs.add(gg_value)
+				# Machine Frame — always create, including "-" as placeholder
+				if machine_frame:
+					frame_value = machine_frame.upper() if machine_frame != "-" else "-"
+					all_machine_frames.add(frame_value)
 
 					# Machine — skip when machine name is "-"
-					if machine_name and machine_name != "-" and machine_gg != "-":
-						machine_id = f"{machine_name}-{gg_value}"
+					if machine_name and machine_name != "-" and machine_frame != "-":
+						machine_id = f"{machine_name}-{frame_value}"
 						if machine_id not in all_machines:
 							all_machines[machine_id] = {
 								"machine_name": machine_name,
-								"machine_gg": gg_value
+								"machine_frame": frame_value
 							}
 
-				# Collect item info
-				if item_code not in all_items:
-					all_items[item_code] = {
-						"item_name": item_data.get("item_name"),
-						"machine_gg": machine_gg.upper() if machine_gg and machine_gg != "-" else "-",
+				# Collect style info
+				if item_code not in all_styles:
+					all_styles[item_code] = {
+						"style_name": item_data.get("item_name"),
+						"machine_frame": machine_frame.upper() if machine_frame and machine_frame != "-" else "-",
 						"size_type": item_data.get("size_type"),
 						"colours": {},
 						"sizes": set()
@@ -224,29 +224,29 @@ class AlbionImport(Document):
 
 				for colour, size_qty in item_data.get("colours", {}).items():
 					all_colours.add(colour)
-					if colour not in all_items[item_code]["colours"]:
-						all_items[item_code]["colours"][colour] = {}
-					all_items[item_code]["colours"][colour].update(size_qty)
+					if colour not in all_styles[item_code]["colours"]:
+						all_styles[item_code]["colours"][colour] = {}
+					all_styles[item_code]["colours"][colour].update(size_qty)
 					for size_name in size_qty:
 						all_sizes.add(str(size_name))
-						all_items[item_code]["sizes"].add(str(size_name))
+						all_styles[item_code]["sizes"].add(str(size_name))
 
-		# Step 2a: Create Customers
-		for customer_name in sorted(all_customers):
-			self.get_or_create("Customer", "customer_name", customer_name,
-				{"customer_name": customer_name}, counts)
+		# Step 2a: Create Clients
+		for client_name in sorted(all_clients):
+			self.get_or_create("Client", "client_name", client_name,
+				{"client_name": client_name}, counts)
 
-		# Step 2b: Create Machine GGs
-		for gg_name in sorted(all_machine_ggs):
-			self.get_or_create("Machine GG", "machine_gg_name", gg_name,
-				{"machine_gg_name": gg_name}, counts)
+		# Step 2b: Create Machine Frames
+		for frame_name in sorted(all_machine_frames):
+			self.get_or_create("Machine Frame", "machine_frame_name", frame_name,
+				{"machine_frame_name": frame_name}, counts)
 
 		# Step 2c: Create Machines
 		for machine_id, mdata in sorted(all_machines.items()):
 			self.get_or_create("Machine", "machine_id", machine_id, {
 				"machine_id": machine_id,
 				"machine_name": mdata["machine_name"],
-				"machine_gg": mdata["machine_gg"]
+				"machine_frame": mdata["machine_frame"]
 			}, counts)
 
 		# Step 2d: Create Colours
@@ -263,8 +263,8 @@ class AlbionImport(Document):
 		self.get_or_create("Process", "process_name", "Knitting",
 			{"process_name": "Knitting"}, counts)
 
-		# Step 2f: Create Size Ranges and Items
-		for item_code, item_info in sorted(all_items.items()):
+		# Step 2f: Create Size Ranges and Styles
+		for item_code, item_info in sorted(all_styles.items()):
 			# Order sizes by their position in the size map (Excel column order)
 			st = item_info.get("size_type", "X")
 			size_order = size_maps.get(st, SIZE_MAPS.get(st, []))
@@ -293,42 +293,42 @@ class AlbionImport(Document):
 				sr_doc.insert(ignore_permissions=True)
 				counts["Size Range"]["created"] += 1
 
-			# Create or update Item
+			# Create or update Style
 			colours_list = sorted(item_info["colours"].keys())
-			machine_gg = item_info.get("machine_gg")
+			machine_frame = item_info.get("machine_frame")
 
-			if frappe.db.exists("Item", item_code):
-				counts["Item"]["existing"] += 1
-				item_doc = frappe.get_doc("Item", item_code)
+			if frappe.db.exists("Style", item_code):
+				counts["Style"]["existing"] += 1
+				style_doc = frappe.get_doc("Style", item_code)
 				# Update colours if new ones found
-				existing_colours = {row.colour for row in item_doc.colours}
+				existing_colours = {row.colour for row in style_doc.colours}
 				changed = False
 				for c in colours_list:
 					if c not in existing_colours:
-						item_doc.append("colours", {"colour": c})
+						style_doc.append("colours", {"colour": c})
 						changed = True
 				if changed:
-					item_doc.save(ignore_permissions=True)
+					style_doc.save(ignore_permissions=True)
 			else:
-				item_doc = frappe.new_doc("Item")
-				item_doc.item_code = item_code
-				item_doc.item_name = item_info.get("item_name") or item_code
-				item_doc.machine_gg = machine_gg or "-"
-				item_doc.size_range = sr_name
+				style_doc = frappe.new_doc("Style")
+				style_doc.style_code = item_code
+				style_doc.style_name = item_info.get("style_name") or item_code
+				style_doc.machine_frame = machine_frame or "-"
+				style_doc.size_range = sr_name
 				for c in colours_list:
-					item_doc.append("colours", {"colour": c})
-				item_doc.append("processes", {
+					style_doc.append("colours", {"colour": c})
+				style_doc.append("processes", {
 					"process_name": "Knitting",
 					"minutes": random.randint(5, 14)
 				})
 				# sizes will be populated via validate -> fetch_sizes_from_range
-				item_doc.insert(ignore_permissions=True)
-				counts["Item"]["created"] += 1
+				style_doc.insert(ignore_permissions=True)
+				counts["Style"]["created"] += 1
 
 		# Step 3: Create Orders
 		for po, order_data in data.items():
 			order_doc = frappe.new_doc("Order")
-			order_doc.customer = order_data.get("customer")
+			order_doc.client = order_data.get("client")
 			order_doc.purchase_order = po
 
 			# Parse dates
@@ -342,18 +342,18 @@ class AlbionImport(Document):
 			if delivery_date:
 				order_doc.delivery_date = getdate(delivery_date)
 
-			# Add items and order details
-			added_items = set()
+			# Add styles and order details
+			added_styles = set()
 			for item_code, item_data in order_data["items"].items():
-				if item_code not in added_items:
-					order_doc.append("items", {"item": item_code})
-					added_items.add(item_code)
+				if item_code not in added_styles:
+					order_doc.append("styles", {"style": item_code})
+					added_styles.add(item_code)
 
 				for colour, size_qty in item_data.get("colours", {}).items():
 					for size_name, qty in size_qty.items():
 						if qty and qty > 0:
 							order_doc.append("order_details", {
-								"item": item_code,
+								"style": item_code,
 								"colour": colour,
 								"size": str(size_name),
 								"quantity": qty

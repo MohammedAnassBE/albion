@@ -33,17 +33,17 @@ def execute():
 	if not frappe.db.exists("Process", "Knitting"):
 		frappe.get_doc({"doctype": "Process", "process_name": "Knitting"}).insert()
 
-	# --- Customers (4) ---
-	customers = ["Alpha Textiles", "Beta Garments", "Gamma Knitwear", "Delta Fashions"]
-	for name in customers:
-		if not frappe.db.exists("Customer", {"customer_name": name}):
-			frappe.get_doc({"doctype": "Customer", "customer_name": name}).insert()
+	# --- Clients (4) ---
+	clients = ["Alpha Textiles", "Beta Garments", "Gamma Knitwear", "Delta Fashions"]
+	for name in clients:
+		if not frappe.db.exists("Client", {"client_name": name}):
+			frappe.get_doc({"doctype": "Client", "client_name": name}).insert()
 
-	# --- Machine GG ---
-	machine_ggs = ["7GG", "12GG", "14GG"]
-	for gg in machine_ggs:
-		if not frappe.db.exists("Machine GG", gg):
-			frappe.get_doc({"doctype": "Machine GG", "machine_gg_name": gg}).insert()
+	# --- Machine Frame ---
+	machine_frames = ["7GG", "12GG", "14GG"]
+	for gg in machine_frames:
+		if not frappe.db.exists("Machine Frame", gg):
+			frappe.get_doc({"doctype": "Machine Frame", "machine_frame_name": gg}).insert()
 
 	# --- Machines (10 distributed across 3 GGs) ---
 	machines = [
@@ -64,16 +64,16 @@ def execute():
 				"doctype": "Machine",
 				"machine_id": machine_id,
 				"machine_name": machine_name,
-				"machine_gg": gg,
+				"machine_frame": gg,
 			}).insert()
 
-	# --- Items (10) ---
+	# --- Styles (10) ---
 	# Use existing colours, sizes, size ranges
 	all_colours = frappe.get_all("Colour", pluck="name")
 	all_sizes = frappe.get_all("Size", pluck="name")
 	all_size_ranges = frappe.get_all("Size Range", pluck="name")
 
-	items_data = [
+	styles_data = [
 		("ITM-001", "V-Neck Pullover", "7GG"),
 		("ITM-002", "Crew Neck Sweater", "7GG"),
 		("ITM-003", "Cable Knit Cardigan", "12GG"),
@@ -86,33 +86,33 @@ def execute():
 		("ITM-010", "Sleeveless Tank", "7GG"),
 	]
 
-	created_items = []
-	for item_code, item_name, gg in items_data:
-		if frappe.db.exists("Item", item_code):
-			created_items.append(item_code)
+	created_styles = []
+	for style_code, style_name, gg in styles_data:
+		if frappe.db.exists("Style", style_code):
+			created_styles.append(style_code)
 			continue
 
-		# Pick 2-4 random colours and 3-5 random sizes for each item
-		item_colours = random.sample(all_colours, min(random.randint(2, 4), len(all_colours)))
-		item_sizes = random.sample(all_sizes, min(random.randint(3, 5), len(all_sizes)))
+		# Pick 2-4 random colours and 3-5 random sizes for each style
+		style_colours = random.sample(all_colours, min(random.randint(2, 4), len(all_colours)))
+		style_sizes = random.sample(all_sizes, min(random.randint(3, 5), len(all_sizes)))
 		size_range = random.choice(all_size_ranges) if all_size_ranges else None
 
 		doc = frappe.get_doc({
-			"doctype": "Item",
-			"item_code": item_code,
-			"item_name": item_name,
-			"machine_gg": gg,
+			"doctype": "Style",
+			"style_code": style_code,
+			"style_name": style_name,
+			"machine_frame": gg,
 			"size_range": size_range,
-			"colours": [{"colour": c} for c in item_colours],
+			"colours": [{"colour": c} for c in style_colours],
 			"processes": [{"process_name": "Knitting", "minutes": random.choice([3, 4, 5, 6, 8, 10])}],
 		})
 		doc.insert()
-		created_items.append(item_code)
+		created_styles.append(style_code)
 
 	# --- Orders (15) ---
-	all_customers = frappe.get_all("Customer", pluck="name")
-	if not all_customers:
-		frappe.throw("No customers found. Please create customers first.")
+	all_clients = frappe.get_all("Client", pluck="name")
+	if not all_clients:
+		frappe.throw("No clients found. Please create clients first.")
 
 	base_date = today()
 
@@ -123,29 +123,29 @@ def execute():
 		if order_count >= 15:
 			break
 
-		customer = random.choice(all_customers)
+		client = random.choice(all_clients)
 		order_date = add_days(base_date, -random.randint(0, 30))
 		delivery_date = add_days(order_date, random.randint(14, 45))
 
-		# Pick 1-3 random items for this order
-		num_items = random.randint(1, 3)
-		order_items_list = random.sample(created_items, min(num_items, len(created_items)))
+		# Pick 1-3 random styles for this order
+		num_styles = random.randint(1, 3)
+		order_styles_list = random.sample(created_styles, min(num_styles, len(created_styles)))
 
-		# Build order_details: for each item, get its colours and sizes, generate quantities
+		# Build order_details: for each style, get its colours and sizes, generate quantities
 		order_details = []
-		for item_code in order_items_list:
-			item_doc = frappe.get_doc("Item", item_code)
-			item_colours = [row.colour for row in item_doc.colours]
-			item_sizes = [row.size for row in item_doc.sizes]
+		for style_code in order_styles_list:
+			style_doc = frappe.get_doc("Style", style_code)
+			style_colours = [row.colour for row in style_doc.colours]
+			style_sizes = [row.size for row in style_doc.sizes]
 
 			# Pick a subset of colours and sizes for this order
-			pick_colours = random.sample(item_colours, min(random.randint(1, 3), len(item_colours)))
-			pick_sizes = random.sample(item_sizes, min(random.randint(2, 4), len(item_sizes)))
+			pick_colours = random.sample(style_colours, min(random.randint(1, 3), len(style_colours)))
+			pick_sizes = random.sample(style_sizes, min(random.randint(2, 4), len(style_sizes)))
 
 			for colour in pick_colours:
 				for size in pick_sizes:
 					order_details.append({
-						"item": item_code,
+						"style": style_code,
 						"colour": colour,
 						"size": size,
 						"quantity": random.randint(10, 200),
@@ -153,10 +153,10 @@ def execute():
 
 		order_doc = frappe.get_doc({
 			"doctype": "Order",
-			"customer": customer,
+			"client": client,
 			"order_date": order_date,
 			"delivery_date": delivery_date,
-			"items": [{"item": ic} for ic in order_items_list],
+			"styles": [{"style": ic} for ic in order_styles_list],
 			"order_details": order_details,
 		})
 		order_doc.insert()

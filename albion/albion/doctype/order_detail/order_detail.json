@@ -1,12 +1,12 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2026-02-09 17:30:00.000000",
+ "creation": "2026-02-09 17:30:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "item",
+  "style",
   "colour",
   "size",
   "quantity",
@@ -15,11 +15,11 @@
  ],
  "fields": [
   {
-   "fieldname": "item",
+   "fieldname": "style",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Item",
-   "options": "Item",
+   "label": "Style",
+   "options": "Style",
    "reqd": 1
   },
   {
@@ -47,13 +47,11 @@
   {
    "fieldname": "rate",
    "fieldtype": "Currency",
-   "in_list_view": 0,
    "label": "Rate"
   },
   {
    "fieldname": "delivery_date",
    "fieldtype": "Date",
-   "in_list_view": 0,
    "label": "Delivery Date"
   }
  ],
@@ -61,7 +59,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-02-09 17:30:00.000000",
+ "modified": "2026-02-25 12:01:41.101529",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Order Detail",

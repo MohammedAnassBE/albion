@@ -15,7 +15,7 @@ def get_order_data(order_name):
     if order.order_details:
         for detail in order.order_details:
             order_details.append({
-                "item": detail.item,
+                "style": detail.style,
                 "colour": detail.colour,
                 "size": detail.size,
                 "quantity": detail.quantity
@@ -24,25 +24,25 @@ def get_order_data(order_name):
     # Build process map from Order's snapshot
     process_map = {}
     for op in order.order_processes or []:
-        process_map.setdefault(op.item, []).append({
+        process_map.setdefault(op.style, []).append({
             "process_name": op.process_name,
             "minutes": op.minutes,
         })
 
-    # Get items with their process details
+    # Get styles with their process details
     items = []
-    if order.items:
-        for item in order.items:
-            item_doc = frappe.get_doc("Item", item.item)
-            processes = process_map.get(item.item, [])
+    if order.styles:
+        for item in order.styles:
+            style_doc = frappe.get_doc("Style", item.style)
+            processes = process_map.get(item.style, [])
 
             items.append({
-                "item": item.item,
-                "item_name": item_doc.item_name,
-                "item_doc": {
-                    "item_code": item_doc.item_code,
-                    "item_name": item_doc.item_name,
-                    "machine_gg": item_doc.machine_gg,
+                "style": item.style,
+                "style_name": style_doc.style_name,
+                "style_doc": {
+                    "style_code": style_doc.style_code,
+                    "style_name": style_doc.style_name,
+                    "machine_frame": style_doc.machine_frame,
                     "processes": processes
                 }
             })
@@ -415,7 +415,7 @@ def get_existing_allocations(order, process):
         },
         fields=[
             "name", "machine", "operation_date", "shift",
-            "item", "colour", "size", "quantity", "allocated_minutes"
+            "style", "colour", "size", "quantity", "allocated_minutes"
         ],
         order_by="creation"
     )
@@ -429,7 +429,7 @@ def get_existing_allocations(order, process):
             "operation_date": str(log.operation_date),
             "shift": log.shift,
             "order": log.order,
-            "item": log.item,
+            "style": log.style,
             "process": process,
             "colour": log.colour,
             "size": log.size,
@@ -450,7 +450,7 @@ def get_all_allocations(start_date, end_date):
         },
         fields=[
             "name", "machine", "operation_date", "shift", "process_name",
-            "item", "colour", "size", "quantity", "allocated_minutes", "order"
+            "style", "colour", "size", "quantity", "allocated_minutes", "order"
         ]
     )
 
@@ -463,7 +463,7 @@ def get_all_allocations(start_date, end_date):
             "operation_date": str(log.operation_date),
             "shift": log.shift,
             "order": log.order,
-            "item": log.item,
+            "style": log.style,
             "process": log.process_name,
             "colour": log.colour,
             "size": log.size,
@@ -507,7 +507,7 @@ def save_allocations(allocations, start_date=None, end_date=None):
                 log = frappe.get_doc("Machine Operation", existing_name)
                 log.machine = machine_name
                 log.order = alloc.get("order")
-                log.item = alloc.get("item")
+                log.style = alloc.get("style")
                 log.process_name = alloc.get("process")
                 log.colour = alloc.get("colour")
                 log.size = alloc.get("size")
@@ -525,7 +525,7 @@ def save_allocations(allocations, start_date=None, end_date=None):
                     {
                         "machine": machine_name,
                         "order": alloc.get("order"),
-                        "item": alloc.get("item"),
+                        "style": alloc.get("style"),
                         "process_name": alloc.get("process"),
                         "colour": alloc.get("colour"),
                         "size": alloc.get("size"),
@@ -539,7 +539,7 @@ def save_allocations(allocations, start_date=None, end_date=None):
                     log = frappe.get_doc("Machine Operation", existing)
                     log.machine = machine_name
                     log.order = alloc.get("order")
-                    log.item = alloc.get("item")
+                    log.style = alloc.get("style")
                     log.process_name = alloc.get("process")
                     log.colour = alloc.get("colour")
                     log.size = alloc.get("size")
@@ -555,7 +555,7 @@ def save_allocations(allocations, start_date=None, end_date=None):
                     log = frappe.new_doc("Machine Operation")
                     log.machine = machine_name
                     log.order = alloc.get("order")
-                    log.item = alloc.get("item")
+                    log.style = alloc.get("style")
                     log.process_name = alloc.get("process")
                     log.colour = alloc.get("colour")
                     log.size = alloc.get("size")
@@ -615,7 +615,7 @@ def get_machines():
     """Get all active machines"""
     machines = frappe.get_all(
         "Machine",
-        fields=["machine_id", "machine_name", "machine_gg"],
+        fields=["machine_id", "machine_name", "machine_frame"],
         order_by="machine_id"
     )
     return machines
@@ -638,7 +638,7 @@ def get_orders():
     orders = frappe.get_all(
         "Order",
         filters={"docstatus": 1},
-        fields=["name", "order_date", "delivery_date", "docstatus", "customer"],
+        fields=["name", "order_date", "delivery_date", "docstatus", "client"],
         order_by="creation desc"
     )
     return orders
@@ -651,11 +651,11 @@ def get_order_tracking_summary():
         "Order Tracking",
         fields=[
             "order",
-            "item",
+            "style",
             "colour",
             "size",
             "sum(quantity) as completed_qty",
         ],
-        group_by="`order`, `item`, `colour`, `size`",
+        group_by="`order`, `style`, `colour`, `size`",
     )
     return data

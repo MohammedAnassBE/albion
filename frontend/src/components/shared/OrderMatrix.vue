@@ -8,7 +8,7 @@
 					<line x1="9" y1="3" x2="9" y2="21"/>
 				</svg>
 			</div>
-			<p>No items added. Add items in the table above to start entering quantities.</p>
+			<p>No styles added. Add styles in the table above to start entering quantities.</p>
 		</div>
 
 		<div v-for="(itemData, itemName) in matrixData" :key="itemName" class="item-card">
@@ -21,7 +21,7 @@
 					</span>
 				</div>
 				<div v-if="!readonly" class="item-card-actions">
-					<button class="btn-refresh" @click="refreshItem(itemName)" title="Refresh from Item master">
+					<button class="btn-refresh" @click="refreshItem(itemName)" title="Refresh from Style master">
 						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<polyline points="23 4 23 10 17 10"/>
 							<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -60,6 +60,8 @@
 							<th class="th-delivery-date">Delivery</th>
 							<th v-for="size in itemData.sizes" :key="size" class="th-size">{{ size }}</th>
 							<th class="th-total">Total</th>
+							<th class="th-total-rate">Total Rate</th>
+							<th class="th-gbp-value">GBP Value</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -103,6 +105,8 @@
 							<td class="td-row-total">
 								{{ getRowTotal(itemData.quantities[colour]) }}
 							</td>
+							<td class="td-total-rate">{{ formatCurrency(getRowTotalRate(itemData, colour)) }}</td>
+							<td class="td-gbp-value">{{ formatCurrency(getRowGbpValue(itemData, colour)) }}</td>
 						</tr>
 					</tbody>
 					<tfoot>
@@ -116,6 +120,8 @@
 							<td class="tf-grand-total">
 								{{ getItemGrandTotal(itemData) }}
 							</td>
+							<td class="tf-total-rate">{{ formatCurrency(getItemTotalRate(itemData)) }}</td>
+							<td class="tf-gbp-value">{{ formatCurrency(getItemTotalGbp(itemData)) }}</td>
 						</tr>
 					</tfoot>
 				</table>
@@ -127,7 +133,7 @@
 					Select colours above to start entering quantities.
 				</template>
 				<template v-else>
-					Loading colours and sizes from item master...
+					Loading colours and sizes from style master...
 				</template>
 			</div>
 		</div>
@@ -142,6 +148,8 @@ const props = defineProps({
 	items: { type: Array, default: () => [] },
 	orderDetails: { type: Array, default: () => [] },
 	readonly: { type: Boolean, default: false },
+	currencyType: { type: String, default: '' },
+	exchangeRates: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['update:orderDetails'])
@@ -157,7 +165,7 @@ async function initMatrix(items = null, orderDetails = null) {
 	if (!itemList || itemList.length === 0) return
 
 	itemList.forEach(item => {
-		const itemName = item.item
+		const itemName = item.style
 		if (!itemName) return
 
 		matrixData.value[itemName] = {
@@ -171,8 +179,8 @@ async function initMatrix(items = null, orderDetails = null) {
 	})
 
 	for (const item of itemList) {
-		if (item.item) {
-			await loadFromItem(item.item)
+		if (item.style) {
+			await loadFromItem(item.style)
 		}
 	}
 
@@ -186,7 +194,7 @@ function loadOrderDetails(orderDetails = null) {
 	if (!details || details.length === 0) return
 
 	details.forEach(detail => {
-		const itemName = detail.item
+		const itemName = detail.style
 		if (!matrixData.value[itemName]) return
 
 		const item = matrixData.value[itemName]
@@ -233,8 +241,8 @@ function loadOrderDetails(orderDetails = null) {
 async function loadFromItem(itemName) {
 	try {
 		const result = await callMethod(
-			'albion.albion.doctype.order.order.get_item_details',
-			{ item_code: itemName }
+			'albion.albion.doctype.order.order.get_style_details',
+			{ style_code: itemName }
 		)
 
 		if (result) {
@@ -264,7 +272,7 @@ async function loadFromItem(itemName) {
 			})
 		}
 	} catch (e) {
-		console.error('Error loading item details:', e)
+		console.error('Error loading style details:', e)
 		warning.value = `Error loading details for ${itemName}`
 	}
 }
@@ -357,17 +365,64 @@ function formatQty(val) {
 	return val % 1 === 0 ? val.toLocaleString() : val.toFixed(2)
 }
 
+function formatCurrency(val) {
+	const n = parseFloat(val) || 0
+	return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+function getExchangeRate(deliveryDate, currencyType) {
+	if (!deliveryDate || currencyType === 'GBP') return 1
+	const row = props.exchangeRates.find(r => r.month_year === deliveryDate)
+	if (!row) return 0
+	if (currencyType === 'Euro') return row.euro_rate || 0
+	if (currencyType === 'Dollar') return row.dollar_rate || 0
+	return 0
+}
+
+function getRowTotalRaw(quantities) {
+	let total = 0
+	Object.values(quantities).forEach(qty => { total += parseFloat(qty) || 0 })
+	return total
+}
+
+function getRowTotalRate(itemData, colour) {
+	const qty = getRowTotalRaw(itemData.quantities[colour] || {})
+	const rate = parseFloat(itemData.rates[colour]) || 0
+	return qty * rate
+}
+
+function getRowGbpValue(itemData, colour) {
+	const totalRate = getRowTotalRate(itemData, colour)
+	if (totalRate === 0) return 0
+	const exRate = getExchangeRate(itemData.deliveryDates[colour], props.currencyType)
+	if (exRate === 0) return 0
+	if (exRate === 1) return totalRate
+	return totalRate / exRate
+}
+
+function getItemTotalRate(itemData) {
+	let total = 0
+	itemData.colours.forEach(colour => { total += getRowTotalRate(itemData, colour) })
+	return total
+}
+
+function getItemTotalGbp(itemData) {
+	let total = 0
+	itemData.colours.forEach(colour => { total += getRowGbpValue(itemData, colour) })
+	return total
+}
+
 function getData() {
 	const details = []
 
-	Object.keys(matrixData.value).forEach(item => {
-		const itemData = matrixData.value[item]
+	Object.keys(matrixData.value).forEach(styleKey => {
+		const itemData = matrixData.value[styleKey]
 		itemData.colours.forEach(colour => {
 			itemData.sizes.forEach(size => {
 				const quantity = parseFloat(itemData.quantities[colour][size]) || 0
 				if (quantity > 0) {
 					details.push({
-						item,
+						style: styleKey,
 						colour,
 						size,
 						quantity,
@@ -588,6 +643,13 @@ defineExpose({ getData, matrixData, initMatrix, refreshItem })
 	padding-right: 24px;
 	border-left: 1px solid var(--color-border);
 }
+.th-total-rate,
+.th-gbp-value {
+	text-align: right;
+	width: 110px;
+	padding-right: 20px;
+	border-left: 1px solid var(--color-border);
+}
 
 .matrix-table tbody tr {
 	transition: background 0.1s ease;
@@ -742,6 +804,18 @@ defineExpose({ getData, matrixData, initMatrix, refreshItem })
 	background: var(--color-surface-alt);
 	border-left: 1px solid var(--color-border);
 }
+.td-total-rate,
+.td-gbp-value {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	padding: 10px 20px;
+	white-space: nowrap;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--color-text);
+	border-left: 1px solid var(--color-border);
+	background: rgba(59, 130, 246, 0.04);
+}
 
 /* Footer */
 .matrix-table tfoot tr {
@@ -779,6 +853,15 @@ defineExpose({ getData, matrixData, initMatrix, refreshItem })
 	padding-right: 24px;
 	background: var(--color-surface-alt);
 	border-left: 1px solid var(--color-border);
+}
+.tf-total-rate,
+.tf-gbp-value {
+	text-align: right;
+	padding-right: 20px;
+	font-weight: 800;
+	color: var(--color-text);
+	border-left: 1px solid var(--color-border);
+	background: rgba(59, 130, 246, 0.04);
 }
 
 /* Item empty state */

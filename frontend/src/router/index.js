@@ -27,14 +27,20 @@ const routes = [
 				name: "Settings",
 				component: () => import("@/views/forms/SettingsForm.vue"),
 			},
+			// Currency Exchange — single doctype
+			{
+				path: "currency-exchange",
+				name: "CurrencyExchange",
+				component: () => import("@/views/forms/CurrencyExchangeForm.vue"),
+			},
 
 			// ── Explicit form routes (per-doctype) ──────────────────
 			// Machine
 			{ path: "machines/new", component: () => import("@/views/forms/MachineForm.vue") },
 			{ path: "machines/:id", component: () => import("@/views/forms/MachineForm.vue"), props: true },
-			// Machine GG
-			{ path: "machine-gg/new", component: () => import("@/views/forms/MachineGGForm.vue") },
-			{ path: "machine-gg/:id", component: () => import("@/views/forms/MachineGGForm.vue"), props: true },
+			// Machine Frame
+			{ path: "machine-frame/new", component: () => import("@/views/forms/MachineFrameForm.vue") },
+			{ path: "machine-frame/:id", component: () => import("@/views/forms/MachineFrameForm.vue"), props: true },
 			// Process
 			{ path: "processes/new", component: () => import("@/views/forms/ProcessForm.vue") },
 			{ path: "processes/:id", component: () => import("@/views/forms/ProcessForm.vue"), props: true },
@@ -44,9 +50,9 @@ const routes = [
 			// Shift Allocation
 			{ path: "shift-allocations/new", component: () => import("@/views/forms/ShiftAllocationForm.vue") },
 			{ path: "shift-allocations/:id", component: () => import("@/views/forms/ShiftAllocationForm.vue"), props: true },
-			// Item
-			{ path: "items/new", component: () => import("@/views/forms/ItemForm.vue") },
-			{ path: "items/:id", component: () => import("@/views/forms/ItemForm.vue"), props: true },
+			// Style
+			{ path: "styles/new", component: () => import("@/views/forms/StyleForm.vue") },
+			{ path: "styles/:id", component: () => import("@/views/forms/StyleForm.vue"), props: true },
 			// Colour
 			{ path: "colours/new", component: () => import("@/views/forms/ColourForm.vue") },
 			{ path: "colours/:id", component: () => import("@/views/forms/ColourForm.vue"), props: true },
@@ -59,9 +65,15 @@ const routes = [
 			// Knitter
 			{ path: "knitters/new", component: () => import("@/views/forms/KnitterForm.vue") },
 			{ path: "knitters/:id", component: () => import("@/views/forms/KnitterForm.vue"), props: true },
-			// Customer
-			{ path: "customers/new", component: () => import("@/views/forms/CustomerForm.vue") },
-			{ path: "customers/:id", component: () => import("@/views/forms/CustomerForm.vue"), props: true },
+			// Product Developer
+			{ path: "product-developers/new", component: () => import("@/views/forms/ProductDeveloperForm.vue") },
+			{ path: "product-developers/:id", component: () => import("@/views/forms/ProductDeveloperForm.vue"), props: true },
+			// Client Season
+			{ path: "client-seasons/new", component: () => import("@/views/forms/ClientSeasonForm.vue") },
+			{ path: "client-seasons/:id", component: () => import("@/views/forms/ClientSeasonForm.vue"), props: true },
+			// Client
+			{ path: "clients/new", component: () => import("@/views/forms/ClientForm.vue") },
+			{ path: "clients/:id", component: () => import("@/views/forms/ClientForm.vue"), props: true },
 			// Order
 			{ path: "orders/new", component: () => import("@/views/forms/OrderForm.vue") },
 			{ path: "orders/:id", component: () => import("@/views/forms/OrderForm.vue"), props: true },

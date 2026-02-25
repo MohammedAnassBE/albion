@@ -66,16 +66,16 @@
 						/>
 					</FormField>
 
-					<!-- Item (cascading select) -->
-					<FormField label="Item" :required="true" :error="validationErrors.item" :readonly="isReadonly">
+					<!-- Style (cascading select) -->
+					<FormField label="Style" :required="true" :error="validationErrors.style" :readonly="isReadonly">
 						<select
 							class="field-select"
-							:value="form.item"
+							:value="form.style"
 							:disabled="isReadonly || !form.order || orderLoading"
-							@change="onItemChange($event.target.value)"
+							@change="onStyleChange($event.target.value)"
 						>
-							<option value="">{{ !form.order ? 'Select Order first' : orderLoading ? 'Loading...' : 'Select Item' }}</option>
-							<option v-for="item in availableItems" :key="item" :value="item">{{ item }}</option>
+							<option value="">{{ !form.order ? 'Select Order first' : orderLoading ? 'Loading...' : 'Select Style' }}</option>
+							<option v-for="s in availableStyles" :key="s" :value="s">{{ s }}</option>
 						</select>
 					</FormField>
 
@@ -84,10 +84,10 @@
 						<select
 							class="field-select"
 							:value="form.colour"
-							:disabled="isReadonly || !form.item"
+							:disabled="isReadonly || !form.style"
 							@change="form.colour = $event.target.value"
 						>
-							<option value="">{{ !form.item ? 'Select Item first' : 'Select Colour' }}</option>
+							<option value="">{{ !form.style ? 'Select Style first' : 'Select Colour' }}</option>
 							<option v-for="c in availableColours" :key="c" :value="c">{{ c }}</option>
 						</select>
 					</FormField>
@@ -97,10 +97,10 @@
 						<select
 							class="field-select"
 							:value="form.size"
-							:disabled="isReadonly || !form.item"
+							:disabled="isReadonly || !form.style"
 							@change="form.size = $event.target.value"
 						>
-							<option value="">{{ !form.item ? 'Select Item first' : 'Select Size' }}</option>
+							<option value="">{{ !form.style ? 'Select Style first' : 'Select Size' }}</option>
 							<option v-for="s in availableSizes" :key="s" :value="s">{{ s }}</option>
 						</select>
 					</FormField>
@@ -190,7 +190,7 @@ const docError = computed(() => docState.value?.error?.value ?? null)
 // Form state
 const form = reactive({
 	order: '',
-	item: '',
+	style: '',
 	colour: '',
 	size: '',
 	quantity: 0,
@@ -200,7 +200,7 @@ const form = reactive({
 })
 const validationErrors = reactive({
 	order: '',
-	item: '',
+	style: '',
 	colour: '',
 	size: '',
 	quantity: '',
@@ -211,26 +211,26 @@ const validationErrors = reactive({
 // Cascading dropdown data
 const orderDetails = ref([])
 const orderLoading = ref(false)
-const availableItems = computed(() => {
-	const items = new Set()
+const availableStyles = computed(() => {
+	const styles = new Set()
 	for (const row of orderDetails.value) {
-		if (row.item) items.add(row.item)
+		if (row.style) styles.add(row.style)
 	}
-	return [...items].sort()
+	return [...styles].sort()
 })
 const availableColours = computed(() => {
-	if (!form.item) return []
+	if (!form.style) return []
 	const colours = new Set()
 	for (const row of orderDetails.value) {
-		if (row.item === form.item && row.colour) colours.add(row.colour)
+		if (row.style === form.style && row.colour) colours.add(row.colour)
 	}
 	return [...colours].sort()
 })
 const availableSizes = computed(() => {
-	if (!form.item) return []
+	if (!form.style) return []
 	const sizes = new Set()
 	for (const row of orderDetails.value) {
-		if (row.item === form.item && row.size) sizes.add(row.size)
+		if (row.style === form.style && row.size) sizes.add(row.size)
 	}
 	return [...sizes].sort()
 })
@@ -265,14 +265,14 @@ async function fetchOrderDetails(orderName) {
 // Change handlers
 function onOrderChange(val) {
 	form.order = val
-	form.item = ''
+	form.style = ''
 	form.colour = ''
 	form.size = ''
 	fetchOrderDetails(val)
 }
 
-function onItemChange(val) {
-	form.item = val
+function onStyleChange(val) {
+	form.style = val
 	form.colour = ''
 	form.size = ''
 }
@@ -280,7 +280,7 @@ function onItemChange(val) {
 // Validation
 function validate() {
 	let valid = true
-	const required = { order: 'Order', item: 'Item', colour: 'Colour', size: 'Size', quantity: 'Quantity', knitter: 'Knitter', completion_date: 'Completion Date' }
+	const required = { order: 'Order', style: 'Style', colour: 'Colour', size: 'Size', quantity: 'Quantity', knitter: 'Knitter', completion_date: 'Completion Date' }
 	for (const [field, label] of Object.entries(required)) {
 		const val = form[field]
 		const empty = val === null || val === undefined || val === '' || (typeof val === 'string' && !val.trim())
@@ -297,7 +297,7 @@ function validate() {
 function buildPayload() {
 	return {
 		order: form.order,
-		item: form.item,
+		style: form.style,
 		colour: form.colour,
 		size: form.size,
 		quantity: form.quantity,
@@ -362,7 +362,7 @@ async function initDoc() {
 function populateForm(data) {
 	if (!data) return
 	form.order = data.order || ''
-	form.item = data.item || ''
+	form.style = data.style || ''
 	form.colour = data.colour || ''
 	form.size = data.size || ''
 	form.quantity = data.quantity || 0

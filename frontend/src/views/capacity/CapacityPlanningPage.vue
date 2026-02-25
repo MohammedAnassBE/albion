@@ -5,8 +5,8 @@
                 <div class="filter-rows">
                     <div class="filter-row" v-show="!isZoomedOut">
                         <div class="filter-field">
-                            <label class="filter-label">Customer</label>
-                            <LinkField :modelValue="selectedCustomer" doctype="Customer" placeholder="Select Customer" @update:modelValue="onCustomerChange" />
+                            <label class="filter-label">Client</label>
+                            <LinkField :modelValue="selectedClient" doctype="Client" placeholder="Select Client" @update:modelValue="onClientChange" />
                         </div>
                         <div class="filter-field">
                             <label class="filter-label">Order</label>
@@ -22,14 +22,14 @@
                         <div class="filter-field">
                             <label class="filter-label">View Type</label>
                             <select class="form-control" v-model="viewType">
-                                <option value="item_wise">Item Wise</option>
+                                <option value="style_wise">Style Wise</option>
                                 <option value="colour_wise">Colour Wise</option>
                                 <option value="size_wise">Size Wise</option>
                             </select>
                         </div>
                         <div class="filter-field">
-                            <label class="filter-label">Machine GG</label>
-                            <LinkField :modelValue="selectedMachineGG" doctype="Machine GG" placeholder="Select Machine GG" @update:modelValue="(val) => selectedMachineGG = val || ''" />
+                            <label class="filter-label">Machine Frame</label>
+                            <LinkField :modelValue="selectedMachineFrame" doctype="Machine Frame" placeholder="Select Machine Frame" @update:modelValue="(val) => selectedMachineFrame = val || ''" />
                         </div>
                     </div>
                     <div class="filter-row">
@@ -92,10 +92,10 @@
                     >
                         <div class="item-header">
                             <span class="drag-handle" v-if="isValidForProcess(item) && getAllocationStatus(item) !== 'full'">&#8942;&#8942;</span>
-                            <span class="item-name">{{ item.item }}</span>
+                            <span class="item-name">{{ item.style }}</span>
                             <span class="item-qty">{{ item.quantity }}</span>
                         </div>
-                        <div v-if="item.machine_gg" class="item-gg">{{ item.machine_gg }}</div>
+                        <div v-if="item.machine_frame" class="item-gg">{{ item.machine_frame }}</div>
                         <div v-if="item.colour" class="item-detail">
                             Colour: {{ item.colour }}
                         </div>
@@ -106,7 +106,7 @@
                             {{ item.minutes }} mins/unit
                         </div>
                         <div v-if="!isValidForProcess(item)" class="invalid-reason">
-                            Process not defined for this item
+                            Process not defined for this style
                         </div>
                         <div v-else-if="getAllocatedQuantity(item) > 0" class="allocation-status" :class="getAllocationStatus(item)">
                             Allocated: {{ getAllocatedQuantity(item) }} / {{ item.quantity }}
@@ -133,7 +133,7 @@
                         >
                             <div class="deleted-item-header">
                                 <span class="drag-handle">&#8942;&#8942;</span>
-                                <span class="deleted-item-name">{{ block.item }}</span>
+                                <span class="deleted-item-name">{{ block.style }}</span>
                                 <span class="deleted-item-qty">{{ block.total_quantity }}</span>
                             </div>
                             <div v-if="block.colour" class="item-detail">Colour: {{ block.colour }}</div>
@@ -176,7 +176,7 @@
                         <template v-for="(machine, mIdx) in filteredMachines" :key="machine.machine_id">
                             <!-- Machine label cell -->
                             <div class="gantt-machine-cell" :class="{ 'machine-disabled': !isMachineCompatible(machine.machine_id), 'machine-cell-zoom': isZoomedOut }" :style="{ gridRow: mIdx + 2 }"
-                                 :title="isZoomedOut ? `${machine.machine_id} (${machine.machine_gg})` : ''">
+                                 :title="isZoomedOut ? `${machine.machine_id} (${machine.machine_frame})` : ''">
                                 <template v-if="isZoomedOut">
                                     <span class="machine-id-zoom">{{ machine.machine_id }}</span>
                                 </template>
@@ -184,9 +184,9 @@
                                     <div class="machine-info">
                                         <div class="machine-title">
                                             <span class="machine-id">{{ machine.machine_id }}</span>
-                                            <span class="machine-gg-badge">{{ machine.machine_gg }}</span>
+                                            <span class="machine-frame-badge">{{ machine.machine_frame }}</span>
                                         </div>
-                                        <span class="machine-name">{{ machine.machine_gg }}</span>
+                                        <span class="machine-name">{{ machine.machine_frame }}</span>
                                     </div>
                                 </template>
                             </div>
@@ -248,13 +248,13 @@
                                     <template v-if="isZoomedOut">
                                         <div class="bar-row-zoom">
                                             <span v-if="group.order" class="bar-tag order-tag"><b>O:</b> {{ group.order }}</span>
-                                            <span class="bar-item">{{ group.item }}</span>
+                                            <span class="bar-item">{{ group.style }}</span>
                                             <span class="bar-qty"><template v-if="getCompletedQty(group)">{{ getCompletedQty(group) }}/</template>{{ group.total_quantity }}</span>
                                         </div>
                                     </template>
                                     <template v-else>
                                         <div class="bar-row-top">
-                                            <span class="bar-item">{{ group.item }}</span>
+                                            <span class="bar-item">{{ group.style }}</span>
                                             <span class="bar-qty"><template v-if="getCompletedQty(group)">{{ getCompletedQty(group) }}/</template>{{ group.total_quantity }}</span>
                                         </div>
                                         <div class="bar-row-mid">
@@ -280,7 +280,7 @@
             <div class="modal-content" @click.stop>
                 <h4>Allocate Quantity</h4>
                 <div class="form-group">
-                    <label>Item: {{ pendingDrop.item }}</label>
+                    <label>Item: {{ pendingDrop.style }}</label>
                 </div>
                 <div class="form-group">
                     <label>Target: {{ pendingDrop.machineId }} &middot; {{ fmtDate(pendingDrop.dateStr) }}</label>
@@ -337,7 +337,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(grp, idx) in shiftModalData.affectedGroups" :key="idx">
-                                <td>{{ grp.item }}</td>
+                                <td>{{ grp.style }}</td>
                                 <td>{{ grp.order }}</td>
                                 <td>{{ grp.dayCount }}</td>
                                 <td>{{ fmtDate(grp.oldStart) }} to {{ fmtDate(grp.oldEnd) }}</td>
@@ -362,7 +362,7 @@
                         <tbody>
                             <tr v-for="(entry, idx) in shiftModalData.affectedAllocations" :key="idx">
                                 <td>{{ entry.allocation.order }}</td>
-                                <td>{{ entry.allocation.item }}</td>
+                                <td>{{ entry.allocation.style }}</td>
                                 <td>{{ entry.allocation.process }}</td>
                                 <td>{{ entry.allocation.quantity }}</td>
                                 <td>{{ fmtDate(entry.currentDate) }}</td>
@@ -404,7 +404,7 @@
                         <tbody>
                             <tr v-for="(entry, idx) in backfillModalData.affectedAllocations" :key="idx">
                                 <td>{{ entry.allocation.order }}</td>
-                                <td>{{ entry.allocation.item }}</td>
+                                <td>{{ entry.allocation.style }}</td>
                                 <td>{{ entry.allocation.process }}</td>
                                 <td>{{ entry.allocation.quantity }}</td>
                                 <td>{{ fmtDate(entry.currentDate) }}</td>
@@ -427,7 +427,7 @@
             <div class="modal-content" @click.stop>
                 <h4>Edit Group Quantity</h4>
                 <div class="form-group">
-                    <label>Item: {{ selectedGroup.item }}</label>
+                    <label>Item: {{ selectedGroup.style }}</label>
                 </div>
                 <div class="form-group">
                     <label>Dates: {{ fmtDate(selectedGroup.start_date) }} to {{ fmtDate(selectedGroup.end_date) }} ({{ selectedGroup.allocs.length }} days)</label>
@@ -451,7 +451,7 @@
             <div class="modal-content" @click.stop>
                 <h4>Split Group at Date</h4>
                 <div class="form-group">
-                    <label>Item: {{ selectedGroup.item }} ({{ selectedGroup.allocs.length }} days)</label>
+                    <label>Item: {{ selectedGroup.style }} ({{ selectedGroup.allocs.length }} days)</label>
                 </div>
                 <div class="form-group">
                     <label>Split before date</label>
@@ -473,7 +473,7 @@
             <div class="shift-modal" @click.stop>
                 <h4>Shift Group by Days</h4>
                 <div class="form-group">
-                    <label>{{ selectedGroup.item }} &mdash; {{ fmtDate(selectedGroup.start_date) }} to {{ fmtDate(selectedGroup.end_date) }} ({{ selectedGroup.allocs.length }} days)</label>
+                    <label>{{ selectedGroup.style }} &mdash; {{ fmtDate(selectedGroup.start_date) }} to {{ fmtDate(selectedGroup.end_date) }} ({{ selectedGroup.allocs.length }} days)</label>
                 </div>
                 <div class="form-group">
                     <label>Number of days to shift</label>
@@ -507,7 +507,7 @@
                                 </thead>
                                 <tbody>
                                     <tr v-for="(grp, idx) in shiftByDaysPreview.affectedGroups" :key="idx">
-                                        <td>{{ grp.item }}</td>
+                                        <td>{{ grp.style }}</td>
                                         <td>{{ grp.order }}</td>
                                         <td>{{ grp.dayCount }}</td>
                                         <td>{{ fmtDate(grp.oldStart) }} to {{ fmtDate(grp.oldEnd) }}</td>
@@ -732,7 +732,7 @@
 
         <!-- Custom Tooltip -->
         <div v-if="tooltip.show" class="gantt-tooltip" :style="{ top: tooltip.y + 'px', left: tooltip.x + 'px' }">
-            <div class="tooltip-header">{{ tooltip.data.item }}</div>
+            <div class="tooltip-header">{{ tooltip.data.style }}</div>
             <div class="tooltip-grid">
                 <span class="tooltip-label">Order</span>
                 <span class="tooltip-value">{{ tooltip.data.order }}</span>
@@ -789,22 +789,22 @@ const toast = useAppToast();
 const confirm = useAppConfirm();
 
 // Order tracking completion maps at different granularities
-const trackingByItem = ref({});     // "order|item" -> sum
-const trackingByColour = ref({});   // "order|item|colour" -> sum
-const trackingBySize = ref({});     // "order|item|size" -> sum
-const trackingByFull = ref({});     // "order|item|colour|size" -> sum
+const trackingByStyle = ref({});     // "order|style" -> sum
+const trackingByColour = ref({});   // "order|style|colour" -> sum
+const trackingBySize = ref({});     // "order|style|size" -> sum
+const trackingByFull = ref({});     // "order|style|colour|size" -> sum
 
 async function fetchTrackingData() {
     try {
         const data = await apiGetOrderTrackingSummary();
-        const byItem = {}, byColour = {}, bySize = {}, byFull = {};
+        const byStyle = {}, byColour = {}, bySize = {}, byFull = {};
         if (data) {
             for (const row of data) {
-                const o = row.order || '', i = row.item || '';
+                const o = row.order || '', i = row.style || '';
                 const c = row.colour || '', s = row.size || '';
                 const qty = row.completed_qty || 0;
-                const itemKey = `${o}|${i}`;
-                byItem[itemKey] = (byItem[itemKey] || 0) + qty;
+                const styleKey = `${o}|${i}`;
+                byStyle[styleKey] = (byStyle[styleKey] || 0) + qty;
                 if (c) {
                     const colourKey = `${o}|${i}|${c}`;
                     byColour[colourKey] = (byColour[colourKey] || 0) + qty;
@@ -819,7 +819,7 @@ async function fetchTrackingData() {
                 }
             }
         }
-        trackingByItem.value = byItem;
+        trackingByStyle.value = byStyle;
         trackingByColour.value = byColour;
         trackingBySize.value = bySize;
         trackingByFull.value = byFull;
@@ -829,23 +829,23 @@ async function fetchTrackingData() {
 }
 
 function getCompletedQty(group) {
-    const o = group.order || '', i = group.item || '';
+    const o = group.order || '', i = group.style || '';
     const c = group.colour || '', s = group.size || '';
     if (c && s) return trackingByFull.value[`${o}|${i}|${c}|${s}`] || 0;
     if (c)      return trackingByColour.value[`${o}|${i}|${c}`] || 0;
     if (s)      return trackingBySize.value[`${o}|${i}|${s}`] || 0;
-    return trackingByItem.value[`${o}|${i}`] || 0;
+    return trackingByStyle.value[`${o}|${i}`] || 0;
 }
 
 // State - internal refs that can be updated via load_data
 const processes = ref([]);
 const machines = ref([]);
 
-const selectedCustomer = ref('');
-const selectedMachineGG = ref('');
+const selectedClient = ref('');
+const selectedMachineFrame = ref('');
 const selectedOrder = ref('');
 const selectedProcess = ref('');
-const viewType = ref('item_wise');
+const viewType = ref('style_wise');
 const startDate = ref('');
 const endDate = ref('');
 const suppressDateWatch = ref(false);
@@ -865,12 +865,12 @@ const applyZoom = ref(false);
 // ── LinkField filters & handlers ──
 const orderFilters = computed(() => {
     const f = { docstatus: 1, status: ['!=', 'Closed'] };
-    if (selectedCustomer.value) f.customer = selectedCustomer.value;
+    if (selectedClient.value) f.client = selectedClient.value;
     return f;
 });
 
-function onCustomerChange(val) {
-    selectedCustomer.value = val || '';
+function onClientChange(val) {
+    selectedClient.value = val || '';
     selectedOrder.value = '';
     orderData.value = null;
 }
@@ -918,7 +918,7 @@ const editGroupQuantity = ref(0);
 const showSplitGroupModal = ref(false);
 const splitGroupDate = ref('');
 
-// Drag tracking for machine_gg filtering
+// Drag tracking for machine_frame filtering
 const draggingItem = ref(null);
 
 // Snap animation tracking for just-dropped groups
@@ -990,13 +990,13 @@ let autoScrollRAF = null;
 let autoScrollDX = 0;
 let autoScrollDY = 0;
 
-// Machine GG lookup: Map<itemCode, machineGG>
-const itemMachineGG = computed(() => {
+// Machine Frame lookup: Map<itemCode, machineFrame>
+const styleMachineFrame = computed(() => {
     const map = new Map();
     if (orderData.value && orderData.value.items) {
         orderData.value.items.forEach(item => {
-            if (item.item_doc && item.item_doc.machine_gg) {
-                map.set(item.item, item.item_doc.machine_gg);
+            if (item.style_doc && item.style_doc.machine_frame) {
+                map.set(item.style, item.style_doc.machine_frame);
             }
         });
     }
@@ -1005,35 +1005,35 @@ const itemMachineGG = computed(() => {
 
 function isMachineCompatible(machineId) {
     if (!draggingItem.value) return true;
-    let itemGG = itemMachineGG.value.get(draggingItem.value.item);
+    let styleGG = styleMachineFrame.value.get(draggingItem.value.style);
     // Fallback: infer GG from the source machine when dragging existing groups
-    if (!itemGG && draggingItem.value.sourceMachineId) {
+    if (!styleGG && draggingItem.value.sourceMachineId) {
         const srcMachine = machines.value.find(m => m.machine_id === draggingItem.value.sourceMachineId);
-        if (srcMachine && srcMachine.machine_gg) itemGG = srcMachine.machine_gg;
+        if (srcMachine && srcMachine.machine_frame) styleGG = srcMachine.machine_frame;
     }
-    if (!itemGG && draggingItem.value.machine_gg) {
-        itemGG = draggingItem.value.machine_gg;
+    if (!styleGG && draggingItem.value.machine_frame) {
+        styleGG = draggingItem.value.machine_frame;
     }
-    if (!itemGG) return true; // no machine_gg info → all machines allowed
+    if (!styleGG) return true; // no machine_frame info → all machines allowed
     const machine = machines.value.find(m => m.machine_id === machineId);
-    if (!machine || !machine.machine_gg) return true; // no machine_gg on machine → allowed
-    return machine.machine_gg === itemGG;
+    if (!machine || !machine.machine_frame) return true; // no machine_frame on machine → allowed
+    return machine.machine_frame === styleGG;
 }
 
-function checkMachineGGCompat(itemCode, sourceMachineId, targetMachineId) {
+function checkMachineFrameCompat(itemCode, sourceMachineId, targetMachineId) {
     if (sourceMachineId === targetMachineId) return true;
     // First try the orderData lookup
-    let itemGG = itemMachineGG.value.get(itemCode);
+    let styleGG = styleMachineFrame.value.get(itemCode);
     // Fallback: infer GG from the source machine (it was compatible when originally placed)
-    if (!itemGG) {
+    if (!styleGG) {
         const srcMachine = machines.value.find(m => m.machine_id === sourceMachineId);
-        if (srcMachine && srcMachine.machine_gg) itemGG = srcMachine.machine_gg;
+        if (srcMachine && srcMachine.machine_frame) styleGG = srcMachine.machine_frame;
     }
-    if (!itemGG) return true; // no GG info available → allow
+    if (!styleGG) return true; // no GG info available → allow
     const targetMachine = machines.value.find(m => m.machine_id === targetMachineId);
-    if (!targetMachine || !targetMachine.machine_gg) return true;
-    if (targetMachine.machine_gg !== itemGG) {
-        toast.error(`Cannot move: item requires Machine GG "${itemGG}" but target has "${targetMachine.machine_gg}"`);
+    if (!targetMachine || !targetMachine.machine_frame) return true;
+    if (targetMachine.machine_frame !== styleGG) {
+        toast.error(`Cannot move: style requires Machine Frame "${styleGG}" but target has "${targetMachine.machine_frame}"`);
         return false;
     }
     return true;
@@ -1076,15 +1076,15 @@ const selectedShiftsTotalMinutes = computed(() => {
 });
 
 const filteredMachines = computed(() => {
-    if (!selectedMachineGG.value) return machines.value;
-    return machines.value.filter(m => m.machine_gg === selectedMachineGG.value);
+    if (!selectedMachineFrame.value) return machines.value;
+    return machines.value.filter(m => m.machine_frame === selectedMachineFrame.value);
 });
 
 const availableProcesses = computed(() => {
     if (!orderData.value || !processes.value) return [];
     const processSet = new Set();
     orderData.value.items?.forEach(item => {
-        item.item_doc?.processes?.forEach(p => processSet.add(p.process_name));
+        item.style_doc?.processes?.forEach(p => processSet.add(p.process_name));
     });
     return processes.value.filter(p => processSet.has(p.name));
 });
@@ -1095,63 +1095,63 @@ const workloadItems = computed(() => {
     const items = [];
     const processMinutes = getProcessMinutes();
 
-    if (viewType.value === 'item_wise') {
-        const itemTotals = {};
+    if (viewType.value === 'style_wise') {
+        const styleTotals = {};
         orderData.value.order_details?.forEach(detail => {
-            if (!itemTotals[detail.item]) {
-                itemTotals[detail.item] = 0;
+            if (!styleTotals[detail.style]) {
+                styleTotals[detail.style] = 0;
             }
-            itemTotals[detail.item] += detail.quantity;
+            styleTotals[detail.style] += detail.quantity;
         });
-        Object.entries(itemTotals).forEach(([item, qty]) => {
+        Object.entries(styleTotals).forEach(([styleName, qty]) => {
             items.push({
-                key: `${item}`,
-                item,
+                key: `${styleName}`,
+                style: styleName,
                 quantity: qty,
-                minutes: processMinutes[item] || 0,
+                minutes: processMinutes[styleName] || 0,
                 colour: null,
                 size: null,
-                machine_gg: itemMachineGG.value.get(item) || null
+                machine_frame: styleMachineFrame.value.get(styleName) || null
             });
         });
     } else if (viewType.value === 'colour_wise') {
         const colourTotals = {};
         orderData.value.order_details?.forEach(detail => {
-            const key = `${detail.item}-${detail.colour}`;
+            const key = `${detail.style}-${detail.colour}`;
             if (!colourTotals[key]) {
-                colourTotals[key] = { item: detail.item, colour: detail.colour, quantity: 0 };
+                colourTotals[key] = { style: detail.style, colour: detail.colour, quantity: 0 };
             }
             colourTotals[key].quantity += detail.quantity;
         });
         Object.entries(colourTotals).forEach(([key, data]) => {
             items.push({
                 key,
-                item: data.item,
+                style: data.style,
                 quantity: data.quantity,
-                minutes: processMinutes[data.item] || 0,
+                minutes: processMinutes[data.style] || 0,
                 colour: data.colour,
                 size: null,
-                machine_gg: itemMachineGG.value.get(data.item) || null
+                machine_frame: styleMachineFrame.value.get(data.style) || null
             });
         });
     } else if (viewType.value === 'size_wise') {
         const sizeTotals = {};
         orderData.value.order_details?.forEach(detail => {
-            const key = `${detail.item}-${detail.size}`;
+            const key = `${detail.style}-${detail.size}`;
             if (!sizeTotals[key]) {
-                sizeTotals[key] = { item: detail.item, size: detail.size, quantity: 0 };
+                sizeTotals[key] = { style: detail.style, size: detail.size, quantity: 0 };
             }
             sizeTotals[key].quantity += detail.quantity;
         });
         Object.entries(sizeTotals).forEach(([key, data]) => {
             items.push({
                 key,
-                item: data.item,
+                style: data.style,
                 quantity: data.quantity,
-                minutes: processMinutes[data.item] || 0,
+                minutes: processMinutes[data.style] || 0,
                 colour: null,
                 size: data.size,
-                machine_gg: itemMachineGG.value.get(data.item) || null
+                machine_frame: styleMachineFrame.value.get(data.style) || null
             });
         });
     }
@@ -1164,7 +1164,7 @@ const groupedAllocations = computed(() => {
     const groupMap = {};
 
     allocations.value.forEach(alloc => {
-        const key = `${alloc.machine_id}|${alloc.order}|${alloc.item}|${alloc.process}|${alloc.colour || ''}|${alloc.size || ''}`;
+        const key = `${alloc.machine_id}|${alloc.order}|${alloc.style}|${alloc.process}|${alloc.colour || ''}|${alloc.size || ''}`;
         if (!groupMap[key]) groupMap[key] = [];
         groupMap[key].push(alloc);
     });
@@ -1189,7 +1189,7 @@ const groupedAllocations = computed(() => {
                     end_date: alloc.operation_date,
                     allocs: [alloc],
                     alloc_keys: [alloc.key],
-                    item: alloc.item,
+                    style: alloc.style,
                     process: alloc.process,
                     order: alloc.order,
                     colour: alloc.colour,
@@ -1251,11 +1251,11 @@ function getProcessMinutes() {
     const minutes = {};
     if (orderData.value && orderData.value.items) {
         orderData.value.items.forEach(item => {
-            const itemDoc = item.item_doc;
-            if (itemDoc && itemDoc.processes) {
-                const proc = itemDoc.processes.find(p => p.process_name === selectedProcess.value);
+            const styleDoc = item.style_doc;
+            if (styleDoc && styleDoc.processes) {
+                const proc = styleDoc.processes.find(p => p.process_name === selectedProcess.value);
                 if (proc) {
-                    minutes[item.item] = proc.minutes;
+                    minutes[item.style] = proc.minutes;
                 }
             }
         });
@@ -1484,7 +1484,7 @@ function getCellClass(machineId, dateStr) {
 
 function hasConflict(alloc) {
     const item = workloadItems.value.find(i =>
-        i.item === alloc.item &&
+        i.style === alloc.style &&
         i.colour === alloc.colour &&
         i.size === alloc.size
     );
@@ -1514,7 +1514,7 @@ const _colorPairs = [
 const _colorMap = new Map();
 
 function getAllocationColor(alloc) {
-    const key = `${alloc.order || ''}-${alloc.item || ''}-${alloc.process || ''}`;
+    const key = `${alloc.order || ''}-${alloc.style || ''}-${alloc.process || ''}`;
     if (!_colorMap.has(key)) {
         _colorMap.set(key, _colorMap.size % _colorPairs.length);
     }
@@ -1522,37 +1522,37 @@ function getAllocationColor(alloc) {
 }
 
 function getAllocatedQuantity(item) {
-    const itemAllocs = allocations.value.filter(a =>
+    const styleAllocs = allocations.value.filter(a =>
         a.order === selectedOrder.value &&
-        a.item === item.item &&
+        a.style === item.style &&
         a.process === selectedProcess.value
     );
-    if (itemAllocs.length === 0) return 0;
+    if (styleAllocs.length === 0) return 0;
 
-    // Detect this workload item's granularity
-    const isItemWise = !item.colour && !item.size;
+    // Detect this workload style's granularity
+    const isStyleWise = !item.colour && !item.size;
     const isColourWise = !!item.colour && !item.size;
     const isSizeWise = !item.colour && !!item.size;
 
     // Check if any allocations exist at a different granularity
-    const hasDifferentGranularity = itemAllocs.some(a => {
-        const allocIsItemWise = !a.colour && !a.size;
+    const hasDifferentGranularity = styleAllocs.some(a => {
+        const allocIsStyleWise = !a.colour && !a.size;
         const allocIsColourWise = !!a.colour && !a.size;
         const allocIsSizeWise = !a.colour && !!a.size;
 
-        if (isItemWise) return !allocIsItemWise;
+        if (isStyleWise) return !allocIsStyleWise;
         if (isColourWise) return !allocIsColourWise;
         if (isSizeWise) return !allocIsSizeWise;
         return false;
     });
 
     if (hasDifferentGranularity) {
-        // Different granularity exists — block this item by returning its full quantity
+        // Different granularity exists — block this style by returning its full quantity
         return item.quantity;
     }
 
     // Same granularity — use exact match
-    return itemAllocs
+    return styleAllocs
         .filter(a => a.colour === item.colour && a.size === item.size)
         .reduce((sum, a) => sum + a.quantity, 0);
 }
@@ -1731,7 +1731,7 @@ function showTooltip(event, group) {
             x: rect.left + rect.width / 2,
             y: rect.top - 8,
             data: {
-                item: group.item,
+                style: group.style,
                 process: group.process,
                 order: group.order,
                 start_date: group.start_date,
@@ -1776,7 +1776,7 @@ function addDeletedBlock(group, allocSnapshots) {
     const blockId = `del-${Date.now()}`;
     deletedBlocks.value.unshift({
         id: blockId,
-        item: firstAlloc.item,
+        style: firstAlloc.style,
         order: firstAlloc.order,
         process: firstAlloc.process,
         colour: firstAlloc.colour || null,
@@ -1784,8 +1784,8 @@ function addDeletedBlock(group, allocSnapshots) {
         total_quantity: totalQty,
         minutes_per_unit: minutesPerUnit,
         machine_id: firstAlloc.machine_id,
-        machine_gg: itemMachineGG.value.get(firstAlloc.item)
-            || machines.value.find(m => m.machine_id === firstAlloc.machine_id)?.machine_gg
+        machine_frame: styleMachineFrame.value.get(firstAlloc.style)
+            || machines.value.find(m => m.machine_id === firstAlloc.machine_id)?.machine_frame
             || null,
         days: allocSnapshots.length,
         timestamp: Date.now()
@@ -1798,9 +1798,9 @@ function removeDeletedBlock(blockId) {
     if (idx > -1) deletedBlocks.value.splice(idx, 1);
 }
 
-function removeMatchingDeletedBlocks(item, colour, size, order, process) {
+function removeMatchingDeletedBlocks(style, colour, size, order, process) {
     deletedBlocks.value = deletedBlocks.value.filter(b =>
-        !(b.item === item && (b.colour || null) === (colour || null) && (b.size || null) === (size || null) && (b.order || null) === (order || null) && (b.process || null) === (process || null))
+        !(b.style === style && (b.colour || null) === (colour || null) && (b.size || null) === (size || null) && (b.order || null) === (order || null) && (b.process || null) === (process || null))
     );
 }
 
@@ -1811,12 +1811,12 @@ function clearDeletedBlocks() {
 function onDeletedBlockDragStart(event, block) {
     const dragData = {
         key: block.id,
-        item: block.item,
+        style: block.style,
         quantity: block.total_quantity,
         minutes: block.minutes_per_unit,
         colour: block.colour,
         size: block.size,
-        machine_gg: block.machine_gg,
+        machine_frame: block.machine_frame,
         order: block.order,
         process: block.process,
         isDeletedBlock: true,
@@ -1856,7 +1856,7 @@ function onGroupDragStart(event, group) {
         start_date: group.start_date,
         end_date: group.end_date,
         alloc_keys: group.alloc_keys,
-        item: group.item,
+        style: group.style,
         process: group.process,
         order: group.order,
         colour: group.colour,
@@ -1866,7 +1866,7 @@ function onGroupDragStart(event, group) {
         grab_offset: grabOffsetDays,
     }));
     event.dataTransfer.effectAllowed = 'move';
-    draggingItem.value = { item: group.item, sourceMachineId: group.machine_id };
+    draggingItem.value = { style: group.style, sourceMachineId: group.machine_id };
     hideTooltip();
 }
 
@@ -1968,7 +1968,7 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
                 operation_date: ud.oldDate,
                 shift: ud.oldShift,
                 order: alloc.order,
-                item: alloc.item,
+                style: alloc.style,
                 process: alloc.process,
                 colour: alloc.colour,
                 size: alloc.size,
@@ -1993,7 +1993,7 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
                     machine_id: ud.oldMachineId,
                     operation_date: ud.oldDate,
                     shift: ud.oldShift,
-                    order: alloc.order, item: alloc.item, process: alloc.process,
+                    order: alloc.order, style: alloc.style, process: alloc.process,
                     colour: alloc.colour, size: alloc.size,
                     quantity: ud.oldQuantity,
                     allocated_minutes: ud.oldAllocatedMinutes
@@ -2037,7 +2037,7 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
                         operation_date: currentDate,
                         shift: shift?.name || '',
                         order: refAlloc.order,
-                        item: refAlloc.item,
+                        style: refAlloc.style,
                         process: refAlloc.process,
                         colour: refAlloc.colour,
                         size: refAlloc.size,
@@ -2079,8 +2079,8 @@ function moveGroup(groupData, newMachineId, newStartDate) {
 
     if (dayOffset === 0 && groupData.machine_id === newMachineId) return;
 
-    // Machine GG compatibility check
-    if (!checkMachineGGCompat(groupData.item, groupData.machine_id, newMachineId)) return;
+    // Machine Frame compatibility check
+    if (!checkMachineFrameCompat(groupData.style, groupData.machine_id, newMachineId)) return;
 
     const groupAllocs = groupData.alloc_keys.map(key => allocations.value.find(a => a.key === key)).filter(Boolean);
 
@@ -2251,7 +2251,7 @@ function moveGroup(groupData, newMachineId, newStartDate) {
                 ? Math.round((new Date(newDates[0]) - new Date(grp.start_date)) / (1000 * 60 * 60 * 24))
                 : 0;
             affectedGroups.push({
-                item: grp.item,
+                style: grp.style,
                 order: grp.order,
                 dayCount: grp.allocs.length,
                 oldStart: grp.start_date,
@@ -2293,7 +2293,7 @@ function confirmEditGroup() {
     }
 
     const item = workloadItems.value.find(i =>
-        i.item === group.item &&
+        i.style === group.style &&
         i.colour === group.colour &&
         i.size === group.size
     );
@@ -2609,7 +2609,7 @@ function computeShiftByDaysPreview() {
                 ? Math.round((new Date(newDates[0]) - new Date(grp.start_date)) / (1000 * 60 * 60 * 24))
                 : 0;
             affectedGroups.push({
-                item: grp.item,
+                style: grp.style,
                 order: grp.order,
                 dayCount: grp.allocs.length,
                 oldStart: grp.start_date,
@@ -2966,7 +2966,7 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
                     if (mpu > 0) {
                         // Capture old end date
                         const groupAllocs = allocations.value.filter(a =>
-                            a.machine_id === mId && a.item === refAlloc.item &&
+                            a.machine_id === mId && a.style === refAlloc.style &&
                             a.colour === refAlloc.colour && a.size === refAlloc.size &&
                             a.order === refAlloc.order && a.process === refAlloc.process
                         );
@@ -2975,7 +2975,7 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
 
                         // Pull back allocations into the off-day
                         const result = compactAfterPull(
-                            mId, dateStr, refAlloc.item, refAlloc.colour, refAlloc.size,
+                            mId, dateStr, refAlloc.style, refAlloc.colour, refAlloc.size,
                             refAlloc.order, refAlloc.process, mpu
                         );
                         allAdded.push(...result.addedKeys);
@@ -2984,7 +2984,7 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
 
                         // Shift subsequent groups left if end date shrunk
                         const groupAllocsAfter = allocations.value.filter(a =>
-                            a.machine_id === mId && a.item === refAlloc.item &&
+                            a.machine_id === mId && a.style === refAlloc.style &&
                             a.colour === refAlloc.colour && a.size === refAlloc.size &&
                             a.order === refAlloc.order && a.process === refAlloc.process
                         );
@@ -3021,7 +3021,7 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
             if (refAlloc) {
                 const groupAllocs = allocations.value.filter(a =>
                     a.machine_id === mId &&
-                    a.item === refAlloc.item && a.colour === refAlloc.colour &&
+                    a.style === refAlloc.style && a.colour === refAlloc.colour &&
                     a.size === refAlloc.size && a.order === refAlloc.order &&
                     a.process === refAlloc.process
                 );
@@ -3039,7 +3039,7 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
             if (refAlloc && oldEndDate) {
                 const groupAllocsAfter = allocations.value.filter(a =>
                     a.machine_id === mId &&
-                    a.item === refAlloc.item && a.colour === refAlloc.colour &&
+                    a.style === refAlloc.style && a.colour === refAlloc.colour &&
                     a.size === refAlloc.size && a.order === refAlloc.order &&
                     a.process === refAlloc.process
                 );
@@ -3128,7 +3128,7 @@ function reflowForBreak(machineId, dateStr) {
 
             const spillResult = spillForward(
                 machineId, dateStr, alloc.quantity, minutesPerUnit,
-                alloc.item, alloc.colour, alloc.size, alloc.order, alloc.process, 0
+                alloc.style, alloc.colour, alloc.size, alloc.order, alloc.process, 0
             );
             addedKeys.push(...spillResult.addedKeys);
             removedKeys.push(...spillResult.cascadedRemoved);
@@ -3148,7 +3148,7 @@ function reflowForBreak(machineId, dateStr) {
 
             const spillResult = spillForward(
                 machineId, dateStr, trimQty, minutesPerUnit,
-                alloc.item, alloc.colour, alloc.size, alloc.order, alloc.process, 0
+                alloc.style, alloc.colour, alloc.size, alloc.order, alloc.process, 0
             );
             addedKeys.push(...spillResult.addedKeys);
             removedKeys.push(...spillResult.cascadedRemoved);
@@ -3160,7 +3160,7 @@ function reflowForBreak(machineId, dateStr) {
     return { addedKeys, removedKeys, modified, unplaced };
 }
 
-function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour, size, order, process, depth) {
+function spillForward(machineId, afterDateStr, qty, minutesPerUnit, style, colour, size, order, process, depth) {
     const MAX_CASCADE = 50;
     if (depth >= MAX_CASCADE || qty < MIN_BATCH_SIZE) {
         return { addedKeys: [], cascadedRemoved: [], cascadedModified: [], remaining: qty };
@@ -3180,7 +3180,7 @@ function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour
 
         // Check if same group exists on this day
         const sameGroup = cellAllocs.find(a =>
-            a.item === item && a.colour === colour && a.size === size &&
+            a.style === style && a.colour === colour && a.size === size &&
             a.order === order && a.process === process
         );
 
@@ -3211,7 +3211,7 @@ function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour
                     operation_date: currentDate,
                     shift: shift?.name || '',
                     order,
-                    item,
+                    style,
                     process,
                     colour,
                     size,
@@ -3237,7 +3237,7 @@ function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour
 
         const cascadeResult = spillForward(
             machineId, currentDate, occQty, occMinPerUnit,
-            occupant.item, occupant.colour, occupant.size, occupant.order, occupant.process, depth + 1
+            occupant.style, occupant.colour, occupant.size, occupant.order, occupant.process, depth + 1
         );
         addedKeys.push(...cascadeResult.addedKeys);
         cascadedRemoved.push(...cascadeResult.cascadedRemoved);
@@ -3255,7 +3255,7 @@ function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour
                 operation_date: currentDate,
                 shift: shift?.name || '',
                 order,
-                item,
+                style,
                 process,
                 colour,
                 size,
@@ -3297,7 +3297,7 @@ function reflowForOvertime(machineId, dateStr) {
     }
 
     const refAlloc = cellAllocs[0];
-    const groupItem = refAlloc.item;
+    const groupStyle = refAlloc.style;
     const groupColour = refAlloc.colour;
     const groupSize = refAlloc.size;
     const groupOrder = refAlloc.order;
@@ -3315,7 +3315,7 @@ function reflowForOvertime(machineId, dateStr) {
     while (freeCapacity > 0 && nextDate) {
         const nextAllocs = getAllocations(machineId, nextDate);
         const sameGroup = nextAllocs.find(a =>
-            a.item === groupItem && a.colour === groupColour && a.size === groupSize &&
+            a.style === groupStyle && a.colour === groupColour && a.size === groupSize &&
             a.order === groupOrder && a.process === groupProcess
         );
 
@@ -3345,7 +3345,7 @@ function reflowForOvertime(machineId, dateStr) {
 
             // Compact: pull further allocations into the freed day
             const compactResult = compactAfterPull(
-                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                machineId, nextDate, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
             );
             addedKeys.push(...compactResult.addedKeys);
             removedKeys.push(...compactResult.removedKeys);
@@ -3357,7 +3357,7 @@ function reflowForOvertime(machineId, dateStr) {
 
             // Compact the partially-reduced day — pull from further days to fill freed capacity
             const compactResult = compactAfterPull(
-                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                machineId, nextDate, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
             );
             addedKeys.push(...compactResult.addedKeys);
             removedKeys.push(...compactResult.removedKeys);
@@ -3370,7 +3370,7 @@ function reflowForOvertime(machineId, dateStr) {
     return { addedKeys, removedKeys, modified };
 }
 
-function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit) {
+function compactAfterPull(machineId, freedDateStr, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit) {
     const addedKeys = [];
     const removedKeys = [];
     const modified = [];
@@ -3385,7 +3385,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
     while (freeMin > 0 && nextDate) {
         const nextAllocs = getAllocations(machineId, nextDate);
         const sameGroup = nextAllocs.find(a =>
-            a.item === groupItem && a.colour === groupColour && a.size === groupSize &&
+            a.style === groupStyle && a.colour === groupColour && a.size === groupSize &&
             a.order === groupOrder && a.process === groupProcess
         );
 
@@ -3403,7 +3403,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
         // Create or augment allocation on freed day
         const freedAllocs = getAllocations(machineId, freedDateStr);
         const existingOnFreed = freedAllocs.find(a =>
-            a.item === groupItem && a.colour === groupColour && a.size === groupSize &&
+            a.style === groupStyle && a.colour === groupColour && a.size === groupSize &&
             a.order === groupOrder && a.process === groupProcess
         );
 
@@ -3420,7 +3420,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
                 operation_date: freedDateStr,
                 shift: shift?.name || '',
                 order: groupOrder,
-                item: groupItem,
+                style: groupStyle,
                 process: groupProcess,
                 colour: groupColour,
                 size: groupSize,
@@ -3437,7 +3437,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
                 if (idx > -1) allocations.value.splice(idx, 1);
                 // Recursively compact the emptied source day to prevent gaps
                 const cascadeResult = compactAfterPull(
-                    machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                    machineId, nextDate, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
                 );
                 addedKeys.push(...cascadeResult.addedKeys);
                 removedKeys.push(...cascadeResult.removedKeys);
@@ -3448,7 +3448,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
                 sameGroup.allocated_minutes -= pullMin;
                 // Recursively compact the partially-freed source day
                 const cascadeResult = compactAfterPull(
-                    machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                    machineId, nextDate, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
                 );
                 addedKeys.push(...cascadeResult.addedKeys);
                 removedKeys.push(...cascadeResult.removedKeys);
@@ -3468,7 +3468,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
             if (idx > -1) allocations.value.splice(idx, 1);
             // Recursively compact the emptied source day to prevent gaps
             const cascadeResult = compactAfterPull(
-                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                machineId, nextDate, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
             );
             addedKeys.push(...cascadeResult.addedKeys);
             removedKeys.push(...cascadeResult.removedKeys);
@@ -3479,7 +3479,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
             sameGroup.allocated_minutes -= pullMin;
             // Recursively compact the partially-freed source day
             const cascadeResult = compactAfterPull(
-                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                machineId, nextDate, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
             );
             addedKeys.push(...cascadeResult.addedKeys);
             removedKeys.push(...cascadeResult.removedKeys);
@@ -3543,7 +3543,7 @@ function refitShiftedAllocations(movedAllocs) {
     // Group by identity (machine/item/colour/size/order/process)
     const groups = new Map();
     for (const alloc of movedAllocs) {
-        const gk = `${alloc.machine_id}|${alloc.item}|${alloc.colour}|${alloc.size}|${alloc.order}|${alloc.process}`;
+        const gk = `${alloc.machine_id}|${alloc.style}|${alloc.colour}|${alloc.size}|${alloc.order}|${alloc.process}`;
         if (!groups.has(gk)) groups.set(gk, []);
         groups.get(gk).push(alloc);
     }
@@ -3588,7 +3588,7 @@ function refitShiftedAllocations(movedAllocs) {
                 const ref = groupAllocs[0];
                 const result = executeAutoSplit(
                     ref.machine_id, startDate, remaining, mpu,
-                    ref.item, ref.colour, ref.size, ref.order, ref.process
+                    ref.style, ref.colour, ref.size, ref.order, ref.process
                 );
                 addedKeys.push(...result.allocationKeys);
             }
@@ -3772,7 +3772,7 @@ function computeShiftPlan(machineId, dropDateStr, workloadPlan, excludeKey = nul
     return { affected };
 }
 
-function executeAutoSplit(machineId, startDate, qty, minutesPerUnit, item, colour, size, order, process) {
+function executeAutoSplit(machineId, startDate, qty, minutesPerUnit, style, colour, size, order, process) {
     const allocOrder = order || selectedOrder.value;
     const allocProcess = process || selectedProcess.value;
     let remainingQty = qty;
@@ -3808,7 +3808,7 @@ function executeAutoSplit(machineId, startDate, qty, minutesPerUnit, item, colou
                 operation_date: currentDate,
                 shift: shift?.name || '',
                 order: allocOrder,
-                item,
+                style,
                 process: allocProcess,
                 colour,
                 size,
@@ -4262,15 +4262,15 @@ function onDrop(event, machineId, dateStr) {
     }
 
     if (!isFromDeleted && !isValidForProcess(item)) {
-        errors.push('Process not defined for this item');
+        errors.push('Process not defined for this style');
     }
 
-    // Machine GG compatibility check
-    const draggedItemGG = isFromDeleted ? item.machine_gg : itemMachineGG.value.get(item.item);
-    if (draggedItemGG) {
+    // Machine Frame compatibility check
+    const draggedStyleGG = isFromDeleted ? item.machine_frame : styleMachineFrame.value.get(item.style);
+    if (draggedStyleGG) {
         const targetMachine = machines.value.find(m => m.machine_id === machineId);
-        if (targetMachine && targetMachine.machine_gg && targetMachine.machine_gg !== draggedItemGG) {
-            errors.push(`Machine GG mismatch: item requires "${draggedItemGG}" but machine has "${targetMachine.machine_gg}"`);
+        if (targetMachine && targetMachine.machine_frame && targetMachine.machine_frame !== draggedStyleGG) {
+            errors.push(`Machine Frame mismatch: style requires "${draggedStyleGG}" but machine has "${targetMachine.machine_frame}"`);
         }
     }
 
@@ -4286,7 +4286,7 @@ function onDrop(event, machineId, dateStr) {
         if (alreadyAllocated >= item.quantity) {
             const allocatedOrders = [...new Set(allocations.value
                 .filter(a =>
-                    a.item === item.item &&
+                    a.style === item.style &&
                     a.process === selectedProcess.value &&
                     a.colour === item.colour &&
                     a.size === item.size
@@ -4296,7 +4296,7 @@ function onDrop(event, machineId, dateStr) {
             const orderMsg = allocatedOrders.length > 0
                 ? ` (Order: ${allocatedOrders.join(', ')})`
                 : '';
-            toast.warn('This item is already fully allocated' + orderMsg);
+            toast.warn('This style is already fully allocated' + orderMsg);
             return;
         }
     }
@@ -4307,7 +4307,7 @@ function onDrop(event, machineId, dateStr) {
     const minutesPerUnit = item.minutes || 0;
 
     if (!minutesPerUnit || minutesPerUnit <= 0) {
-        toast.error('Invalid process minutes for this item');
+        toast.error('Invalid process minutes for this style');
         return;
     }
 
@@ -4329,7 +4329,7 @@ function onDrop(event, machineId, dateStr) {
         type: 'workload',
         machineId,
         dateStr,
-        item: item.item,
+        style: item.style,
         colour: item.colour,
         size: item.size,
         minutesPerUnit,
@@ -4360,8 +4360,8 @@ function moveAllocation(alloc, newMachineId, newDateStr) {
         return;
     }
 
-    // Machine GG compatibility check
-    if (!checkMachineGGCompat(actualAlloc.item, actualAlloc.machine_id, newMachineId)) return;
+    // Machine Frame compatibility check
+    if (!checkMachineFrameCompat(actualAlloc.style, actualAlloc.machine_id, newMachineId)) return;
 
     // One-item-per-machine-day validation
     if (!validateMachineDaySlot(newMachineId, newDateStr, [actualAlloc.key])) {
@@ -4381,7 +4381,7 @@ function moveAllocation(alloc, newMachineId, newDateStr) {
         machineId: newMachineId,
         dateStr: newDateStr,
         allocKey: actualAlloc.key,
-        item: actualAlloc.item,
+        style: actualAlloc.style,
         colour: actualAlloc.colour,
         size: actualAlloc.size,
         minutesPerUnit,
@@ -4476,7 +4476,7 @@ function confirmDrop() {
         }
 
         const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
-            pd.machineId, pd.dateStr, qty, pd.minutesPerUnit, pd.item, pd.colour, pd.size, pd.order, pd.process
+            pd.machineId, pd.dateStr, qty, pd.minutesPerUnit, pd.style, pd.colour, pd.size, pd.order, pd.process
         );
 
         if (allocationsMade > 0) {
@@ -4484,7 +4484,7 @@ function confirmDrop() {
             if (pd.deletedBlockId) {
                 removeDeletedBlock(pd.deletedBlockId);
             } else {
-                removeMatchingDeletedBlocks(pd.item, pd.colour, pd.size, pd.order, pd.process);
+                removeMatchingDeletedBlocks(pd.style, pd.colour, pd.size, pd.order, pd.process);
             }
             if (remainingQty > 0) {
                 toast.warn(`Allocated across ${allocationsMade} day(s). ${remainingQty} units could not be allocated (no capacity)`);
@@ -4530,7 +4530,7 @@ function confirmDrop() {
 
             const sourceResult = handleMoveSource(sourceAlloc, qty, pd.minutesPerUnit);
             const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
-                pd.machineId, pd.dateStr, qty, pd.minutesPerUnit, pd.item, pd.colour, pd.size, pd.order, pd.process
+                pd.machineId, pd.dateStr, qty, pd.minutesPerUnit, pd.style, pd.colour, pd.size, pd.order, pd.process
             );
 
             if (allocationsMade > 0 || sourceResult.sourceRemoved) {
@@ -4571,7 +4571,7 @@ function confirmDrop() {
                     operation_date: pd.dateStr,
                     shift: shift?.name || '',
                     order: sourceAlloc.order,
-                    item: sourceAlloc.item,
+                    style: sourceAlloc.style,
                     process: sourceAlloc.process,
                     colour: sourceAlloc.colour,
                     size: sourceAlloc.size,
@@ -4722,7 +4722,7 @@ function executeShiftAndAllocate(shiftData, sourceResult) {
     const refitResult = refitShiftedAllocations(shiftedAllocRefs);
 
     const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
-        pd.machineId, pd.dateStr, dropQty, pd.minutesPerUnit, pd.item, pd.colour, pd.size, pd.order, pd.process
+        pd.machineId, pd.dateStr, dropQty, pd.minutesPerUnit, pd.style, pd.colour, pd.size, pd.order, pd.process
     );
 
     const shiftCount = shiftedAllocations.length;
@@ -4750,7 +4750,7 @@ function executeShiftAndAllocate(shiftData, sourceResult) {
     if (pd.deletedBlockId) {
         removeDeletedBlock(pd.deletedBlockId);
     } else {
-        removeMatchingDeletedBlocks(pd.item, pd.colour, pd.size, pd.order, pd.process);
+        removeMatchingDeletedBlocks(pd.style, pd.colour, pd.size, pd.order, pd.process);
     }
 
     if (allocationsMade > 0) {
@@ -4936,7 +4936,7 @@ async function doSaveAllocations() {
     workloadItems.value.forEach(item => {
         const allocated = getAllocatedQuantity(item);
         if (allocated > item.quantity) {
-            errors.push(`${item.item}: Allocated ${allocated} exceeds order ${item.quantity}`);
+            errors.push(`${item.style}: Allocated ${allocated} exceeds order ${item.quantity}`);
         }
     });
 
@@ -6072,7 +6072,7 @@ select.form-control {
     color: #64748b;
 }
 
-.machine-gg-badge {
+.machine-frame-badge {
     font-size: 10px;
     font-weight: 700;
     color: #6d28d9;
@@ -6888,7 +6888,7 @@ select.form-control {
     margin-bottom: 0;
 }
 
-/* ===== Machine GG Disabled State ===== */
+/* ===== Machine Frame Disabled State ===== */
 .machine-disabled {
     opacity: 0.35;
     pointer-events: none;

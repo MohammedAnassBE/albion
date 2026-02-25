@@ -279,9 +279,9 @@ tr:hover td{background:#F8FAFC}
         <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
         <span class="nav-label">Processes</span>
       </div>
-      <div class="nav-item" onclick="navigate('machine-gg',this)" title="Machine GG">
+      <div class="nav-item" onclick="navigate('machine-frame',this)" title="Machine Frame">
         <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"/></svg>
-        <span class="nav-label">Machine GG</span>
+        <span class="nav-label">Machine Frame</span>
       </div>
       <div class="nav-item" onclick="navigate('size-ranges',this)" title="Size Ranges">
         <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
@@ -469,7 +469,7 @@ tr:hover td{background:#F8FAFC}
   </div>
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box blue"><svg fill="none" stroke="#2563EB" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div><span class="stat-trend neutral">Total</span></div><div class="stat-value">84</div><div class="stat-label">Total Items</div></div>
-    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box violet"><svg fill="none" stroke="#7C3AED" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2"/></svg></div><span class="stat-trend neutral">GG Types</span></div><div class="stat-value">6</div><div class="stat-label">Machine GGs used</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box violet"><svg fill="none" stroke="#7C3AED" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2"/></svg></div><span class="stat-trend neutral">GG Types</span></div><div class="stat-value">6</div><div class="stat-label">Machine Frames used</div></div>
     <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box amber"><svg fill="none" stroke="#D97706" stroke-width="1.8" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg></div><span class="stat-trend neutral">Active</span></div><div class="stat-value">14</div><div class="stat-label">Size Ranges</div></div>
     <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box emerald"><svg fill="none" stroke="#059669" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/></svg></div><span class="stat-trend neutral">Configured</span></div><div class="stat-value">8</div><div class="stat-label">Processes</div></div>
   </div>
@@ -781,10 +781,10 @@ tr:hover td{background:#F8FAFC}
   </div>
 </div>
 
-<!-- ════════════════════════════════ PAGE: MACHINE GG ════════════════════════════════ -->
-<div class="page" id="page-machine-gg">
+<!-- ════════════════════════════════ PAGE: MACHINE FRAME ════════════════════════════════ -->
+<div class="page" id="page-machine-frame">
   <div class="page-header-row">
-    <div class="page-header"><h1>Machine GG</h1><p>Gauge types for knitting machines</p></div>
+    <div class="page-header"><h1>Machine Frame</h1><p>Gauge types for knitting machines</p></div>
     <button class="btn btn-primary btn-sm" style="align-self:flex-start">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New GG
     </button>
@@ -887,7 +887,7 @@ const pageMap = {
   'dashboard':'Dashboard','orders':'Orders','items':'Items','customers':'Customers',
   'machines':'Machines','shifts':'Shifts','shift-allocations':'Shift Allocations',
   'capacity':'Capacity Planning','import':'Import Data','colours':'Colours',
-  'sizes':'Sizes','processes':'Processes','machine-gg':'Machine GG','size-ranges':'Size Ranges'
+  'sizes':'Sizes','processes':'Processes','machine-frame':'Machine Frame','size-ranges':'Size Ranges'
 };
 
 function navigate(pageId, navEl){
@@ -902,7 +902,7 @@ function navigate(pageId, navEl){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if(navEl) navEl.classList.add('active');
   // Open settings if needed
-  const settingsPages = ['colours','sizes','processes','machine-gg','size-ranges'];
+  const settingsPages = ['colours','sizes','processes','machine-frame','size-ranges'];
   if(settingsPages.includes(pageId)){
     openSettings();
   }

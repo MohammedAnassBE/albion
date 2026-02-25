@@ -162,7 +162,7 @@ async function initMatrix(items = null, orderDetails = null) {
     if (!itemList || itemList.length === 0) return;
 
     itemList.forEach(item => {
-        const itemName = item.item;
+        const itemName = item.style;
         if (!itemName) return;
 
         matrixData.value[itemName] = {

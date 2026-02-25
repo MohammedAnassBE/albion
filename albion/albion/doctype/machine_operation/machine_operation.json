@@ -7,9 +7,9 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-   "machine",
+  "machine",
   "order",
-  "item",
+  "style",
   "process_name",
   "colour",
   "size",
@@ -33,10 +33,10 @@
    "options": "Order"
   },
   {
-   "fieldname": "item",
+   "fieldname": "style",
    "fieldtype": "Link",
-   "label": "Item",
-   "options": "Item"
+   "label": "Style",
+   "options": "Style"
   },
   {
    "fieldname": "process_name",
@@ -86,7 +86,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-10 13:13:29.572183",
+ "modified": "2026-02-25 12:01:40.665888",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Machine Operation",

@@ -7,7 +7,7 @@ from frappe.model.document import Document
 
 class Order(Document):
 	def validate(self):
-		self.validate_items()
+		self.validate_styles()
 		self.total_quantity = sum((d.quantity or 0) for d in self.order_details or [])
 
 	def before_submit(self):
@@ -18,11 +18,11 @@ class Order(Document):
 
 	def populate_order_processes(self):
 		self.order_processes = []
-		for row in self.items:
-			item_doc = frappe.get_doc("Item", row.item)
-			for proc in item_doc.processes or []:
+		for row in self.styles:
+			style_doc = frappe.get_doc("Style", row.style)
+			for proc in style_doc.processes or []:
 				self.append("order_processes", {
-					"item": row.item,
+					"style": row.style,
 					"process_name": proc.process_name,
 					"minutes": proc.minutes,
 				})
@@ -46,20 +46,20 @@ class Order(Document):
 				" Please remove the allocations from Capacity Planning first."
 			)
 
-	def validate_items(self):
-		if not self.items:
-			frappe.throw("Please add at least one Item before saving.")
+	def validate_styles(self):
+		if not self.styles:
+			frappe.throw("Please add at least one Style before saving.")
 
 	def validate_order_details(self):
-		items_in_details = set()
+		styles_in_details = set()
 		for d in self.order_details or []:
 			if d.quantity and d.quantity > 0:
-				items_in_details.add(d.item)
+				styles_in_details.add(d.style)
 
-		for row in self.items:
-			if row.item not in items_in_details:
+		for row in self.styles:
+			if row.style not in styles_in_details:
 				frappe.throw(
-					f"Please enter colour and size wise quantities for Item <b>{row.item}</b> in the Order Matrix."
+					f"Please enter colour and size wise quantities for Style <b>{row.style}</b> in the Order Matrix."
 				)
 
 	def validate_rate_and_delivery_date(self):
@@ -69,14 +69,14 @@ class Order(Document):
 		for d in self.order_details or []:
 			if not d.quantity or d.quantity <= 0:
 				continue
-			key = (d.item, d.colour)
+			key = (d.style, d.colour)
 			if key in seen:
 				continue
 			seen.add(key)
 			if not d.rate:
-				missing_rate.append(f"{d.item} – {d.colour}")
+				missing_rate.append(f"{d.style} – {d.colour}")
 			if not d.delivery_date:
-				missing_date.append(f"{d.item} – {d.colour}")
+				missing_date.append(f"{d.style} – {d.colour}")
 
 		msgs = []
 		if missing_rate:
@@ -113,36 +113,36 @@ def reopen_order(order_name):
 
 @frappe.whitelist()
 def get_order_completion(order):
-    """Aggregated completed qty from Order Tracking, grouped by item+colour+size."""
+    """Aggregated completed qty from Order Tracking, grouped by style+colour+size."""
     rows = frappe.get_all(
         "Order Tracking",
         filters={"order": order},
-        fields=["item", "colour", "size", "sum(quantity) as completed_qty"],
-        group_by="item, colour, size",
+        fields=["style", "colour", "size", "sum(quantity) as completed_qty"],
+        group_by="style, colour, size",
     )
     result = {}
     for r in rows:
-        result.setdefault(r.item, {}).setdefault(r.colour or "", {})[r.size or ""] = r.completed_qty
+        result.setdefault(r.style, {}).setdefault(r.colour or "", {})[r.size or ""] = r.completed_qty
     return result
 
 
 @frappe.whitelist()
-def get_item_details(item_code):
-    """Fetch colours and sizes from Item master"""
-    if not item_code:
+def get_style_details(style_code):
+    """Fetch colours and sizes from Style master"""
+    if not style_code:
         return {}
-    
-    item = frappe.get_doc("Item", item_code)
-    
+
+    style = frappe.get_doc("Style", style_code)
+
     colours = []
     sizes = []
-    
-    if item.colours:
-        colours = [{"colour": c.colour} for c in item.colours]
-    
-    if item.sizes:
-        sizes = [{"size": s.size} for s in item.sizes]
-    
+
+    if style.colours:
+        colours = [{"colour": c.colour} for c in style.colours]
+
+    if style.sizes:
+        sizes = [{"size": s.size} for s in style.sizes]
+
     return {
         "colours": colours,
         "sizes": sizes

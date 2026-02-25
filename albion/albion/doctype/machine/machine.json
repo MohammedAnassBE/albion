@@ -7,7 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "machine_id",
-  "machine_gg"
+  "machine_frame"
  ],
  "fields": [
   {
@@ -19,18 +19,18 @@
    "unique": 1
   },
   {
-   "fieldname": "machine_gg",
+   "fieldname": "machine_frame",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Machine GG",
-   "options": "Machine GG",
+   "label": "Machine Frame",
+   "options": "Machine Frame",
    "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-13 14:16:45.492761",
+ "modified": "2026-02-25 12:39:51.153854",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Machine",

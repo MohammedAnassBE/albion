@@ -71,17 +71,17 @@
 					</select>
 				</div>
 
-				<!-- Item -->
+				<!-- Style -->
 				<div class="inline-field">
-					<label>Item <span class="req">*</span></label>
+					<label>Style <span class="req">*</span></label>
 					<select
 						class="field-select"
-						v-model="inlineForm.item"
+						v-model="inlineForm.style"
 						:disabled="!inlineForm.order || orderLoading"
-						@change="onInlineItemChange(inlineForm.item)"
+						@change="onInlineStyleChange(inlineForm.style)"
 					>
-						<option value="">{{ !inlineForm.order ? 'Select Order first' : orderLoading ? 'Loading...' : 'Select Item' }}</option>
-						<option v-for="it in availableItems" :key="it" :value="it">{{ it }}</option>
+						<option value="">{{ !inlineForm.order ? 'Select Order first' : orderLoading ? 'Loading...' : 'Select Style' }}</option>
+						<option v-for="it in availableStyles" :key="it" :value="it">{{ it }}</option>
 					</select>
 				</div>
 
@@ -91,9 +91,9 @@
 					<select
 						class="field-select"
 						v-model="inlineForm.colour"
-						:disabled="!inlineForm.item"
+						:disabled="!inlineForm.style"
 					>
-						<option value="">{{ !inlineForm.item ? 'Select Item first' : 'Select Colour' }}</option>
+						<option value="">{{ !inlineForm.style ? 'Select Style first' : 'Select Colour' }}</option>
 						<option v-for="c in availableColours" :key="c" :value="c">{{ c }}</option>
 					</select>
 				</div>
@@ -104,9 +104,9 @@
 					<select
 						class="field-select"
 						v-model="inlineForm.size"
-						:disabled="!inlineForm.item"
+						:disabled="!inlineForm.style"
 					>
-						<option value="">{{ !inlineForm.item ? 'Select Item first' : 'Select Size' }}</option>
+						<option value="">{{ !inlineForm.style ? 'Select Style first' : 'Select Size' }}</option>
 						<option v-for="s in availableSizes" :key="s" :value="s">{{ s }}</option>
 					</select>
 				</div>
@@ -483,7 +483,7 @@ function todayStr() {
 const inlineForm = reactive({
 	completion_date: todayStr(),
 	order: '',
-	item: '',
+	style: '',
 	colour: '',
 	size: '',
 	quantity: 0,
@@ -522,28 +522,28 @@ async function fetchAllocatedOrders() {
 const orderDetails = ref([])
 const orderLoading = ref(false)
 
-const availableItems = computed(() => {
-	const items = new Set()
+const availableStyles = computed(() => {
+	const styles = new Set()
 	for (const row of orderDetails.value) {
-		if (row.item) items.add(row.item)
+		if (row.style) styles.add(row.style)
 	}
-	return [...items].sort()
+	return [...styles].sort()
 })
 
 const availableColours = computed(() => {
-	if (!inlineForm.item) return []
+	if (!inlineForm.style) return []
 	const colours = new Set()
 	for (const row of orderDetails.value) {
-		if (row.item === inlineForm.item && row.colour) colours.add(row.colour)
+		if (row.style === inlineForm.style && row.colour) colours.add(row.colour)
 	}
 	return [...colours].sort()
 })
 
 const availableSizes = computed(() => {
-	if (!inlineForm.item) return []
+	if (!inlineForm.style) return []
 	const sizes = new Set()
 	for (const row of orderDetails.value) {
-		if (row.item === inlineForm.item && row.size) sizes.add(row.size)
+		if (row.style === inlineForm.style && row.size) sizes.add(row.size)
 	}
 	return [...sizes].sort()
 })
@@ -566,14 +566,14 @@ async function fetchOrderDetails(orderName) {
 
 function onInlineOrderChange(val) {
 	inlineForm.order = val
-	inlineForm.item = ''
+	inlineForm.style = ''
 	inlineForm.colour = ''
 	inlineForm.size = ''
 	fetchOrderDetails(val)
 }
 
-function onInlineItemChange(val) {
-	inlineForm.item = val
+function onInlineStyleChange(val) {
+	inlineForm.style = val
 	inlineForm.colour = ''
 	inlineForm.size = ''
 }
@@ -581,7 +581,7 @@ function onInlineItemChange(val) {
 function resetForm() {
 	inlineForm.completion_date = todayStr()
 	inlineForm.order = ''
-	inlineForm.item = ''
+	inlineForm.style = ''
 	inlineForm.colour = ''
 	inlineForm.size = ''
 	inlineForm.quantity = 0
@@ -595,7 +595,7 @@ function startEdit(row) {
 	editingRow.value = row
 	inlineForm.completion_date = row.completion_date || ''
 	inlineForm.order = row.order || ''
-	inlineForm.item = row.item || ''
+	inlineForm.style = row.style || ''
 	inlineForm.colour = row.colour || ''
 	inlineForm.size = row.size || ''
 	inlineForm.quantity = row.quantity || 0
@@ -614,7 +614,7 @@ function cancelEdit() {
 function validate() {
 	if (!inlineForm.completion_date) return 'Completion Date is required'
 	if (!inlineForm.order) return 'Order is required'
-	if (!inlineForm.item) return 'Item is required'
+	if (!inlineForm.style) return 'Style is required'
 	if (!inlineForm.colour) return 'Colour is required'
 	if (!inlineForm.size) return 'Size is required'
 	if (!inlineForm.quantity || inlineForm.quantity <= 0) return 'Quantity must be greater than 0'
@@ -633,7 +633,7 @@ async function handleSubmit() {
 
 	const payload = {
 		order: inlineForm.order,
-		item: inlineForm.item,
+		style: inlineForm.style,
 		colour: inlineForm.colour,
 		size: inlineForm.size,
 		quantity: inlineForm.quantity,

@@ -34,32 +34,32 @@
 			</div>
 		</div>
 
-		<!-- Recent Orders -->
-		<div class="panel recent-panel">
-			<h3 class="panel-title">Recent Orders</h3>
-			<div v-if="recentOrders.length" class="recent-list">
+		<!-- Underutilized Machines -->
+		<div class="panel">
+			<h3 class="panel-title">Underutilized Machines</h3>
+			<div v-if="machineUtilisation.length" class="machine-list">
 				<div
-					v-for="order in recentOrders"
-					:key="order.name"
-					class="recent-row"
-					@click="$router.push(`/orders/${encodeURIComponent(order.name)}`)"
+					v-for="m in machineUtilisation"
+					:key="m.machine_id"
+					class="machine-row"
+					@click="$router.push('/machine-availability')"
 				>
-					<div class="recent-main">
-						<span class="recent-name">{{ order.name }}</span>
-						<span class="recent-customer">{{ order.customer || '\u2014' }}</span>
+					<div class="machine-info">
+						<span class="machine-id">{{ m.machine_id }}</span>
+						<span v-if="m.machine_frame" class="machine-frame">{{ m.machine_frame }}</span>
 					</div>
-					<div class="recent-meta">
-						<span class="recent-date">{{ formatDate(order.order_date) }}</span>
-						<span
-							class="recent-badge"
-							:class="badgeClass(order.docstatus)"
-						>{{ badgeLabel(order.docstatus) }}</span>
+					<div class="machine-stats">
+						<div class="util-bar-wrap">
+							<div class="util-bar" :class="utilClass(m.pct)" :style="{ width: Math.min(m.pct, 100) + '%' }" />
+						</div>
+						<span class="util-pct" :class="utilClass(m.pct)">{{ m.pct }}%</span>
+						<span class="machine-avail">{{ m.available }} min free</span>
 					</div>
 				</div>
 			</div>
 			<div v-else class="panel-empty">
 				<AppIcon name="inbox" :size="24" style="opacity: 0.4" />
-				<span>No orders yet</span>
+				<span>No machines found</span>
 			</div>
 		</div>
 	</div>
@@ -72,14 +72,14 @@ import AppIcon from "@/components/shared/AppIcon.vue"
 
 const loading = ref(false)
 const data = ref({})
-const recentOrders = ref([])
+const machineUtilisation = ref([])
 
 async function load() {
 	loading.value = true
 	try {
 		const result = await callMethod("albion.api.get_dashboard_stats")
 		data.value = result || {}
-		recentOrders.value = result.recent_orders || []
+		machineUtilisation.value = result.machine_utilisation || []
 	} catch (e) {
 		console.error("Dashboard load failed:", e)
 	} finally {
@@ -92,7 +92,7 @@ onMounted(load)
 const reportCards = computed(() => [
 	{
 		label: "PRODUCTION REPORT",
-		desc: "pcs this week",
+		desc: "pcs last 7 days",
 		value: data.value.production_qty ?? "—",
 		unit: "",
 		icon: "bar-chart",
@@ -102,7 +102,7 @@ const reportCards = computed(() => [
 	},
 	{
 		label: "MACHINE AVAILABILITY",
-		desc: "avg utilisation this week",
+		desc: "avg utilisation last 7 days",
 		value: data.value.avg_utilisation !== undefined ? data.value.avg_utilisation + "%" : "—",
 		unit: "",
 		icon: "calendar",
@@ -112,22 +112,10 @@ const reportCards = computed(() => [
 	},
 ])
 
-function badgeClass(ds) {
-	if (ds === 1) return "badge-blue"
-	if (ds === 2) return "badge-red"
-	return "badge-grey"
-}
-
-function badgeLabel(ds) {
-	if (ds === 1) return "Submitted"
-	if (ds === 2) return "Cancelled"
-	return "Draft"
-}
-
-function formatDate(val) {
-	if (!val) return ''
-	const [y, m, d] = val.split('-')
-	return (y && m && d) ? `${d}-${m}-${y}` : val
+function utilClass(pct) {
+	if (pct < 40) return "util-low"
+	if (pct < 75) return "util-mid"
+	return "util-high"
 }
 </script>
 
@@ -280,8 +268,7 @@ function formatDate(val) {
 	line-height: 1.4;
 }
 
-
-/* ── Recent Orders Panel ───────────────────────────────── */
+/* ── Underutilized Machines Panel ──────────────────────── */
 .panel {
 	background: var(--color-surface);
 	border: 1px solid var(--color-border);
@@ -296,12 +283,12 @@ function formatDate(val) {
 	margin: 0 0 var(--space-md);
 }
 
-.recent-list {
+.machine-list {
 	display: flex;
 	flex-direction: column;
 }
 
-.recent-row {
+.machine-row {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -314,66 +301,95 @@ function formatDate(val) {
 	padding-right: var(--space-lg);
 }
 
-.recent-row:last-child {
+.machine-row:last-child {
 	border-bottom: none;
 }
 
-.recent-row:hover {
+.machine-row:hover {
 	background: var(--color-surface-hover);
 }
 
-.recent-main {
+.machine-info {
 	display: flex;
-	flex-direction: column;
-	gap: 2px;
+	align-items: center;
+	gap: var(--space-sm);
 	min-width: 0;
 }
 
-.recent-name {
+.machine-id {
 	font-size: 0.8125rem;
 	font-weight: 600;
 	color: var(--color-primary);
 }
 
-.recent-customer {
-	font-size: 0.75rem;
-	color: var(--color-text-muted);
-}
-
-.recent-meta {
-	display: flex;
-	align-items: center;
-	gap: var(--space-sm);
-	flex-shrink: 0;
-}
-
-.recent-date {
-	font-size: 0.75rem;
-	color: var(--color-text-muted);
-}
-
-.recent-badge {
+.machine-frame {
 	font-size: 10px;
 	font-weight: 600;
 	padding: 2px 8px;
 	border-radius: 10px;
 	text-transform: uppercase;
 	letter-spacing: 0.3px;
-}
-
-.badge-grey {
-	background: #f1f5f9;
-	color: #64748b;
-}
-
-.badge-blue {
 	background: rgba(37, 99, 235, 0.1);
 	color: #2563eb;
 }
 
-.badge-red {
-	background: rgba(220, 38, 38, 0.08);
-	color: #dc2626;
+.machine-stats {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	flex-shrink: 0;
+}
+
+.util-bar-wrap {
+	width: 80px;
+	height: 6px;
+	background: var(--color-bg);
+	border-radius: 3px;
+	overflow: hidden;
+}
+
+.util-bar {
+	height: 100%;
+	border-radius: 3px;
+	transition: width 0.3s ease;
+}
+
+.util-bar.util-low {
+	background: #ef4444;
+}
+
+.util-bar.util-mid {
+	background: #f59e0b;
+}
+
+.util-bar.util-high {
+	background: #10b981;
+}
+
+.util-pct {
+	font-size: 0.75rem;
+	font-weight: 700;
+	min-width: 40px;
+	text-align: right;
+}
+
+.util-pct.util-low {
+	color: #ef4444;
+}
+
+.util-pct.util-mid {
+	color: #f59e0b;
+}
+
+.util-pct.util-high {
+	color: #10b981;
+}
+
+.machine-avail {
+	font-size: 0.6875rem;
+	color: var(--color-text-muted);
+	min-width: 70px;
+	text-align: right;
 }
 
 .panel-empty {
@@ -390,6 +406,10 @@ function formatDate(val) {
 @media (max-width: 900px) {
 	.stat-grid {
 		grid-template-columns: repeat(1, 1fr);
+	}
+
+	.util-bar-wrap {
+		width: 50px;
 	}
 }
 </style>

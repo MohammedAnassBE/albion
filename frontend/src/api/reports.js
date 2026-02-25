@@ -7,12 +7,12 @@ import { callMethod } from './client'
 
 const BASE = 'albion.albion.api.reports'
 
-export function getProductionReport({ startDate, endDate, machine, item, process, order, groupBy }) {
+export function getProductionReport({ startDate, endDate, machine, style, process, order, groupBy }) {
   return callMethod(`${BASE}.get_production_report`, {
     start_date: startDate,
     end_date: endDate,
     machine: machine || null,
-    item: item || null,
+    style: style || null,
     process: process || null,
     order: order || null,
     group_by: groupBy || null,

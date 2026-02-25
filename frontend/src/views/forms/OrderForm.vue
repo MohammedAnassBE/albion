@@ -120,6 +120,16 @@
 								:disabled="isReadonly || !!field.read_only"
 								@update:modelValue="(val) => form[field.fieldname] = val"
 							/>
+							<select
+								v-else-if="field.fieldtype === 'Select'"
+								class="field-input"
+								:value="form[field.fieldname] || ''"
+								:disabled="isReadonly || !!field.read_only"
+								@change="form[field.fieldname] = $event.target.value"
+							>
+								<option value="" disabled>Select {{ field.label }}</option>
+								<option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
+							</select>
 							<input
 								v-else-if="field.fieldtype === 'Date'"
 								type="date"
@@ -142,23 +152,25 @@
 				</div>
 			</div>
 
-			<!-- Items Table -->
+			<!-- Styles Table -->
 			<ItemCardList
 				class="child-table-animated"
 				:style="{ animationDelay: '0.06s' }"
-				title="Items"
-				:modelValue="form.items || []"
-				:columns="itemColumns"
+				title="Styles"
+				:modelValue="form.styles || []"
+				:columns="styleColumns"
 				:readonly="isReadonly"
-				@update:modelValue="(val) => form.items = val"
+				@update:modelValue="(val) => form.styles = val"
 			/>
 
 			<!-- Order Matrix -->
 			<OrderMatrix
 				v-if="!isNew"
-				:items="form.items || []"
+				:items="form.styles || []"
 				:orderDetails="form.order_details || []"
 				:readonly="isReadonly"
+				:currencyType="form.currency_type || ''"
+				:exchangeRates="exchangeRates"
 				@update:orderDetails="(details) => form.order_details = details"
 			/>
 
@@ -190,6 +202,8 @@
 				<OrderCompletionMatrix
 					:orderDetails="form.order_details || []"
 					:completionData="completionData"
+					:currencyType="form.currency_type || ''"
+					:exchangeRates="exchangeRates"
 				/>
 			</div>
 
@@ -213,7 +227,7 @@ import { useDoc } from '@/composables/useDoc'
 import { useAppToast } from '@/composables/useToast'
 import { useAppConfirm } from '@/composables/useConfirm'
 import { usePermissions } from '@/composables/usePermissions'
-import { callMethod } from '@/api/client'
+import { callMethod, getDoc } from '@/api/client'
 import config from '@/config/fields/order'
 
 const props = defineProps({ id: { type: String, default: null } })
@@ -227,11 +241,11 @@ const fields = config.fields
 const isNew = computed(() => !props.id)
 
 const cardIcon = computed(() => config.icon || 'shopping-cart')
-const cardSubtitle = computed(() => config.subtitle || 'Customer order with items and quantities')
+const cardSubtitle = computed(() => config.subtitle || 'Client order with styles and quantities')
 
-const itemColumns = [{ field: 'item', header: 'Item', type: 'link', options: 'Item' }]
+const styleColumns = [{ field: 'style', header: 'Style', type: 'link', options: 'Style' }]
 const processColumns = [
-	{ field: 'item', header: 'Item', type: 'data' },
+	{ field: 'style', header: 'Style', type: 'data' },
 	{ field: 'process_name', header: 'Process', type: 'data' },
 	{ field: 'minutes', header: 'Minutes', type: 'float' },
 ]
@@ -246,6 +260,7 @@ const docError = computed(() => docState.value?.error?.value ?? null)
 const form = reactive({})
 const validationErrors = reactive({})
 const completionData = ref({})
+const exchangeRates = ref([])
 
 async function fetchCompletion(orderName) {
 	if (!orderName) return
@@ -255,6 +270,16 @@ async function fetchCompletion(orderName) {
 	} catch (e) {
 		console.error('Error fetching completion data:', e)
 		completionData.value = {}
+	}
+}
+
+async function fetchExchangeRates() {
+	try {
+		const doc = await getDoc('Currency Exchange', 'Currency Exchange')
+		exchangeRates.value = doc?.rates || []
+	} catch (e) {
+		console.error('Error fetching exchange rates:', e)
+		exchangeRates.value = []
 	}
 }
 
@@ -381,6 +406,7 @@ async function initDoc() {
 		await docState.value.load(props.id)
 		if (docState.value.doc.value) {
 			populateForm(docState.value.doc.value)
+			fetchExchangeRates()
 			if (docState.value.doc.value.docstatus === 1) {
 				fetchCompletion(props.id)
 			}

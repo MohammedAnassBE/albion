@@ -54,6 +54,15 @@
 								@update:modelValue="(val) => updateCell(index, col.field, val)"
 							/>
 						</template>
+						<template v-else-if="col.type === 'date'">
+							<input
+								type="date"
+								class="field-input"
+								:value="row[col.field] || ''"
+								:placeholder="col.header"
+								@input="updateCell(index, col.field, $event.target.value)"
+							/>
+						</template>
 						<template v-else-if="col.type === 'float' || col.type === 'int'">
 							<input
 								type="number"

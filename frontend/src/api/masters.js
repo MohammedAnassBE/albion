@@ -1,6 +1,6 @@
 /**
  * Generic CRUD wrappers for simple master DocTypes
- * (Machine, Machine GG, Item, Process, Shift, Colour, Size, Size Range, Customer, etc.)
+ * (Machine, Machine Frame, Item, Process, Shift, Colour, Size, Size Range, Client, etc.)
  *
  * These thin pass-throughs keep view/composable code declarative while
  * centralising the import surface to a single module.

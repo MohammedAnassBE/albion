@@ -1,19 +1,22 @@
 export default {
 	doctype: 'Order',
 	icon: 'shopping-cart',
-	subtitle: 'Customer order with items and quantities',
+	subtitle: 'Client order with items and quantities',
 	fields: [
-		{ fieldname: 'customer', fieldtype: 'Link', label: 'Customer', options: 'Customer', reqd: 1 },
+		{ fieldname: 'client', fieldtype: 'Link', label: 'Client', options: 'Client', reqd: 1 },
+		{ fieldname: 'product_developer', fieldtype: 'Link', label: 'Product Developer', options: 'Product Developer', reqd: 1 },
+		{ fieldname: 'client_season', fieldtype: 'Link', label: 'Client Season', options: 'Client Season', reqd: 1 },
+		{ fieldname: 'currency_type', fieldtype: 'Select', label: 'Currency Type', options: ['Euro', 'Dollar', 'GBP'], reqd: 1 },
 		{ fieldname: 'purchase_order', fieldtype: 'Data', label: 'Purchase Order' },
 		{ fieldname: 'order_date', fieldtype: 'Date', label: 'Order Date', reqd: 1 },
 		{ fieldname: 'delivery_date', fieldtype: 'Date', label: 'Delivery Date' },
 		{ fieldname: 'status', fieldtype: 'Data', label: 'Status', read_only: 1, hidden_if_empty: true },
 		{ fieldname: 'amended_from', fieldtype: 'Link', label: 'Amended From', options: 'Order', read_only: 1, hidden_if_empty: true },
-		{ fieldname: 'items', fieldtype: 'Table', label: 'Items', options: 'Order Item', columns: [
-			{ field: 'item', header: 'Item', type: 'link', options: 'Item' },
+		{ fieldname: 'styles', fieldtype: 'Table', label: 'Styles', options: 'Order Style', columns: [
+			{ field: 'style', header: 'Style', type: 'link', options: 'Style' },
 		]},
 		{ fieldname: 'order_details', fieldtype: 'Table', label: 'Order Details', options: 'Order Detail', hidden: true, columns: [
-			{ field: 'item', header: 'Item', type: 'link', options: 'Item' },
+			{ field: 'style', header: 'Style', type: 'link', options: 'Style' },
 			{ field: 'colour', header: 'Colour', type: 'link', options: 'Colour' },
 			{ field: 'size', header: 'Size', type: 'data' },
 			{ field: 'quantity', header: 'Quantity', type: 'float' },
@@ -21,7 +24,7 @@ export default {
 		{ field: 'delivery_date', header: 'Delivery Date', type: 'date' },
 		]},
 		{ fieldname: 'order_processes', fieldtype: 'Table', label: 'Order Processes', options: 'Order Process', read_only: 1, columns: [
-			{ field: 'item', header: 'Item', type: 'link', options: 'Item' },
+			{ field: 'style', header: 'Style', type: 'link', options: 'Style' },
 			{ field: 'process_name', header: 'Process', type: 'link', options: 'Process' },
 			{ field: 'minutes', header: 'Minutes', type: 'float' },
 		]},

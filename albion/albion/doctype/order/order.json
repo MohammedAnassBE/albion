@@ -6,13 +6,16 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "customer",
+  "client",
+  "product_developer",
+  "client_season",
+  "currency_type",
   "purchase_order",
   "order_date",
   "delivery_date",
   "status",
   "total_quantity",
-  "items",
+  "styles",
   "section_break_matrix",
   "order_matrix_html",
   "order_details",
@@ -21,11 +24,32 @@
  ],
  "fields": [
   {
-   "fieldname": "customer",
+   "fieldname": "client",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Customer",
-   "options": "Customer",
+   "label": "Client",
+   "options": "Client",
+   "reqd": 1
+  },
+  {
+   "fieldname": "product_developer",
+   "fieldtype": "Link",
+   "label": "Product Developer",
+   "options": "Product Developer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "client_season",
+   "fieldtype": "Link",
+   "label": "Client Season",
+   "options": "Client Season",
+   "reqd": 1
+  },
+  {
+   "fieldname": "currency_type",
+   "fieldtype": "Select",
+   "label": "Currency Type",
+   "options": "\nEuro\nDollar\nGBP",
    "reqd": 1
   },
   {
@@ -66,10 +90,10 @@
    "read_only": 1
   },
   {
-   "fieldname": "items",
+   "fieldname": "styles",
    "fieldtype": "Table",
-   "label": "Items",
-   "options": "Order Item"
+   "label": "Styles",
+   "options": "Order Style"
   },
   {
    "fieldname": "section_break_matrix",
@@ -91,9 +115,9 @@
   {
    "fieldname": "order_processes",
    "fieldtype": "Table",
-   "read_only": 1,
    "label": "Order Processes",
-   "options": "Order Process"
+   "options": "Order Process",
+   "read_only": 1
   },
   {
    "fieldname": "amended_from",
@@ -110,10 +134,11 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-10 09:53:35.543694",
+ "modified": "2026-02-25 14:50:33.291471",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Order",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

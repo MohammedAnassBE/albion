@@ -80,7 +80,7 @@
 				<tbody>
 					<tr v-for="s in machineSummary" :key="s.machine_id">
 						<td class="cell-machine">{{ s.machine_id }}</td>
-						<td>{{ s.machine_gg }}</td>
+						<td>{{ s.machine_frame }}</td>
 						<td class="num-col">{{ s.capacity.toLocaleString() }}</td>
 						<td class="num-col">{{ s.used.toLocaleString() }}</td>
 						<td class="num-col">{{ s.available.toLocaleString() }}</td>

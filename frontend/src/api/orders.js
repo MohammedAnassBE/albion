@@ -1,6 +1,6 @@
 /**
  * Order-specific API helpers.
- * Order is a submittable DocType with child tables (Order Item, Order Detail, Order Item Detail).
+ * Order is a submittable DocType with child tables (Order Style, Order Detail, Order Item Detail).
  */
 
 import { getList, getDoc, createDoc, updateDoc, submitDoc, cancelDoc, callMethod } from './client'
@@ -11,7 +11,7 @@ import { getList, getDoc, createDoc, updateDoc, submitDoc, cancelDoc, callMethod
  */
 export function getOrders(params = {}) {
   return getList('Order', {
-    fields: ['name', 'customer', 'purchase_order', 'order_date', 'delivery_date', 'docstatus'],
+    fields: ['name', 'client', 'purchase_order', 'order_date', 'delivery_date', 'docstatus'],
     order_by: 'creation desc',
     ...params,
   })
@@ -38,9 +38,9 @@ export function cancelOrder(name) {
 }
 
 /**
- * Fetch colour/size/process details for an Item, used when populating the Order matrix.
+ * Fetch colour/size/process details for a Style, used when populating the Order matrix.
  * Calls the whitelisted method in albion.albion.doctype.order.order.
  */
-export function getItemDetails(itemCode) {
-  return callMethod('albion.albion.doctype.order.order.get_item_details', { item_code: itemCode })
+export function getStyleDetails(styleCode) {
+  return callMethod('albion.albion.doctype.order.order.get_style_details', { style_code: styleCode })
 }

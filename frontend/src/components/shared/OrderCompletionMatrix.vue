@@ -28,6 +28,8 @@
 							<th class="th-colour">Colour</th>
 							<th v-for="size in itemEntry.sizes" :key="size" class="th-size">{{ size }}</th>
 							<th class="th-total">Total</th>
+							<th class="th-rate">Total Rate</th>
+							<th class="th-gbp">GBP Value</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -48,6 +50,8 @@
 								<span class="qty-slash">/</span>
 								<span class="qty-target">{{ formatQty(rowOrdered(itemEntry, colour)) }}</span>
 							</td>
+							<td class="td-rate">{{ formatCurrency(rowTotalRate(itemEntry, colour)) }}</td>
+							<td class="td-gbp">{{ formatCurrency(rowGbpValue(itemEntry, colour)) }}</td>
 						</tr>
 					</tbody>
 					<tfoot>
@@ -63,6 +67,8 @@
 								<span class="qty-slash">/</span>
 								<span class="qty-target">{{ itemEntry.orderedTotal }}</span>
 							</td>
+							<td class="tf-rate">{{ formatCurrency(itemTotalRate(itemEntry)) }}</td>
+							<td class="tf-gbp">{{ formatCurrency(itemTotalGbp(itemEntry)) }}</td>
 						</tr>
 					</tfoot>
 				</table>
@@ -77,23 +83,32 @@ import { computed } from 'vue'
 const props = defineProps({
 	orderDetails: { type: Array, default: () => [] },
 	completionData: { type: Object, default: () => ({}) },
+	currencyType: { type: String, default: '' },
+	exchangeRates: { type: Array, default: () => [] },
 })
 
 const itemList = computed(() => {
 	const itemMap = {}
 	for (const d of props.orderDetails) {
-		if (!d.item) continue
-		if (!itemMap[d.item]) {
-			itemMap[d.item] = { colours: [], sizes: [], cells: {} }
+		if (!d.style) continue
+		if (!itemMap[d.style]) {
+			itemMap[d.style] = { colours: [], sizes: [], cells: {}, ratePerColour: {}, deliveryDatePerColour: {} }
 		}
-		const entry = itemMap[d.item]
+		const entry = itemMap[d.style]
 		if (!entry.colours.includes(d.colour)) entry.colours.push(d.colour)
 		if (!entry.sizes.includes(d.size)) entry.sizes.push(d.size)
 		if (!entry.cells[d.colour]) entry.cells[d.colour] = {}
-		const completed = props.completionData?.[d.item]?.[d.colour]?.[d.size] ?? 0
+		const completed = props.completionData?.[d.style]?.[d.colour]?.[d.size] ?? 0
 		entry.cells[d.colour][d.size] = {
 			ordered: parseFloat(d.quantity) || 0,
 			completed: parseFloat(completed) || 0,
+		}
+		// Store rate and delivery_date per colour (same for all sizes in a colour; take first)
+		if (entry.ratePerColour[d.colour] === undefined) {
+			entry.ratePerColour[d.colour] = parseFloat(d.rate) || 0
+		}
+		if (!entry.deliveryDatePerColour[d.colour]) {
+			entry.deliveryDatePerColour[d.colour] = d.delivery_date || ''
 		}
 	}
 
@@ -114,6 +129,8 @@ const itemList = computed(() => {
 			colours: data.colours,
 			sizes: data.sizes,
 			cells: data.cells,
+			ratePerColour: data.ratePerColour,
+			deliveryDatePerColour: data.deliveryDatePerColour,
 			orderedTotal: formatQty(orderedTotal),
 			completedTotal: formatQty(completedTotal),
 			_orderedRaw: orderedTotal,
@@ -122,9 +139,23 @@ const itemList = computed(() => {
 	})
 })
 
+function getExchangeRate(deliveryDate, currencyType) {
+	if (!deliveryDate || currencyType === 'GBP') return 1
+	const row = props.exchangeRates.find(r => r.month_year === deliveryDate)
+	if (!row) return 0
+	if (currencyType === 'Euro') return row.euro_rate || 0
+	if (currencyType === 'Dollar') return row.dollar_rate || 0
+	return 0
+}
+
 function formatQty(val) {
 	const n = parseFloat(val) || 0
 	return n % 1 === 0 ? n.toLocaleString() : n.toFixed(2)
+}
+
+function formatCurrency(val) {
+	const n = parseFloat(val) || 0
+	return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function cellClass(cell) {
@@ -160,6 +191,33 @@ function rowCompleted(item, colour) {
 function rowOrdered(item, colour) {
 	let total = 0
 	for (const size of item.sizes) total += item.cells[colour]?.[size]?.ordered ?? 0
+	return total
+}
+
+function rowTotalRate(item, colour) {
+	const completed = rowCompleted(item, colour)
+	const rate = item.ratePerColour[colour] || 0
+	return completed * rate
+}
+
+function rowGbpValue(item, colour) {
+	const totalRate = rowTotalRate(item, colour)
+	if (totalRate === 0) return 0
+	const exRate = getExchangeRate(item.deliveryDatePerColour[colour], props.currencyType)
+	if (exRate === 0) return 0
+	if (exRate === 1) return totalRate // Already GBP
+	return totalRate / exRate
+}
+
+function itemTotalRate(item) {
+	let total = 0
+	for (const colour of item.colours) total += rowTotalRate(item, colour)
+	return total
+}
+
+function itemTotalGbp(item) {
+	let total = 0
+	for (const colour of item.colours) total += rowGbpValue(item, colour)
 	return total
 }
 
@@ -297,6 +355,13 @@ function colOrdered(item, size) {
 	padding-right: 24px;
 	border-left: 1px solid var(--color-border);
 }
+.th-rate,
+.th-gbp {
+	text-align: right;
+	width: 110px;
+	padding-right: 20px;
+	border-left: 1px solid var(--color-border);
+}
 
 /* ── Body ───────────────────────────────────────────────────── */
 .matrix-table tbody tr {
@@ -378,6 +443,20 @@ function colOrdered(item, size) {
 .total-complete .qty-done { color: #16a34a; }
 .total-partial .qty-done  { color: #d97706; }
 
+/* ── Rate & GBP columns ───────────────────────────────────── */
+.td-rate,
+.td-gbp {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	padding: 10px 20px;
+	white-space: nowrap;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--color-text);
+	border-left: 1px solid var(--color-border);
+	background: rgba(59, 130, 246, 0.04);
+}
+
 /* ── Footer ─────────────────────────────────────────────────── */
 .matrix-table tfoot tr {
 	background: var(--color-surface-alt);
@@ -416,5 +495,15 @@ function colOrdered(item, size) {
 .tf-grand-total .qty-done {
 	color: var(--color-text);
 	font-weight: 800;
+}
+
+.tf-rate,
+.tf-gbp {
+	text-align: right;
+	padding-right: 20px;
+	font-weight: 800;
+	color: var(--color-text);
+	border-left: 1px solid var(--color-border);
+	background: rgba(59, 130, 246, 0.04);
 }
 </style>

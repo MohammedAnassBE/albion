@@ -25,8 +25,8 @@
 				<LinkField v-model="filterMachine" doctype="Machine" placeholder="All machines" />
 			</div>
 			<div class="filter-group">
-				<label class="filter-label">Item</label>
-				<LinkField v-model="filterItem" doctype="Item" placeholder="All items" />
+				<label class="filter-label">Style</label>
+				<LinkField v-model="filterStyle" doctype="Style" placeholder="All styles" />
 			</div>
 			<div class="filter-group">
 				<label class="filter-label">Process</label>
@@ -40,7 +40,7 @@
 				<label class="filter-label">Group By</label>
 				<select v-model="groupBy" class="filter-input">
 					<option value="">Detailed</option>
-					<option value="item">Item Wise</option>
+					<option value="style">Style Wise</option>
 					<option value="machine">Machine Wise</option>
 				</select>
 			</div>
@@ -99,7 +99,7 @@ const startDate = ref(new Date(now.getFullYear(), now.getMonth(), 1).toISOString
 const endDate = ref(new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10))
 
 const filterMachine = ref('')
-const filterItem = ref('')
+const filterStyle = ref('')
 const filterProcess = ref('')
 const filterOrder = ref('')
 const groupBy = ref('')
@@ -114,7 +114,7 @@ const sortDir = ref('asc')
 const DETAIL_COLUMNS = [
 	{ key: 'machine_id', label: 'Machine' },
 	{ key: 'order', label: 'Order' },
-	{ key: 'item', label: 'Item' },
+	{ key: 'style', label: 'Style' },
 	{ key: 'process_name', label: 'Process' },
 	{ key: 'colour', label: 'Colour' },
 	{ key: 'size', label: 'Size' },
@@ -122,8 +122,8 @@ const DETAIL_COLUMNS = [
 	{ key: 'total_minutes', label: 'Minutes', numeric: true },
 ]
 
-const ITEM_COLUMNS = [
-	{ key: 'item', label: 'Item' },
+const STYLE_COLUMNS = [
+	{ key: 'style', label: 'Style' },
 	{ key: 'total_quantity', label: 'Quantity', numeric: true },
 ]
 
@@ -133,7 +133,7 @@ const MACHINE_COLUMNS = [
 ]
 
 const columns = computed(() => {
-	if (groupBy.value === 'item') return ITEM_COLUMNS
+	if (groupBy.value === 'style') return STYLE_COLUMNS
 	if (groupBy.value === 'machine') return MACHINE_COLUMNS
 	return DETAIL_COLUMNS
 })
@@ -184,7 +184,7 @@ async function runReport() {
 			startDate: startDate.value,
 			endDate: endDate.value,
 			machine: filterMachine.value || null,
-			item: filterItem.value || null,
+			style: filterStyle.value || null,
 			process: filterProcess.value || null,
 			order: filterOrder.value || null,
 			groupBy: groupBy.value || null,

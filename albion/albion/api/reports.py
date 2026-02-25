@@ -9,13 +9,13 @@ from albion.albion.page.capacity_planning.capacity_planning import (
 
 
 @frappe.whitelist()
-def get_production_report(start_date, end_date, machine=None, item=None, process=None, order=None, group_by=None):
+def get_production_report(start_date, end_date, machine=None, style=None, process=None, order=None, group_by=None):
     """Aggregated production data from Machine Operation for a date range.
 
-    Groups by machine, order, item, process, colour, size and returns
+    Groups by machine, order, style, process, colour, size and returns
     SUM(quantity) and SUM(allocated_minutes).
 
-    Optional group_by: "item" or "machine" for coarser aggregation.
+    Optional group_by: "style" or "machine" for coarser aggregation.
     """
     conditions = ["mo.operation_date BETWEEN %(start_date)s AND %(end_date)s"]
     params = {"start_date": start_date, "end_date": end_date}
@@ -23,9 +23,9 @@ def get_production_report(start_date, end_date, machine=None, item=None, process
     if machine:
         conditions.append("mo.machine = %(machine)s")
         params["machine"] = machine
-    if item:
-        conditions.append("mo.item = %(item)s")
-        params["item"] = item
+    if style:
+        conditions.append("mo.style = %(style)s")
+        params["style"] = style
     if process:
         conditions.append("mo.process_name = %(process)s")
         params["process"] = process
@@ -35,17 +35,17 @@ def get_production_report(start_date, end_date, machine=None, item=None, process
 
     where = " AND ".join(conditions)
 
-    if group_by == "item":
+    if group_by == "style":
         rows = frappe.db.sql(
             f"""
             SELECT
-                mo.item,
+                mo.style,
                 SUM(mo.quantity) AS total_quantity
             FROM `tabMachine Operation` mo
             JOIN `tabMachine` m ON m.name = mo.machine
             WHERE {where}
-            GROUP BY mo.item
-            ORDER BY mo.item
+            GROUP BY mo.style
+            ORDER BY mo.style
             """,
             params,
             as_dict=True,
@@ -73,7 +73,7 @@ def get_production_report(start_date, end_date, machine=None, item=None, process
                 m.machine_id,
                 m.machine_name,
                 mo.`order`,
-                mo.item,
+                mo.style,
                 mo.process_name,
                 mo.colour,
                 mo.size,
@@ -82,9 +82,9 @@ def get_production_report(start_date, end_date, machine=None, item=None, process
             FROM `tabMachine Operation` mo
             JOIN `tabMachine` m ON m.name = mo.machine
             WHERE {where}
-            GROUP BY m.machine_id, m.machine_name, mo.`order`, mo.item,
+            GROUP BY m.machine_id, m.machine_name, mo.`order`, mo.style,
                      mo.process_name, mo.colour, mo.size
-            ORDER BY m.machine_id, mo.`order`, mo.item
+            ORDER BY m.machine_id, mo.`order`, mo.style
             """,
             params,
             as_dict=True,
