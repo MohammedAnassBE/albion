@@ -3,25 +3,23 @@
         <div class="cp-header">
             <div class="cp-filters">
                 <div class="filter-rows">
-                    <div class="filter-row">
-                        <div class="filter-field" v-show="!isZoomedOut">
-                            <label class="filter-label">Customer</label>
-                            <div class="frappe-field" ref="customerFieldRef"></div>
+                    <div class="filter-row" v-show="!isZoomedOut">
+                        <div class="filter-field">
+                            <label class="filter-label">Client</label>
+                            <div class="frappe-field" ref="clientFieldRef"></div>
                         </div>
-                        <div class="filter-field" v-show="!isZoomedOut">
+                        <div class="filter-field">
                             <label class="filter-label">Order</label>
                             <div class="frappe-field" ref="orderFieldRef"></div>
                         </div>
-                        <div class="filter-field">
+                        <div class="filter-field" style="display:none">
                             <label class="filter-label">Start Date</label>
                             <div class="frappe-field" ref="startDateFieldRef"></div>
                         </div>
-                        <div class="filter-field">
+                        <div class="filter-field" style="display:none">
                             <label class="filter-label">End Date</label>
                             <div class="frappe-field" ref="endDateFieldRef"></div>
                         </div>
-                    </div>
-                    <div class="filter-row" v-show="!isZoomedOut">
                         <div class="filter-field">
                             <label class="filter-label">Process</label>
                             <div class="frappe-field" ref="processFieldRef"></div>
@@ -31,20 +29,25 @@
                             <div class="frappe-field" ref="viewTypeFieldRef"></div>
                         </div>
                         <div class="filter-field">
-                            <label class="filter-label">Machine GG</label>
-                            <div class="frappe-field" ref="machineGGFieldRef"></div>
+                            <label class="filter-label">Machine Frame</label>
+                            <div class="frappe-field" ref="machineFrameFieldRef"></div>
                         </div>
                     </div>
-                </div>
-                <div class="action-group">
-                    <button v-if="applyZoom" class="btn btn-default" @click="isZoomedOut = !isZoomedOut">
-                        {{ isZoomedOut ? 'Zoom In' : 'Zoom Out' }}
-                    </button>
-                    <button class="btn btn-default" @click="undoLastAction" :disabled="actionHistory.length === 0" v-show="!isZoomedOut">Undo</button>
-                    <button class="btn btn-default" @click="redoLastAction" :disabled="redoHistory.length === 0" v-show="!isZoomedOut">Redo</button>
-                    <button class="btn btn-default" @click="refreshCalendar">Refresh</button>
-                    <button class="btn btn-default" @click="openBulkShiftModal" v-show="!isZoomedOut">Update Shifts</button>
-                    <button class="btn btn-primary" @click="saveAllocations" v-show="!isZoomedOut">Save</button>
+                    <div class="filter-row">
+                        <div class="action-group">
+                            <label v-if="applyZoom" class="compact-toggle-wrap">
+                                <span class="compact-label">Compact View</span>
+                                <div class="toggle-switch" :class="{ 'toggle-on': isZoomedOut }" @click="isZoomedOut = !isZoomedOut">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </label>
+                            <button class="btn btn-default" @click="undoLastAction" :disabled="actionHistory.length === 0" v-show="!isZoomedOut">Undo</button>
+                            <button class="btn btn-default" @click="redoLastAction" :disabled="redoHistory.length === 0" v-show="!isZoomedOut">Redo</button>
+                            <button class="btn btn-default" @click="refreshCalendar">Refresh</button>
+                            <button class="btn btn-default" @click="openBulkShiftModal" v-show="!isZoomedOut">Update Shifts</button>
+                            <button class="btn btn-primary" @click="saveAllocations" v-show="!isZoomedOut">Save</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -57,7 +60,9 @@
 
         <div class="cp-body">
             <!-- Left Panel - Workload List -->
-            <div class="cp-left-panel" :class="{ 'panel-collapsed': workloadCollapsed }" v-show="!isZoomedOut">
+            <div class="cp-left-panel" :class="{ 'panel-collapsed': workloadCollapsed }" v-show="!isZoomedOut"
+                 @dragover="onWorkloadDragOver"
+                 @drop="onWorkloadDrop">
                 <div class="panel-header" @click="workloadCollapsed = !workloadCollapsed">
                     <div class="panel-header-row">
                         <h4>Workload</h4>
@@ -88,10 +93,10 @@
                     >
                         <div class="item-header">
                             <span class="drag-handle" v-if="isValidForProcess(item) && getAllocationStatus(item) !== 'full'">&#8942;&#8942;</span>
-                            <span class="item-name">{{ item.item }}</span>
+                            <span class="item-name">{{ item.style }}</span>
                             <span class="item-qty">{{ item.quantity }}</span>
                         </div>
-                        <div v-if="item.machine_gg" class="item-gg">{{ item.machine_gg }}</div>
+                        <div v-if="item.machine_frame" class="item-frame">{{ item.machine_frame }}</div>
                         <div v-if="item.colour" class="item-detail">
                             Colour: {{ item.colour }}
                         </div>
@@ -129,7 +134,7 @@
                         >
                             <div class="deleted-item-header">
                                 <span class="drag-handle">&#8942;&#8942;</span>
-                                <span class="deleted-item-name">{{ block.item }}</span>
+                                <span class="deleted-item-name">{{ block.style }}</span>
                                 <span class="deleted-item-qty">{{ block.total_quantity }}</span>
                             </div>
                             <div v-if="block.colour" class="item-detail">Colour: {{ block.colour }}</div>
@@ -172,7 +177,7 @@
                         <template v-for="(machine, mIdx) in filteredMachines" :key="machine.machine_id">
                             <!-- Machine label cell -->
                             <div class="gantt-machine-cell" :class="{ 'machine-disabled': !isMachineCompatible(machine.machine_id), 'machine-cell-zoom': isZoomedOut }" :style="{ gridRow: mIdx + 2 }"
-                                 :title="isZoomedOut ? `${machine.machine_id} — ${machine.machine_name} (${machine.machine_gg})` : ''">
+                                 :title="isZoomedOut ? `${machine.machine_id} — ${machine.machine_name} (${machine.machine_frame})` : ''">
                                 <template v-if="isZoomedOut">
                                     <span class="machine-id-zoom">{{ machine.machine_id }}</span>
                                 </template>
@@ -180,7 +185,7 @@
                                     <div class="machine-info">
                                         <div class="machine-title">
                                             <span class="machine-id">{{ machine.machine_id }}</span>
-                                            <span class="machine-gg-badge">{{ machine.machine_gg }}</span>
+                                            <span class="machine-frame-badge">{{ machine.machine_frame }}</span>
                                         </div>
                                         <span class="machine-name">{{ machine.machine_name }}</span>
                                     </div>
@@ -194,8 +199,14 @@
                                  :class="[getCellClass(machine.machine_id, date), { 'machine-disabled': !isMachineCompatible(machine.machine_id) }]"
                                  :style="{ gridRow: mIdx + 2, gridColumn: dIdx + 2 }"
                                  @dragover="!isZoomedOut && onCellDragOver($event, machine.machine_id)"
-                                 @drop="!isZoomedOut && onDrop($event, machine.machine_id, date)">
+                                 @drop="!isZoomedOut && onDrop($event, machine.machine_id, date)"
+                                 @click.self="!isZoomedOut && openActionChoice(date, machine.machine_id)">
                                 <template v-if="!isZoomedOut">
+                                    <span v-if="hasMachineSpecificShift(date, machine.machine_id)"
+                                          class="machine-shift-badge clickable"
+                                          @click.stop="openActionChoice(date, machine.machine_id)">
+                                        {{ getShiftNamesForDate(date, machine.machine_id) }}
+                                    </span>
                                     <span v-if="getCellAlterationBadge(date, machine.machine_id)"
                                           class="alteration-badge clickable"
                                           :class="getCellAlterationBadge(date, machine.machine_id).cls"
@@ -203,7 +214,7 @@
                                         {{ getCellAlterationBadge(date, machine.machine_id).label }}
                                     </span>
                                     <div class="cell-top-row">
-                                        <button class="cell-add-btn" @click.stop="openAlterationDialog(date, machine.machine_id)" title="Add overtime/break">+</button>
+                                        <button class="cell-add-btn" @click.stop="openActionChoice(date, machine.machine_id)" title="Update shift or time">+</button>
                                     </div>
                                     <div class="cell-utilization" v-if="getUsedMinutes(machine.machine_id, date) > 0"
                                          :title="`${getUsedMinutes(machine.machine_id, date)}m / ${getEffectiveMinutes(date, machine.machine_id)}m`">
@@ -238,14 +249,14 @@
                                     <template v-if="isZoomedOut">
                                         <div class="bar-row-zoom">
                                             <span v-if="group.order" class="bar-tag order-tag"><b>O:</b> {{ group.order }}</span>
-                                            <span class="bar-item">{{ group.item }}</span>
-                                            <span class="bar-qty">{{ group.total_quantity }}</span>
+                                            <span class="bar-item">{{ group.style }}</span>
+                                            <span class="bar-qty"><template v-if="getCompletedQty(group)">{{ getCompletedQty(group) }}/</template>{{ group.total_quantity }}</span>
                                         </div>
                                     </template>
                                     <template v-else>
                                         <div class="bar-row-top">
-                                            <span class="bar-item">{{ group.item }}</span>
-                                            <span class="bar-qty">{{ group.total_quantity }}</span>
+                                            <span class="bar-item">{{ group.style }}</span>
+                                            <span class="bar-qty"><template v-if="getCompletedQty(group)">{{ getCompletedQty(group) }}/</template>{{ group.total_quantity }}</span>
                                         </div>
                                         <div class="bar-row-mid">
                                             <span class="bar-process">{{ group.process }}</span>
@@ -270,7 +281,7 @@
             <div class="modal-content" @click.stop>
                 <h4>Allocate Quantity</h4>
                 <div class="form-group">
-                    <label>Item: {{ pendingDrop.item }}</label>
+                    <label>Item: {{ pendingDrop.style }}</label>
                 </div>
                 <div class="form-group">
                     <label>Target: {{ pendingDrop.machineId }} &middot; {{ fmtDate(pendingDrop.dateStr) }}</label>
@@ -327,7 +338,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(grp, idx) in shiftModalData.affectedGroups" :key="idx">
-                                <td>{{ grp.item }}</td>
+                                <td>{{ grp.style }}</td>
                                 <td>{{ grp.order }}</td>
                                 <td>{{ grp.dayCount }}</td>
                                 <td>{{ fmtDate(grp.oldStart) }} to {{ fmtDate(grp.oldEnd) }}</td>
@@ -352,7 +363,7 @@
                         <tbody>
                             <tr v-for="(entry, idx) in shiftModalData.affectedAllocations" :key="idx">
                                 <td>{{ entry.allocation.order }}</td>
-                                <td>{{ entry.allocation.item }}</td>
+                                <td>{{ entry.allocation.style }}</td>
                                 <td>{{ entry.allocation.process }}</td>
                                 <td>{{ entry.allocation.quantity }}</td>
                                 <td>{{ fmtDate(entry.currentDate) }}</td>
@@ -394,7 +405,7 @@
                         <tbody>
                             <tr v-for="(entry, idx) in backfillModalData.affectedAllocations" :key="idx">
                                 <td>{{ entry.allocation.order }}</td>
-                                <td>{{ entry.allocation.item }}</td>
+                                <td>{{ entry.allocation.style }}</td>
                                 <td>{{ entry.allocation.process }}</td>
                                 <td>{{ entry.allocation.quantity }}</td>
                                 <td>{{ fmtDate(entry.currentDate) }}</td>
@@ -417,7 +428,7 @@
             <div class="modal-content" @click.stop>
                 <h4>Edit Group Quantity</h4>
                 <div class="form-group">
-                    <label>Item: {{ selectedGroup.item }}</label>
+                    <label>Item: {{ selectedGroup.style }}</label>
                 </div>
                 <div class="form-group">
                     <label>Dates: {{ fmtDate(selectedGroup.start_date) }} to {{ fmtDate(selectedGroup.end_date) }} ({{ selectedGroup.allocs.length }} days)</label>
@@ -441,7 +452,7 @@
             <div class="modal-content" @click.stop>
                 <h4>Split Group at Date</h4>
                 <div class="form-group">
-                    <label>Item: {{ selectedGroup.item }} ({{ selectedGroup.allocs.length }} days)</label>
+                    <label>Item: {{ selectedGroup.style }} ({{ selectedGroup.allocs.length }} days)</label>
                 </div>
                 <div class="form-group">
                     <label>Split before date</label>
@@ -463,7 +474,7 @@
             <div class="shift-modal" @click.stop>
                 <h4>Shift Group by Days</h4>
                 <div class="form-group">
-                    <label>{{ selectedGroup.item }} &mdash; {{ fmtDate(selectedGroup.start_date) }} to {{ fmtDate(selectedGroup.end_date) }} ({{ selectedGroup.allocs.length }} days)</label>
+                    <label>{{ selectedGroup.style }} &mdash; {{ fmtDate(selectedGroup.start_date) }} to {{ fmtDate(selectedGroup.end_date) }} ({{ selectedGroup.allocs.length }} days)</label>
                 </div>
                 <div class="form-group">
                     <label>Number of days to shift</label>
@@ -497,7 +508,7 @@
                                 </thead>
                                 <tbody>
                                     <tr v-for="(grp, idx) in shiftByDaysPreview.affectedGroups" :key="idx">
-                                        <td>{{ grp.item }}</td>
+                                        <td>{{ grp.style }}</td>
                                         <td>{{ grp.order }}</td>
                                         <td>{{ grp.dayCount }}</td>
                                         <td>{{ fmtDate(grp.oldStart) }} to {{ fmtDate(grp.oldEnd) }}</td>
@@ -554,10 +565,14 @@
         <!-- Shift Update Modal -->
         <div v-if="showShiftUpdateModal" class="modal-overlay" @click="closeShiftUpdateModal">
             <div class="modal-content" @click.stop>
-                <h4>Update Shifts</h4>
+                <h4>Update Shifts{{ shiftUpdateForm.machine ? ' — ' + shiftUpdateForm.machine : '' }}</h4>
                 <div class="form-group">
                     <label>Date</label>
                     <input type="text" class="form-control" :value="shiftUpdateForm.date" disabled />
+                </div>
+                <div class="form-group" v-if="shiftUpdateForm.machine">
+                    <label>Machine</label>
+                    <input type="text" class="form-control" :value="shiftUpdateForm.machine" disabled />
                 </div>
                 <div class="form-group">
                     <label>Shifts</label>
@@ -718,7 +733,7 @@
 
         <!-- Custom Tooltip -->
         <div v-if="tooltip.show" class="gantt-tooltip" :style="{ top: tooltip.y + 'px', left: tooltip.x + 'px' }">
-            <div class="tooltip-header">{{ tooltip.data.item }}</div>
+            <div class="tooltip-header">{{ tooltip.data.style }}</div>
             <div class="tooltip-grid">
                 <span class="tooltip-label">Order</span>
                 <span class="tooltip-value">{{ tooltip.data.order }}</span>
@@ -730,6 +745,10 @@
                 <span class="tooltip-value">{{ tooltip.data.days }}</span>
                 <span class="tooltip-label">Quantity</span>
                 <span class="tooltip-value tooltip-qty">{{ tooltip.data.total_quantity }}</span>
+                <template v-if="tooltip.data.completed_qty">
+                    <span class="tooltip-label">Completed</span>
+                    <span class="tooltip-value tooltip-completed">{{ tooltip.data.completed_qty }}</span>
+                </template>
                 <span class="tooltip-label">Minutes</span>
                 <span class="tooltip-value">{{ tooltip.data.total_minutes }}m</span>
                 <template v-if="tooltip.data.colour">
@@ -750,12 +769,63 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 
 const emit = defineEmits(['saveAllocations']);
 
+// Order tracking completion maps at different granularities
+const trackingByStyle = ref({});     // "order|style" -> sum
+const trackingByColour = ref({});   // "order|style|colour" -> sum
+const trackingBySize = ref({});     // "order|style|size" -> sum
+const trackingByFull = ref({});     // "order|style|colour|size" -> sum
+
+async function fetchTrackingData() {
+    try {
+        const response = await frappe.call({
+            method: 'albion.albion.page.capacity_planning.capacity_planning.get_order_tracking_summary',
+        });
+        const byStyle = {}, byColour = {}, bySize = {}, byFull = {};
+        if (response.message) {
+            for (const row of response.message) {
+                const o = row.order || '', i = row.style || '';
+                const c = row.colour || '', s = row.size || '';
+                const qty = row.completed_qty || 0;
+                const styleKey = `${o}|${i}`;
+                byStyle[styleKey] = (byStyle[styleKey] || 0) + qty;
+                if (c) {
+                    const colourKey = `${o}|${i}|${c}`;
+                    byColour[colourKey] = (byColour[colourKey] || 0) + qty;
+                }
+                if (s) {
+                    const sizeKey = `${o}|${i}|${s}`;
+                    bySize[sizeKey] = (bySize[sizeKey] || 0) + qty;
+                }
+                if (c && s) {
+                    const fullKey = `${o}|${i}|${c}|${s}`;
+                    byFull[fullKey] = (byFull[fullKey] || 0) + qty;
+                }
+            }
+        }
+        trackingByStyle.value = byStyle;
+        trackingByColour.value = byColour;
+        trackingBySize.value = bySize;
+        trackingByFull.value = byFull;
+    } catch (e) {
+        console.error('Error fetching tracking data:', e);
+    }
+}
+
+function getCompletedQty(group) {
+    const o = group.order || '', i = group.style || '';
+    const c = group.colour || '', s = group.size || '';
+    if (c && s) return trackingByFull.value[`${o}|${i}|${c}|${s}`] || 0;
+    if (c)      return trackingByColour.value[`${o}|${i}|${c}`] || 0;
+    if (s)      return trackingBySize.value[`${o}|${i}|${s}`] || 0;
+    return trackingByStyle.value[`${o}|${i}`] || 0;
+}
+
 // State - internal refs that can be updated via load_data
 const processes = ref([]);
 const machines = ref([]);
 
-const selectedCustomer = ref('');
-const selectedMachineGG = ref('');
+const selectedClient = ref('');
+const selectedMachineFrame = ref('');
 const selectedOrder = ref('');
 const selectedProcess = ref('');
 const viewType = ref('item_wise');
@@ -764,14 +834,20 @@ const endDate = ref('');
 const suppressDateWatch = ref(false);
 const orderData = ref(null);
 
+// Infinite scroll
+const isExtending = ref(false);
+let scrollDebounceTimer = null;
+const EXTEND_THRESHOLD = 300;
+const EXTEND_DAYS = 30;
+
 // Workload panel collapse
 const workloadCollapsed = ref(false);
 const isZoomedOut = ref(false);
 const applyZoom = ref(false);
 
 // Template refs for Frappe fields
-const customerFieldRef = ref(null);
-const machineGGFieldRef = ref(null);
+const clientFieldRef = ref(null);
+const machineFrameFieldRef = ref(null);
 const orderFieldRef = ref(null);
 const processFieldRef = ref(null);
 const viewTypeFieldRef = ref(null);
@@ -780,8 +856,8 @@ const endDateFieldRef = ref(null);
 const bulkShiftDateFieldRef = ref(null);
 
 // Frappe control instances
-let customerControl = null;
-let machineGGControl = null;
+let clientControl = null;
+let machineFrameControl = null;
 let orderControl = null;
 let processControl = null;
 let viewTypeControl = null;
@@ -822,7 +898,7 @@ const editGroupQuantity = ref(0);
 const showSplitGroupModal = ref(false);
 const splitGroupDate = ref('');
 
-// Drag tracking for machine_gg filtering
+// Drag tracking for machine_frame filtering
 const draggingItem = ref(null);
 
 // Snap animation tracking for just-dropped groups
@@ -860,7 +936,7 @@ const actionChoiceContext = ref({ date: '', machine: null });
 // Shift update modal state
 const showShiftUpdateModal = ref(false);
 const shiftUpdateSaving = ref(false);
-const shiftUpdateForm = ref({ date: '', shifts: [] });
+const shiftUpdateForm = ref({ date: '', shifts: [], machine: null });
 const allShifts = ref([]);
 
 // Bulk shift update modal state
@@ -891,13 +967,13 @@ let autoScrollRAF = null;
 let autoScrollDX = 0;
 let autoScrollDY = 0;
 
-// Machine GG lookup: Map<itemCode, machineGG>
-const itemMachineGG = computed(() => {
+// Machine Frame lookup: Map<styleCode, machineFrame>
+const styleMachineFrame = computed(() => {
     const map = new Map();
     if (orderData.value && orderData.value.items) {
         orderData.value.items.forEach(item => {
-            if (item.item_doc && item.item_doc.machine_gg) {
-                map.set(item.item, item.item_doc.machine_gg);
+            if (item.style_doc && item.style_doc.machine_frame) {
+                map.set(item.style, item.style_doc.machine_frame);
             }
         });
     }
@@ -906,32 +982,35 @@ const itemMachineGG = computed(() => {
 
 function isMachineCompatible(machineId) {
     if (!draggingItem.value) return true;
-    let itemGG = itemMachineGG.value.get(draggingItem.value.item);
-    // Fallback: infer GG from the source machine when dragging existing groups
-    if (!itemGG && draggingItem.value.sourceMachineId) {
+    let styleFrame = styleMachineFrame.value.get(draggingItem.value.style);
+    // Fallback: infer frame from the source machine when dragging existing groups
+    if (!styleFrame && draggingItem.value.sourceMachineId) {
         const srcMachine = machines.value.find(m => m.machine_id === draggingItem.value.sourceMachineId);
-        if (srcMachine && srcMachine.machine_gg) itemGG = srcMachine.machine_gg;
+        if (srcMachine && srcMachine.machine_frame) styleFrame = srcMachine.machine_frame;
     }
-    if (!itemGG) return true; // no machine_gg info → all machines allowed
+    if (!styleFrame && draggingItem.value.machine_frame) {
+        styleFrame = draggingItem.value.machine_frame;
+    }
+    if (!styleFrame) return true; // no machine_frame info → all machines allowed
     const machine = machines.value.find(m => m.machine_id === machineId);
-    if (!machine || !machine.machine_gg) return true; // no machine_gg on machine → allowed
-    return machine.machine_gg === itemGG;
+    if (!machine || !machine.machine_frame) return true; // no machine_frame on machine → allowed
+    return machine.machine_frame === styleFrame;
 }
 
-function checkMachineGGCompat(itemCode, sourceMachineId, targetMachineId) {
+function checkMachineFrameCompat(itemCode, sourceMachineId, targetMachineId) {
     if (sourceMachineId === targetMachineId) return true;
     // First try the orderData lookup
-    let itemGG = itemMachineGG.value.get(itemCode);
-    // Fallback: infer GG from the source machine (it was compatible when originally placed)
-    if (!itemGG) {
+    let styleFrame = styleMachineFrame.value.get(itemCode);
+    // Fallback: infer frame from the source machine (it was compatible when originally placed)
+    if (!styleFrame) {
         const srcMachine = machines.value.find(m => m.machine_id === sourceMachineId);
-        if (srcMachine && srcMachine.machine_gg) itemGG = srcMachine.machine_gg;
+        if (srcMachine && srcMachine.machine_frame) styleFrame = srcMachine.machine_frame;
     }
-    if (!itemGG) return true; // no GG info available → allow
+    if (!styleFrame) return true; // no frame info available → allow
     const targetMachine = machines.value.find(m => m.machine_id === targetMachineId);
-    if (!targetMachine || !targetMachine.machine_gg) return true;
-    if (targetMachine.machine_gg !== itemGG) {
-        frappe.show_alert({ message: __(`Cannot move: item requires Machine GG "${itemGG}" but target has "${targetMachine.machine_gg}"`), indicator: 'red' });
+    if (!targetMachine || !targetMachine.machine_frame) return true;
+    if (targetMachine.machine_frame !== styleFrame) {
+        frappe.show_alert({ message: __(`Cannot move: item requires Machine Frame "${styleFrame}" but target has "${targetMachine.machine_frame}"`), indicator: 'red' });
         return false;
     }
     return true;
@@ -954,6 +1033,18 @@ const ganttGridStyle = computed(() => ({
     gridTemplateColumns: `${isZoomedOut.value ? MACHINE_COL_WIDTH_ZOOM : MACHINE_COL_WIDTH}px repeat(${dateRange.value.length}, ${colWidth.value}px)`,
 }));
 
+watch(isZoomedOut, async () => {
+    await nextTick();
+    const wrapper = document.querySelector('.calendar-wrapper');
+    if (!wrapper) return;
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const todayIdx = dateRange.value.indexOf(todayStr);
+    if (todayIdx >= 0) {
+        wrapper.scrollLeft = Math.max(0, todayIdx * colWidth.value - colWidth.value * 2);
+    }
+});
+
 const selectedShiftsTotalMinutes = computed(() => {
     return shiftUpdateForm.value.shifts.reduce((sum, name) => {
         const s = allShifts.value.find(x => x.name === name);
@@ -962,15 +1053,15 @@ const selectedShiftsTotalMinutes = computed(() => {
 });
 
 const filteredMachines = computed(() => {
-    if (!selectedMachineGG.value) return machines.value;
-    return machines.value.filter(m => m.machine_gg === selectedMachineGG.value);
+    if (!selectedMachineFrame.value) return machines.value;
+    return machines.value.filter(m => m.machine_frame === selectedMachineFrame.value);
 });
 
 const availableProcesses = computed(() => {
     if (!orderData.value || !processes.value) return [];
     const processSet = new Set();
     orderData.value.items?.forEach(item => {
-        item.item_doc?.processes?.forEach(p => processSet.add(p.process_name));
+        item.style_doc?.processes?.forEach(p => processSet.add(p.process_name));
     });
     return processes.value.filter(p => processSet.has(p.name));
 });
@@ -982,62 +1073,62 @@ const workloadItems = computed(() => {
     const processMinutes = getProcessMinutes();
 
     if (viewType.value === 'item_wise') {
-        const itemTotals = {};
+        const styleTotals = {};
         orderData.value.order_details?.forEach(detail => {
-            if (!itemTotals[detail.item]) {
-                itemTotals[detail.item] = 0;
+            if (!styleTotals[detail.style]) {
+                styleTotals[detail.style] = 0;
             }
-            itemTotals[detail.item] += detail.quantity;
+            styleTotals[detail.style] += detail.quantity;
         });
-        Object.entries(itemTotals).forEach(([item, qty]) => {
+        Object.entries(styleTotals).forEach(([style, qty]) => {
             items.push({
-                key: `${item}`,
-                item,
+                key: `${style}`,
+                style,
                 quantity: qty,
-                minutes: processMinutes[item] || 0,
+                minutes: processMinutes[style] || 0,
                 colour: null,
                 size: null,
-                machine_gg: itemMachineGG.value.get(item) || null
+                machine_frame: styleMachineFrame.value.get(style) || null
             });
         });
     } else if (viewType.value === 'colour_wise') {
         const colourTotals = {};
         orderData.value.order_details?.forEach(detail => {
-            const key = `${detail.item}-${detail.colour}`;
+            const key = `${detail.style}-${detail.colour}`;
             if (!colourTotals[key]) {
-                colourTotals[key] = { item: detail.item, colour: detail.colour, quantity: 0 };
+                colourTotals[key] = { style: detail.style, colour: detail.colour, quantity: 0 };
             }
             colourTotals[key].quantity += detail.quantity;
         });
         Object.entries(colourTotals).forEach(([key, data]) => {
             items.push({
                 key,
-                item: data.item,
+                style: data.style,
                 quantity: data.quantity,
-                minutes: processMinutes[data.item] || 0,
+                minutes: processMinutes[data.style] || 0,
                 colour: data.colour,
                 size: null,
-                machine_gg: itemMachineGG.value.get(data.item) || null
+                machine_frame: styleMachineFrame.value.get(data.style) || null
             });
         });
     } else if (viewType.value === 'size_wise') {
         const sizeTotals = {};
         orderData.value.order_details?.forEach(detail => {
-            const key = `${detail.item}-${detail.size}`;
+            const key = `${detail.style}-${detail.size}`;
             if (!sizeTotals[key]) {
-                sizeTotals[key] = { item: detail.item, size: detail.size, quantity: 0 };
+                sizeTotals[key] = { style: detail.style, size: detail.size, quantity: 0 };
             }
             sizeTotals[key].quantity += detail.quantity;
         });
         Object.entries(sizeTotals).forEach(([key, data]) => {
             items.push({
                 key,
-                item: data.item,
+                style: data.style,
                 quantity: data.quantity,
-                minutes: processMinutes[data.item] || 0,
+                minutes: processMinutes[data.style] || 0,
                 colour: null,
                 size: data.size,
-                machine_gg: itemMachineGG.value.get(data.item) || null
+                machine_frame: styleMachineFrame.value.get(data.style) || null
             });
         });
     }
@@ -1050,7 +1141,7 @@ const groupedAllocations = computed(() => {
     const groupMap = {};
 
     allocations.value.forEach(alloc => {
-        const key = `${alloc.machine_id}|${alloc.order}|${alloc.item}|${alloc.process}|${alloc.colour || ''}|${alloc.size || ''}`;
+        const key = `${alloc.machine_id}|${alloc.order}|${alloc.style}|${alloc.process}|${alloc.colour || ''}|${alloc.size || ''}`;
         if (!groupMap[key]) groupMap[key] = [];
         groupMap[key].push(alloc);
     });
@@ -1075,7 +1166,7 @@ const groupedAllocations = computed(() => {
                     end_date: alloc.operation_date,
                     allocs: [alloc],
                     alloc_keys: [alloc.key],
-                    item: alloc.item,
+                    style: alloc.style,
                     process: alloc.process,
                     order: alloc.order,
                     colour: alloc.colour,
@@ -1142,11 +1233,11 @@ function getProcessMinutes() {
     const minutes = {};
     if (orderData.value && orderData.value.items) {
         orderData.value.items.forEach(item => {
-            const itemDoc = item.item_doc;
-            if (itemDoc && itemDoc.processes) {
-                const proc = itemDoc.processes.find(p => p.process_name === selectedProcess.value);
+            const styleDoc = item.style_doc;
+            if (styleDoc && styleDoc.processes) {
+                const proc = styleDoc.processes.find(p => p.process_name === selectedProcess.value);
                 if (proc) {
-                    minutes[item.item] = proc.minutes;
+                    minutes[item.style] = proc.minutes;
                 }
             }
         });
@@ -1175,46 +1266,72 @@ function fmtDate(dateStr) {
     return `${parts[2]}-${parts[1]}-${parts[0]}`;
 }
 
-function getCalendarForDate(dateStr) {
-    // Prefer single-day calendar (exact match) over range calendar
-    let rangeMatch = null;
+function getCalendarForDate(dateStr, machineId = null) {
+    // Priority: machine-single(1) > general-single(2) > machine-range(3) > general-range(4) > default(5)
+    let machineRange = null, generalSingleDay = null, generalRange = null;
     for (const cal of shiftAllocations.value) {
-        if (dateStr >= cal.start_date && dateStr <= cal.end_date) {
-            if (cal.start_date === dateStr && cal.end_date === dateStr) {
-                return cal; // exact single-day match — best
-            }
-            if (!rangeMatch) rangeMatch = cal;
+        if (dateStr < cal.start_date || dateStr > cal.end_date) continue;
+        const isSingleDay = cal.start_date === dateStr && cal.end_date === dateStr;
+
+        if (machineId && cal.machine === machineId) {
+            if (isSingleDay) return cal;  // Priority 1: machine single-day
+            if (!machineRange) machineRange = cal;
+        } else if (!cal.machine) {
+            if (isSingleDay) { generalSingleDay = cal; }  // Priority 2
+            else if (!generalRange) { generalRange = cal; }
         }
     }
-    return rangeMatch || defaultAllocation.value;
+    return generalSingleDay || machineRange || generalRange || defaultAllocation.value;
 }
 
-function getShiftForDate(dateStr) {
-    const cal = getCalendarForDate(dateStr);
+function getShiftForDate(dateStr, machineId = null) {
+    const cal = getCalendarForDate(dateStr, machineId);
     if (cal && cal.shifts && cal.shifts.length > 0) {
         return cal.shifts[0];
     }
     return null;
 }
 
-function getShiftNamesForDate(dateStr) {
-    const cal = getCalendarForDate(dateStr);
+function getShiftNamesForDate(dateStr, machineId = null) {
+    const cal = getCalendarForDate(dateStr, machineId);
     if (!cal || !cal.shifts || cal.shifts.length === 0) return 'No Shift';
     return cal.shifts.map(s => s.shift_name).join(', ');
 }
 
-function getShiftMinutes(dateStr) {
+function getShiftMinutes(dateStr, machineId = null) {
+    if (machineId) {
+        // Check for a machine-specific calendar (overrides off-day)
+        const machineCal = _findMachineCalendar(dateStr, machineId);
+        if (machineCal) return machineCal.total_duration_minutes || 0;
+    }
     if (isOffDay(dateStr)) return 0;
-    const cal = getCalendarForDate(dateStr);
+    const cal = getCalendarForDate(dateStr, null); // General only
     return cal ? (cal.total_duration_minutes || 480) : 480;
 }
 
-function getEffectiveMinutes(dateStr, machineId = null) {
-    let base = getShiftMinutes(dateStr);
-    const cal = getCalendarForDate(dateStr);
-    if (!cal || !cal.alterations) return base;
+function _findMachineCalendar(dateStr, machineId) {
+    // Returns a machine-specific calendar for this date+machine, or null
+    let machineRange = null;
+    for (const cal of shiftAllocations.value) {
+        if (dateStr < cal.start_date || dateStr > cal.end_date) continue;
+        if (cal.machine !== machineId) continue;
+        if (cal.start_date === dateStr && cal.end_date === dateStr) return cal;
+        if (!machineRange) machineRange = cal;
+    }
+    return machineRange;
+}
 
-    for (const alt of cal.alterations) {
+function hasMachineSpecificShift(dateStr, machineId) {
+    return !!_findMachineCalendar(dateStr, machineId);
+}
+
+function getEffectiveMinutes(dateStr, machineId = null) {
+    let base = getShiftMinutes(dateStr, machineId); // Machine-aware base
+    // Alterations are always on the general calendar
+    const generalCal = getCalendarForDate(dateStr, null);
+    if (!generalCal || !generalCal.alterations) return Math.max(0, base);
+
+    for (const alt of generalCal.alterations) {
         if (alt.date !== dateStr) continue;
         // Day-level alterations (no machine)
         if (!alt.machine) {
@@ -1223,7 +1340,7 @@ function getEffectiveMinutes(dateStr, machineId = null) {
     }
 
     if (machineId) {
-        for (const alt of cal.alterations) {
+        for (const alt of generalCal.alterations) {
             if (alt.date !== dateStr) continue;
             if (alt.machine === machineId) {
                 base += alt.alteration_type === 'Add' ? alt.minutes : -alt.minutes;
@@ -1235,7 +1352,7 @@ function getEffectiveMinutes(dateStr, machineId = null) {
 }
 
 function getCellAlterationBadge(dateStr, machineId) {
-    const base = getShiftMinutes(dateStr);
+    const base = getShiftMinutes(dateStr, machineId);
     const effective = getEffectiveMinutes(dateStr, machineId);
     const delta = effective - base;
     if (delta === 0) return null;
@@ -1246,8 +1363,8 @@ function getCellAlterationBadge(dateStr, machineId) {
 }
 
 function getDayAlterationDelta(dateStr) {
-    const base = getShiftMinutes(dateStr);
-    const effective = getEffectiveMinutes(dateStr);
+    const base = getShiftMinutes(dateStr, null);
+    const effective = getEffectiveMinutes(dateStr, null);
     const delta = effective - base;
     if (delta === 0) return null;
     return {
@@ -1260,6 +1377,22 @@ function isOffDay(dateStr) {
     const cal = defaultAllocation.value;
     if (!cal) return false;
     const dayIndex = new Date(dateStr).getDay(); // 0=Sun..6=Sat
+    const dayFields = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    if (!cal[dayFields[dayIndex]]) {
+        // Check if a single-day general calendar was explicitly created for this date
+        const hasExplicitCal = shiftAllocations.value.some(
+            sa => sa.start_date === dateStr && sa.end_date === dateStr && !sa.machine
+        );
+        if (hasExplicitCal) return false;
+        return true;
+    }
+    return false;
+}
+
+function isDefaultWeekdayOff(dateStr) {
+    const cal = defaultAllocation.value;
+    if (!cal) return false;
+    const dayIndex = new Date(dateStr).getDay();
     const dayFields = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     return !cal[dayFields[dayIndex]];
 }
@@ -1333,7 +1466,7 @@ function getCellClass(machineId, dateStr) {
 
 function hasConflict(alloc) {
     const item = workloadItems.value.find(i =>
-        i.item === alloc.item &&
+        i.style === alloc.style &&
         i.colour === alloc.colour &&
         i.size === alloc.size
     );
@@ -1349,21 +1482,21 @@ function hasConflict(alloc) {
 }
 
 const _colorPairs = [
-    { border: '#2563eb', bg: '#bfdbfe' },
-    { border: '#dc2626', bg: '#fecaca' },
-    { border: '#059669', bg: '#a7f3d0' },
-    { border: '#d97706', bg: '#fde68a' },
-    { border: '#7c3aed', bg: '#ddd6fe' },
-    { border: '#0891b2', bg: '#a5f3fc' },
-    { border: '#db2777', bg: '#fbcfe8' },
-    { border: '#4f46e5', bg: '#c7d2fe' },
-    { border: '#ca8a04', bg: '#fef08a' },
-    { border: '#0d9488', bg: '#99f6e4' },
+    { border: '#2563eb', bg: '#bfdbfe', bgDone: '#93c5fd' },
+    { border: '#dc2626', bg: '#fecaca', bgDone: '#fca5a5' },
+    { border: '#059669', bg: '#a7f3d0', bgDone: '#6ee7b7' },
+    { border: '#d97706', bg: '#fde68a', bgDone: '#fcd34d' },
+    { border: '#7c3aed', bg: '#ddd6fe', bgDone: '#c4b5fd' },
+    { border: '#0891b2', bg: '#a5f3fc', bgDone: '#67e8f9' },
+    { border: '#db2777', bg: '#fbcfe8', bgDone: '#f9a8d4' },
+    { border: '#4f46e5', bg: '#c7d2fe', bgDone: '#a5b4fc' },
+    { border: '#ca8a04', bg: '#fef08a', bgDone: '#fde047' },
+    { border: '#0d9488', bg: '#99f6e4', bgDone: '#5eead4' },
 ];
 const _colorMap = new Map();
 
 function getAllocationColor(alloc) {
-    const key = `${alloc.order || ''}-${alloc.item || ''}-${alloc.process || ''}`;
+    const key = `${alloc.order || ''}-${alloc.style || ''}-${alloc.process || ''}`;
     if (!_colorMap.has(key)) {
         _colorMap.set(key, _colorMap.size % _colorPairs.length);
     }
@@ -1371,12 +1504,12 @@ function getAllocationColor(alloc) {
 }
 
 function getAllocatedQuantity(item) {
-    const itemAllocs = allocations.value.filter(a =>
+    const styleAllocs = allocations.value.filter(a =>
         a.order === selectedOrder.value &&
-        a.item === item.item &&
+        a.style === item.style &&
         a.process === selectedProcess.value
     );
-    if (itemAllocs.length === 0) return 0;
+    if (styleAllocs.length === 0) return 0;
 
     // Detect this workload item's granularity
     const isItemWise = !item.colour && !item.size;
@@ -1384,7 +1517,7 @@ function getAllocatedQuantity(item) {
     const isSizeWise = !item.colour && !!item.size;
 
     // Check if any allocations exist at a different granularity
-    const hasDifferentGranularity = itemAllocs.some(a => {
+    const hasDifferentGranularity = styleAllocs.some(a => {
         const allocIsItemWise = !a.colour && !a.size;
         const allocIsColourWise = !!a.colour && !a.size;
         const allocIsSizeWise = !a.colour && !!a.size;
@@ -1401,7 +1534,7 @@ function getAllocatedQuantity(item) {
     }
 
     // Same granularity — use exact match
-    return itemAllocs
+    return styleAllocs
         .filter(a => a.colour === item.colour && a.size === item.size)
         .reduce((sum, a) => sum + a.quantity, 0);
 }
@@ -1421,7 +1554,7 @@ function isNextDay(dateA, dateB) {
     let cursor = fmt(new Date(y, m - 1, d + 1));
     // Skip over off days between dateA and dateB
     while (cursor < dateB) {
-        if (!isOffDay(cursor)) return false;
+        if (!isOffDay(cursor) && !isDefaultWeekdayOff(cursor)) return false;
         const [cy, cm, cd] = cursor.split('-').map(Number);
         cursor = fmt(new Date(cy, cm - 1, cd + 1));
     }
@@ -1467,10 +1600,19 @@ function getNextWorkingDay(dateStr, machineId) {
     return null;
 }
 
-function extendEndDate(newEndDate) {
+async function extendEndDate(newEndDate) {
+    const oldEnd = endDate.value;
     suppressDateWatch.value = true;
+    const fetchStart = addDaysToDate(oldEnd, 1);
+    await Promise.all([
+        loadShiftAllocationsForRange(fetchStart, newEndDate),
+        loadAllocationsForRange(fetchStart, newEndDate)
+    ]);
     endDate.value = newEndDate;
-    nextTick(() => { suppressDateWatch.value = false; });
+    if (endDateControl) endDateControl.set_value(newEndDate);
+    await nextTick();
+    await nextTick();
+    suppressDateWatch.value = false;
 }
 
 function ensureWorkingDaysAvailable(fromDate, neededCount, machineId) {
@@ -1541,7 +1683,7 @@ function getBarStyle(group) {
 
     const colors = getAllocationColor(group);
 
-    return {
+    const style = {
         position: 'absolute',
         left: left + 'px',
         top: top + 'px',
@@ -1552,6 +1694,14 @@ function getBarStyle(group) {
         borderRadius: '4px',
         pointerEvents: 'auto',
     };
+
+    const completed = getCompletedQty(group);
+    if (completed > 0 && group.total_quantity > 0) {
+        const pct = Math.min(100, Math.round((completed / group.total_quantity) * 100));
+        style.backgroundImage = `linear-gradient(to right, ${colors.bgDone} ${pct}%, ${colors.bg} ${pct}%)`;
+    }
+
+    return style;
 }
 
 let tooltipTimer = null;
@@ -1564,13 +1714,14 @@ function showTooltip(event, group) {
             x: rect.left + rect.width / 2,
             y: rect.top - 8,
             data: {
-                item: group.item,
+                style: group.style,
                 process: group.process,
                 order: group.order,
                 start_date: group.start_date,
                 end_date: group.end_date,
                 days: group.allocs.length,
                 total_quantity: group.total_quantity,
+                completed_qty: getCompletedQty(group),
                 total_minutes: group.total_minutes,
                 colour: group.colour,
                 size: group.size
@@ -1605,9 +1756,10 @@ function addDeletedBlock(group, allocSnapshots) {
         ? firstAlloc.allocated_minutes / firstAlloc.quantity
         : 0;
 
+    const blockId = `del-${Date.now()}`;
     deletedBlocks.value.unshift({
-        id: `del-${Date.now()}`,
-        item: firstAlloc.item,
+        id: blockId,
+        style: firstAlloc.style,
         order: firstAlloc.order,
         process: firstAlloc.process,
         colour: firstAlloc.colour || null,
@@ -1615,15 +1767,24 @@ function addDeletedBlock(group, allocSnapshots) {
         total_quantity: totalQty,
         minutes_per_unit: minutesPerUnit,
         machine_id: firstAlloc.machine_id,
-        machine_gg: itemMachineGG.value.get(firstAlloc.item) || null,
+        machine_frame: styleMachineFrame.value.get(firstAlloc.style)
+            || machines.value.find(m => m.machine_id === firstAlloc.machine_id)?.machine_frame
+            || null,
         days: allocSnapshots.length,
         timestamp: Date.now()
     });
+    return blockId;
 }
 
 function removeDeletedBlock(blockId) {
     const idx = deletedBlocks.value.findIndex(b => b.id === blockId);
     if (idx > -1) deletedBlocks.value.splice(idx, 1);
+}
+
+function removeMatchingDeletedBlocks(style, colour, size, order, process) {
+    deletedBlocks.value = deletedBlocks.value.filter(b =>
+        !(b.style === style && (b.colour || null) === (colour || null) && (b.size || null) === (size || null) && (b.order || null) === (order || null) && (b.process || null) === (process || null))
+    );
 }
 
 function clearDeletedBlocks() {
@@ -1633,12 +1794,14 @@ function clearDeletedBlocks() {
 function onDeletedBlockDragStart(event, block) {
     const dragData = {
         key: block.id,
-        item: block.item,
+        style: block.style,
         quantity: block.total_quantity,
         minutes: block.minutes_per_unit,
         colour: block.colour,
         size: block.size,
-        machine_gg: block.machine_gg,
+        machine_frame: block.machine_frame,
+        order: block.order,
+        process: block.process,
         isDeletedBlock: true,
         deletedBlockId: block.id
     };
@@ -1676,7 +1839,7 @@ function onGroupDragStart(event, group) {
         start_date: group.start_date,
         end_date: group.end_date,
         alloc_keys: group.alloc_keys,
-        item: group.item,
+        style: group.style,
         process: group.process,
         order: group.order,
         colour: group.colour,
@@ -1686,8 +1849,59 @@ function onGroupDragStart(event, group) {
         grab_offset: grabOffsetDays,
     }));
     event.dataTransfer.effectAllowed = 'move';
-    draggingItem.value = { item: group.item, sourceMachineId: group.machine_id };
+    draggingItem.value = { style: group.style, sourceMachineId: group.machine_id };
     hideTooltip();
+}
+
+function onWorkloadDragOver(event) {
+    // Only accept gantt-group drags (not workload items or deleted blocks)
+    if (event.dataTransfer.types.includes('application/gantt-group')) {
+        event.preventDefault();
+    }
+}
+
+function onWorkloadDrop(event) {
+    event.preventDefault();
+    const raw = event.dataTransfer.getData('application/gantt-group');
+    if (!raw) return;
+
+    const groupData = JSON.parse(raw);
+    draggingItem.value = null;
+
+    // Find the actual allocations by key
+    const allocs = groupData.alloc_keys
+        .map(key => allocations.value.find(a => a.key === key))
+        .filter(Boolean);
+    if (allocs.length === 0) return;
+
+    const undoData = allocs.map(a => ({ ...a }));
+    const machineId = groupData.machine_id;
+    const gapStartDate = groupData.start_date;
+    const deletedKeys = groupData.alloc_keys;
+
+    // Remove from local state (needed for backfill gap computation)
+    allocs.forEach(alloc => {
+        const idx = allocations.value.findIndex(a => a.key === alloc.key);
+        if (idx > -1) allocations.value.splice(idx, 1);
+    });
+
+    // Check for backfill candidates
+    const { affected } = computeBackfillPlan(machineId, gapStartDate, deletedKeys);
+
+    if (affected.length > 0) {
+        backfillModalData.value = {
+            machineId,
+            deletedAllocations: undoData,
+            deletedKeys,
+            affectedAllocations: affected
+        };
+        showBackfillModal.value = true;
+    } else {
+        saveAction('delete_group', { allocations: undoData });
+        const blockId = addDeletedBlock(null, undoData);
+        actionHistory.value[actionHistory.value.length - 1].data.deletedBlockId = blockId;
+        frappe.show_alert({ message: __(`Moved to recently deleted`), indicator: 'green' });
+    }
 }
 
 function onBarContextMenu(event, group) {
@@ -1719,7 +1933,7 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
     targetDays.forEach(({ alloc, newDate }) => {
         alloc.machine_id = newMachineId;
         alloc.operation_date = newDate;
-        alloc.shift = getShiftForDate(newDate)?.name || '';
+        alloc.shift = getShiftForDate(newDate, newMachineId)?.name || '';
     });
 
     // Redistribute total quantity across target days based on each day's capacity
@@ -1737,7 +1951,7 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
                 operation_date: ud.oldDate,
                 shift: ud.oldShift,
                 order: alloc.order,
-                item: alloc.item,
+                style: alloc.style,
                 process: alloc.process,
                 colour: alloc.colour,
                 size: alloc.size,
@@ -1762,7 +1976,7 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
                     machine_id: ud.oldMachineId,
                     operation_date: ud.oldDate,
                     shift: ud.oldShift,
-                    order: alloc.order, item: alloc.item, process: alloc.process,
+                    order: alloc.order, style: alloc.style, process: alloc.process,
                     colour: alloc.colour, size: alloc.size,
                     quantity: ud.oldQuantity,
                     allocated_minutes: ud.oldAllocatedMinutes
@@ -1799,14 +2013,14 @@ function executeMoveGroup(groupData, targetDays, newMachineId) {
 
                 if (allocQty > 0) {
                     const key = `${newMachineId}-${currentDate}-gmove-${Date.now()}-${overflowKeys.length}`;
-                    const shift = getShiftForDate(currentDate);
+                    const shift = getShiftForDate(currentDate, newMachineId);
                     allocations.value.push({
                         key,
                         machine_id: newMachineId,
                         operation_date: currentDate,
                         shift: shift?.name || '',
                         order: refAlloc.order,
-                        item: refAlloc.item,
+                        style: refAlloc.style,
                         process: refAlloc.process,
                         colour: refAlloc.colour,
                         size: refAlloc.size,
@@ -1851,8 +2065,8 @@ function moveGroup(groupData, newMachineId, newStartDate) {
 
     if (dayOffset === 0 && groupData.machine_id === newMachineId) return;
 
-    // Machine GG compatibility check
-    if (!checkMachineGGCompat(groupData.item, groupData.machine_id, newMachineId)) return;
+    // Machine Frame compatibility check
+    if (!checkMachineFrameCompat(groupData.style, groupData.machine_id, newMachineId)) return;
 
     const groupAllocs = groupData.alloc_keys.map(key => allocations.value.find(a => a.key === key)).filter(Boolean);
 
@@ -2029,7 +2243,7 @@ function moveGroup(groupData, newMachineId, newStartDate) {
                 ? Math.round((new Date(newDates[0]) - new Date(grp.start_date)) / (1000 * 60 * 60 * 24))
                 : 0;
             affectedGroups.push({
-                item: grp.item,
+                style: grp.style,
                 order: grp.order,
                 dayCount: grp.allocs.length,
                 oldStart: grp.start_date,
@@ -2071,7 +2285,7 @@ function confirmEditGroup() {
     }
 
     const item = workloadItems.value.find(i =>
-        i.item === group.item &&
+        i.style === group.style &&
         i.colour === group.colour &&
         i.size === group.size
     );
@@ -2387,7 +2601,7 @@ function computeShiftByDaysPreview() {
                 ? Math.round((new Date(newDates[0]) - new Date(grp.start_date)) / (1000 * 60 * 60 * 24))
                 : 0;
             affectedGroups.push({
-                item: grp.item,
+                style: grp.style,
                 order: grp.order,
                 dayCount: grp.allocs.length,
                 oldStart: grp.start_date,
@@ -2431,7 +2645,7 @@ function confirmShiftByDays() {
             if (pushKeys.has(allocation.key) || pullKeys.has(allocation.key)) return; // handled by executeMoveGroup below
             shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
             allocation.operation_date = newDate;
-            const newShift = getShiftForDate(newDate);
+            const newShift = getShiftForDate(newDate, allocation.machine_id);
             allocation.shift = newShift?.name || '';
             shiftedAllocRefs.push(allocation);
         });
@@ -2637,7 +2851,8 @@ function deleteGroup() {
             () => {
                 // Confirmed
                 saveAction('delete_group', { allocations: undoData });
-                addDeletedBlock(group, undoData);
+                const blockId = addDeletedBlock(group, undoData);
+                actionHistory.value[actionHistory.value.length - 1].data.deletedBlockId = blockId;
                 frappe.show_alert({ message: __(`Deleted group: ${group.allocs.length} day(s)`), indicator: 'green' });
             },
             () => {
@@ -2659,7 +2874,7 @@ function confirmBackfill() {
     bd.affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
         shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
         allocation.operation_date = newDate;
-        const newShift = getShiftForDate(newDate);
+        const newShift = getShiftForDate(newDate, allocation.machine_id);
         allocation.shift = newShift?.name || '';
         shiftedAllocRefs.push(allocation);
     });
@@ -2672,7 +2887,8 @@ function confirmBackfill() {
         refitAddedKeys: refitResult.addedKeys,
         refitRemovedSnapshots: refitResult.removedSnapshots
     });
-    addDeletedBlock(null, bd.deletedAllocations);
+    const blockId = addDeletedBlock(null, bd.deletedAllocations);
+    actionHistory.value[actionHistory.value.length - 1].data.deletedBlockId = blockId;
     frappe.show_alert({ message: __(`Deleted group and shifted ${shiftedAllocations.length} allocation(s) backward`), indicator: 'green' });
     closeBackfillModal();
 }
@@ -2682,7 +2898,8 @@ function declineBackfill() {
     const bd = backfillModalData.value;
 
     saveAction('delete_group', { allocations: bd.deletedAllocations });
-    addDeletedBlock(null, bd.deletedAllocations);
+    const blockId = addDeletedBlock(null, bd.deletedAllocations);
+    actionHistory.value[actionHistory.value.length - 1].data.deletedBlockId = blockId;
     frappe.show_alert({ message: __('Group deleted'), indicator: 'green' });
     closeBackfillModal();
 }
@@ -2717,10 +2934,11 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
     for (const mId of affectedMachines) {
         const cellAllocs = getAllocations(mId, dateStr);
         if (cellAllocs.length === 0) {
-            // Off-day with new overtime: pull from subsequent groups
-            // Only pull if the date is a genuine off-day (0 base shift minutes),
-            // not just a working day where this machine has no allocations.
-            if (alterationType === 'Add' && getShiftMinutes(dateStr) === 0 && getEffectiveMinutes(dateStr, mId) > 0) {
+            // Off-day with new capacity: pull from subsequent groups
+            // Only pull if the date is a genuine off-day (0 base shift minutes or
+            // naturally off weekday per default calendar), not just a working day
+            // where this machine has no allocations.
+            if (alterationType === 'Add' && (getShiftMinutes(dateStr, mId) === 0 || isDefaultWeekdayOff(dateStr)) && getEffectiveMinutes(dateStr, mId) > 0) {
                 let searchDate = getNextDate(dateStr);
                 let refAlloc = null;
                 while (searchDate && !refAlloc) {
@@ -2734,7 +2952,7 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
                     if (mpu > 0) {
                         // Capture old end date
                         const groupAllocs = allocations.value.filter(a =>
-                            a.machine_id === mId && a.item === refAlloc.item &&
+                            a.machine_id === mId && a.style === refAlloc.style &&
                             a.colour === refAlloc.colour && a.size === refAlloc.size &&
                             a.order === refAlloc.order && a.process === refAlloc.process
                         );
@@ -2743,7 +2961,7 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
 
                         // Pull back allocations into the off-day
                         const result = compactAfterPull(
-                            mId, dateStr, refAlloc.item, refAlloc.colour, refAlloc.size,
+                            mId, dateStr, refAlloc.style, refAlloc.colour, refAlloc.size,
                             refAlloc.order, refAlloc.process, mpu
                         );
                         allAdded.push(...result.addedKeys);
@@ -2752,7 +2970,7 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
 
                         // Shift subsequent groups left if end date shrunk
                         const groupAllocsAfter = allocations.value.filter(a =>
-                            a.machine_id === mId && a.item === refAlloc.item &&
+                            a.machine_id === mId && a.style === refAlloc.style &&
                             a.colour === refAlloc.colour && a.size === refAlloc.size &&
                             a.order === refAlloc.order && a.process === refAlloc.process
                         );
@@ -2789,7 +3007,7 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
             if (refAlloc) {
                 const groupAllocs = allocations.value.filter(a =>
                     a.machine_id === mId &&
-                    a.item === refAlloc.item && a.colour === refAlloc.colour &&
+                    a.style === refAlloc.style && a.colour === refAlloc.colour &&
                     a.size === refAlloc.size && a.order === refAlloc.order &&
                     a.process === refAlloc.process
                 );
@@ -2807,7 +3025,7 @@ function autoReflowAfterAlteration(dateStr, machineId, alterationType, minutes) 
             if (refAlloc && oldEndDate) {
                 const groupAllocsAfter = allocations.value.filter(a =>
                     a.machine_id === mId &&
-                    a.item === refAlloc.item && a.colour === refAlloc.colour &&
+                    a.style === refAlloc.style && a.colour === refAlloc.colour &&
                     a.size === refAlloc.size && a.order === refAlloc.order &&
                     a.process === refAlloc.process
                 );
@@ -2898,7 +3116,7 @@ function reflowForBreak(machineId, dateStr) {
 
             const spillResult = spillForward(
                 machineId, dateStr, alloc.quantity, minutesPerUnit,
-                alloc.item, alloc.colour, alloc.size, alloc.order, alloc.process, 0
+                alloc.style, alloc.colour, alloc.size, alloc.order, alloc.process, 0
             );
             addedKeys.push(...spillResult.addedKeys);
             removedKeys.push(...spillResult.cascadedRemoved);
@@ -2918,7 +3136,7 @@ function reflowForBreak(machineId, dateStr) {
 
             const spillResult = spillForward(
                 machineId, dateStr, trimQty, minutesPerUnit,
-                alloc.item, alloc.colour, alloc.size, alloc.order, alloc.process, 0
+                alloc.style, alloc.colour, alloc.size, alloc.order, alloc.process, 0
             );
             addedKeys.push(...spillResult.addedKeys);
             removedKeys.push(...spillResult.cascadedRemoved);
@@ -2930,7 +3148,7 @@ function reflowForBreak(machineId, dateStr) {
     return { addedKeys, removedKeys, modified, unplaced };
 }
 
-function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour, size, order, process, depth) {
+function spillForward(machineId, afterDateStr, qty, minutesPerUnit, style, colour, size, order, process, depth) {
     const MAX_CASCADE = 50;
     if (depth >= MAX_CASCADE || qty < MIN_BATCH_SIZE) {
         return { addedKeys: [], cascadedRemoved: [], cascadedModified: [], remaining: qty };
@@ -2950,7 +3168,7 @@ function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour
 
         // Check if same group exists on this day
         const sameGroup = cellAllocs.find(a =>
-            a.item === item && a.colour === colour && a.size === size &&
+            a.style === style && a.colour === colour && a.size === size &&
             a.order === order && a.process === process
         );
 
@@ -2973,7 +3191,7 @@ function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour
             const canFitQty = Math.floor(effectiveCap / minutesPerUnit);
             const allocQty = Math.min(remaining, canFitQty);
             if (allocQty >= MIN_BATCH_SIZE) {
-                const shift = getShiftForDate(currentDate);
+                const shift = getShiftForDate(currentDate, machineId);
                 const key = `${machineId}-${currentDate}-reflow-${Date.now()}-${addedKeys.length}`;
                 allocations.value.push({
                     key,
@@ -2981,7 +3199,7 @@ function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour
                     operation_date: currentDate,
                     shift: shift?.name || '',
                     order,
-                    item,
+                    style,
                     process,
                     colour,
                     size,
@@ -3007,7 +3225,7 @@ function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour
 
         const cascadeResult = spillForward(
             machineId, currentDate, occQty, occMinPerUnit,
-            occupant.item, occupant.colour, occupant.size, occupant.order, occupant.process, depth + 1
+            occupant.style, occupant.colour, occupant.size, occupant.order, occupant.process, depth + 1
         );
         addedKeys.push(...cascadeResult.addedKeys);
         cascadedRemoved.push(...cascadeResult.cascadedRemoved);
@@ -3017,7 +3235,7 @@ function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour
         const canFitQty = Math.floor(effectiveCap / minutesPerUnit);
         const allocQty = Math.min(remaining, canFitQty);
         if (allocQty >= MIN_BATCH_SIZE) {
-            const shift = getShiftForDate(currentDate);
+            const shift = getShiftForDate(currentDate, machineId);
             const key = `${machineId}-${currentDate}-reflow-${Date.now()}-${addedKeys.length}`;
             allocations.value.push({
                 key,
@@ -3025,7 +3243,7 @@ function spillForward(machineId, afterDateStr, qty, minutesPerUnit, item, colour
                 operation_date: currentDate,
                 shift: shift?.name || '',
                 order,
-                item,
+                style,
                 process,
                 colour,
                 size,
@@ -3067,7 +3285,7 @@ function reflowForOvertime(machineId, dateStr) {
     }
 
     const refAlloc = cellAllocs[0];
-    const groupItem = refAlloc.item;
+    const groupStyle = refAlloc.style;
     const groupColour = refAlloc.colour;
     const groupSize = refAlloc.size;
     const groupOrder = refAlloc.order;
@@ -3085,7 +3303,7 @@ function reflowForOvertime(machineId, dateStr) {
     while (freeCapacity > 0 && nextDate) {
         const nextAllocs = getAllocations(machineId, nextDate);
         const sameGroup = nextAllocs.find(a =>
-            a.item === groupItem && a.colour === groupColour && a.size === groupSize &&
+            a.style === groupStyle && a.colour === groupColour && a.size === groupSize &&
             a.order === groupOrder && a.process === groupProcess
         );
 
@@ -3115,7 +3333,7 @@ function reflowForOvertime(machineId, dateStr) {
 
             // Compact: pull further allocations into the freed day
             const compactResult = compactAfterPull(
-                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                machineId, nextDate, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
             );
             addedKeys.push(...compactResult.addedKeys);
             removedKeys.push(...compactResult.removedKeys);
@@ -3127,7 +3345,7 @@ function reflowForOvertime(machineId, dateStr) {
 
             // Compact the partially-reduced day — pull from further days to fill freed capacity
             const compactResult = compactAfterPull(
-                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                machineId, nextDate, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
             );
             addedKeys.push(...compactResult.addedKeys);
             removedKeys.push(...compactResult.removedKeys);
@@ -3140,7 +3358,7 @@ function reflowForOvertime(machineId, dateStr) {
     return { addedKeys, removedKeys, modified };
 }
 
-function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit) {
+function compactAfterPull(machineId, freedDateStr, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit) {
     const addedKeys = [];
     const removedKeys = [];
     const modified = [];
@@ -3155,7 +3373,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
     while (freeMin > 0 && nextDate) {
         const nextAllocs = getAllocations(machineId, nextDate);
         const sameGroup = nextAllocs.find(a =>
-            a.item === groupItem && a.colour === groupColour && a.size === groupSize &&
+            a.style === groupStyle && a.colour === groupColour && a.size === groupSize &&
             a.order === groupOrder && a.process === groupProcess
         );
 
@@ -3173,7 +3391,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
         // Create or augment allocation on freed day
         const freedAllocs = getAllocations(machineId, freedDateStr);
         const existingOnFreed = freedAllocs.find(a =>
-            a.item === groupItem && a.colour === groupColour && a.size === groupSize &&
+            a.style === groupStyle && a.colour === groupColour && a.size === groupSize &&
             a.order === groupOrder && a.process === groupProcess
         );
 
@@ -3182,7 +3400,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
             existingOnFreed.quantity += pullQty;
             existingOnFreed.allocated_minutes += pullMin;
         } else {
-            const shift = getShiftForDate(freedDateStr);
+            const shift = getShiftForDate(freedDateStr, machineId);
             const key = `${machineId}-${freedDateStr}-compact-${Date.now()}-${addedKeys.length}`;
             allocations.value.push({
                 key,
@@ -3190,7 +3408,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
                 operation_date: freedDateStr,
                 shift: shift?.name || '',
                 order: groupOrder,
-                item: groupItem,
+                style: groupStyle,
                 process: groupProcess,
                 colour: groupColour,
                 size: groupSize,
@@ -3207,7 +3425,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
                 if (idx > -1) allocations.value.splice(idx, 1);
                 // Recursively compact the emptied source day to prevent gaps
                 const cascadeResult = compactAfterPull(
-                    machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                    machineId, nextDate, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
                 );
                 addedKeys.push(...cascadeResult.addedKeys);
                 removedKeys.push(...cascadeResult.removedKeys);
@@ -3218,7 +3436,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
                 sameGroup.allocated_minutes -= pullMin;
                 // Recursively compact the partially-freed source day
                 const cascadeResult = compactAfterPull(
-                    machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                    machineId, nextDate, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
                 );
                 addedKeys.push(...cascadeResult.addedKeys);
                 removedKeys.push(...cascadeResult.removedKeys);
@@ -3238,7 +3456,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
             if (idx > -1) allocations.value.splice(idx, 1);
             // Recursively compact the emptied source day to prevent gaps
             const cascadeResult = compactAfterPull(
-                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                machineId, nextDate, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
             );
             addedKeys.push(...cascadeResult.addedKeys);
             removedKeys.push(...cascadeResult.removedKeys);
@@ -3249,7 +3467,7 @@ function compactAfterPull(machineId, freedDateStr, groupItem, groupColour, group
             sameGroup.allocated_minutes -= pullMin;
             // Recursively compact the partially-freed source day
             const cascadeResult = compactAfterPull(
-                machineId, nextDate, groupItem, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
+                machineId, nextDate, groupStyle, groupColour, groupSize, groupOrder, groupProcess, minutesPerUnit
             );
             addedKeys.push(...cascadeResult.addedKeys);
             removedKeys.push(...cascadeResult.removedKeys);
@@ -3286,7 +3504,7 @@ function shiftSubsequentAllocsLeft(machineId, afterDate, dayOffset) {
         const oldDate = alloc.operation_date;
         const oldShift = alloc.shift;
         const newDate = dates[targetIdx];
-        const newShift = getShiftForDate(newDate);
+        const newShift = getShiftForDate(newDate, machineId);
 
         modified.push({
             key: alloc.key,
@@ -3313,7 +3531,7 @@ function refitShiftedAllocations(movedAllocs) {
     // Group by identity (machine/item/colour/size/order/process)
     const groups = new Map();
     for (const alloc of movedAllocs) {
-        const gk = `${alloc.machine_id}|${alloc.item}|${alloc.colour}|${alloc.size}|${alloc.order}|${alloc.process}`;
+        const gk = `${alloc.machine_id}|${alloc.style}|${alloc.colour}|${alloc.size}|${alloc.order}|${alloc.process}`;
         if (!groups.has(gk)) groups.set(gk, []);
         groups.get(gk).push(alloc);
     }
@@ -3358,7 +3576,7 @@ function refitShiftedAllocations(movedAllocs) {
                 const ref = groupAllocs[0];
                 const result = executeAutoSplit(
                     ref.machine_id, startDate, remaining, mpu,
-                    ref.item, ref.colour, ref.size, ref.order, ref.process
+                    ref.style, ref.colour, ref.size, ref.order, ref.process
                 );
                 addedKeys.push(...result.allocationKeys);
             }
@@ -3542,7 +3760,7 @@ function computeShiftPlan(machineId, dropDateStr, workloadPlan, excludeKey = nul
     return { affected };
 }
 
-function executeAutoSplit(machineId, startDate, qty, minutesPerUnit, item, colour, size, order, process) {
+function executeAutoSplit(machineId, startDate, qty, minutesPerUnit, style, colour, size, order, process) {
     const allocOrder = order || selectedOrder.value;
     const allocProcess = process || selectedProcess.value;
     let remainingQty = qty;
@@ -3551,13 +3769,13 @@ function executeAutoSplit(machineId, startDate, qty, minutesPerUnit, item, colou
     const allocationKeys = [];
 
     while (remainingQty >= MIN_BATCH_SIZE && currentDate) {
-        // One-item-per-machine-day: skip occupied days
+        // One-style-per-machine-day: skip occupied days
         if (!validateMachineDaySlot(machineId, currentDate)) {
             currentDate = getNextDate(currentDate);
             continue;
         }
 
-        const shift = getShiftForDate(currentDate);
+        const shift = getShiftForDate(currentDate, machineId);
         const usedMin = getUsedMinutes(machineId, currentDate);
         const totalMin = getEffectiveMinutes(currentDate, machineId);
         const availMin = totalMin - usedMin;
@@ -3578,7 +3796,7 @@ function executeAutoSplit(machineId, startDate, qty, minutesPerUnit, item, colou
                 operation_date: currentDate,
                 shift: shift?.name || '',
                 order: allocOrder,
-                item,
+                style,
                 process: allocProcess,
                 colour,
                 size,
@@ -3825,6 +4043,9 @@ function undoLastAction() {
             action.data.allocations.forEach(a => {
                 allocations.value.push(a);
             });
+            if (action.data.deletedBlockId) {
+                removeDeletedBlock(action.data.deletedBlockId);
+            }
             break;
         case 'delete_group_and_backfill':
             // Undo refit: remove spill allocations and restore removed allocs
@@ -3851,6 +4072,9 @@ function undoLastAction() {
             action.data.allocations.forEach(a => {
                 allocations.value.push(a);
             });
+            if (action.data.deletedBlockId) {
+                removeDeletedBlock(action.data.deletedBlockId);
+            }
             break;
         case 'edit_group':
             action.data.allocations.forEach(({ key, oldQty, oldMinutes }) => {
@@ -4008,7 +4232,7 @@ function onDrop(event, machineId, dateStr) {
     validationErrors.value = [];
     const errors = [];
 
-    if (orderData.value?.docstatus !== 1) {
+    if (!isFromDeleted && orderData.value?.docstatus !== 1) {
         errors.push('Order must be submitted before allocation');
     }
 
@@ -4020,7 +4244,7 @@ function onDrop(event, machineId, dateStr) {
         errors.push('Cannot allocate to past dates');
     }
 
-    const shift = getShiftForDate(dateStr);
+    const shift = getShiftForDate(dateStr, machineId);
     if (!shift) {
         errors.push('No shift defined for this date');
     }
@@ -4029,12 +4253,12 @@ function onDrop(event, machineId, dateStr) {
         errors.push('Process not defined for this item');
     }
 
-    // Machine GG compatibility check
-    const draggedItemGG = isFromDeleted ? item.machine_gg : itemMachineGG.value.get(item.item);
-    if (draggedItemGG) {
+    // Machine Frame compatibility check
+    const draggedStyleFrame = isFromDeleted ? item.machine_frame : styleMachineFrame.value.get(item.style);
+    if (draggedStyleFrame) {
         const targetMachine = machines.value.find(m => m.machine_id === machineId);
-        if (targetMachine && targetMachine.machine_gg && targetMachine.machine_gg !== draggedItemGG) {
-            errors.push(`Machine GG mismatch: item requires "${draggedItemGG}" but machine has "${targetMachine.machine_gg}"`);
+        if (targetMachine && targetMachine.machine_frame && targetMachine.machine_frame !== draggedStyleFrame) {
+            errors.push(`Machine Frame mismatch: item requires "${draggedStyleFrame}" but machine has "${targetMachine.machine_frame}"`);
         }
     }
 
@@ -4053,7 +4277,7 @@ function onDrop(event, machineId, dateStr) {
         if (alreadyAllocated >= item.quantity) {
             const allocatedOrders = [...new Set(allocations.value
                 .filter(a =>
-                    a.item === item.item &&
+                    a.style === item.style &&
                     a.process === selectedProcess.value &&
                     a.colour === item.colour &&
                     a.size === item.size
@@ -4108,13 +4332,15 @@ function onDrop(event, machineId, dateStr) {
         type: 'workload',
         machineId,
         dateStr,
-        item: item.item,
+        style: item.style,
         colour: item.colour,
         size: item.size,
         minutesPerUnit,
         maxQty: remainingQuantity,
         availableCapacityQty,
-        deletedBlockId
+        deletedBlockId,
+        order: item.order || selectedOrder.value || null,
+        process: item.process || selectedProcess.value || null
     };
     dropQuantity.value = remainingQuantity;
     showDropModal.value = true;
@@ -4137,8 +4363,8 @@ function moveAllocation(alloc, newMachineId, newDateStr) {
         return;
     }
 
-    // Machine GG compatibility check
-    if (!checkMachineGGCompat(actualAlloc.item, actualAlloc.machine_id, newMachineId)) return;
+    // Machine Frame compatibility check
+    if (!checkMachineFrameCompat(actualAlloc.style, actualAlloc.machine_id, newMachineId)) return;
 
     // One-item-per-machine-day validation
     if (!validateMachineDaySlot(newMachineId, newDateStr, [actualAlloc.key])) {
@@ -4158,7 +4384,7 @@ function moveAllocation(alloc, newMachineId, newDateStr) {
         machineId: newMachineId,
         dateStr: newDateStr,
         allocKey: actualAlloc.key,
-        item: actualAlloc.item,
+        style: actualAlloc.style,
         colour: actualAlloc.colour,
         size: actualAlloc.size,
         minutesPerUnit,
@@ -4259,13 +4485,15 @@ function confirmDrop() {
         }
 
         const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
-            pd.machineId, pd.dateStr, qty, pd.minutesPerUnit, pd.item, pd.colour, pd.size
+            pd.machineId, pd.dateStr, qty, pd.minutesPerUnit, pd.style, pd.colour, pd.size, pd.order, pd.process
         );
 
         if (allocationsMade > 0) {
             saveAction('add', { keys: allocationKeys });
             if (pd.deletedBlockId) {
                 removeDeletedBlock(pd.deletedBlockId);
+            } else {
+                removeMatchingDeletedBlocks(pd.style, pd.colour, pd.size, pd.order, pd.process);
             }
             if (remainingQty > 0) {
                 frappe.show_alert({ message: __(`Allocated across ${allocationsMade} day(s). ${remainingQty} units could not be allocated (no capacity)`), indicator: 'orange' });
@@ -4314,7 +4542,7 @@ function confirmDrop() {
 
             const sourceResult = handleMoveSource(sourceAlloc, qty, pd.minutesPerUnit);
             const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
-                pd.machineId, pd.dateStr, qty, pd.minutesPerUnit, pd.item, pd.colour, pd.size, pd.order, pd.process
+                pd.machineId, pd.dateStr, qty, pd.minutesPerUnit, pd.style, pd.colour, pd.size, pd.order, pd.process
             );
 
             if (allocationsMade > 0 || sourceResult.sourceRemoved) {
@@ -4330,7 +4558,7 @@ function confirmDrop() {
                 frappe.show_alert({ message: __(`Moved ${qty - remainingQty} units across ${allocationsMade} day(s)`), indicator: 'green' });
             }
         } else {
-            const shift = getShiftForDate(pd.dateStr);
+            const shift = getShiftForDate(pd.dateStr, pd.machineId);
 
             if (qty === sourceAlloc.quantity) {
                 const oldMachineId = sourceAlloc.machine_id;
@@ -4355,7 +4583,7 @@ function confirmDrop() {
                     operation_date: pd.dateStr,
                     shift: shift?.name || '',
                     order: sourceAlloc.order,
-                    item: sourceAlloc.item,
+                    style: sourceAlloc.style,
                     process: sourceAlloc.process,
                     colour: sourceAlloc.colour,
                     size: sourceAlloc.size,
@@ -4408,7 +4636,7 @@ function confirmShift() {
             if (pushKeys.has(allocation.key)) return; // handled by executeMoveGroup below
             shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
             allocation.operation_date = newDate;
-            const newShift = getShiftForDate(newDate);
+            const newShift = getShiftForDate(newDate, allocation.machine_id);
             allocation.shift = newShift?.name || '';
             shiftedAllocRefs.push(allocation);
         });
@@ -4498,17 +4726,15 @@ function executeShiftAndAllocate(shiftData, sourceResult) {
     affectedAllocations.forEach(({ allocation, currentDate, newDate }) => {
         shiftedAllocations.push({ key: allocation.key, oldDate: currentDate, oldShift: allocation.shift, oldQuantity: allocation.quantity, oldAllocatedMinutes: allocation.allocated_minutes });
         allocation.operation_date = newDate;
-        const newShift = getShiftForDate(newDate);
+        const newShift = getShiftForDate(newDate, allocation.machine_id);
         allocation.shift = newShift?.name || '';
         shiftedAllocRefs.push(allocation);
     });
 
     const refitResult = refitShiftedAllocations(shiftedAllocRefs);
 
-    const orderForSplit = type === 'move' ? pd.order : undefined;
-    const processForSplit = type === 'move' ? pd.process : undefined;
     const { allocationKeys, allocationsMade, remainingQty } = executeAutoSplit(
-        pd.machineId, pd.dateStr, dropQty, pd.minutesPerUnit, pd.item, pd.colour, pd.size, orderForSplit, processForSplit
+        pd.machineId, pd.dateStr, dropQty, pd.minutesPerUnit, pd.style, pd.colour, pd.size, pd.order, pd.process
     );
 
     const shiftCount = shiftedAllocations.length;
@@ -4535,6 +4761,8 @@ function executeShiftAndAllocate(shiftData, sourceResult) {
 
     if (pd.deletedBlockId) {
         removeDeletedBlock(pd.deletedBlockId);
+    } else {
+        removeMatchingDeletedBlocks(pd.style, pd.colour, pd.size, pd.order, pd.process);
     }
 
     if (allocationsMade > 0) {
@@ -4579,6 +4807,7 @@ async function onProcessChange() {
 async function refreshCalendar() {
     await loadShiftAllocations();
     await loadAllAllocations();
+    fetchTrackingData();
 }
 
 async function loadShiftAllocations() {
@@ -4625,6 +4854,117 @@ async function loadAllAllocations() {
     }
 }
 
+async function loadShiftAllocationsForRange(rangeStart, rangeEnd) {
+    try {
+        const response = await frappe.call({
+            method: 'albion.albion.page.capacity_planning.capacity_planning.get_shift_allocations',
+            args: { start_date: rangeStart, end_date: rangeEnd }
+        });
+        if (response.message) {
+            const existingNames = new Set(shiftAllocations.value.map(c => c.name));
+            const newCalendars = (response.message.calendars || []).filter(c => !existingNames.has(c.name));
+            if (newCalendars.length > 0) {
+                shiftAllocations.value = [...shiftAllocations.value, ...newCalendars];
+            }
+            if (!defaultAllocation.value && response.message.default_calendar) {
+                defaultAllocation.value = response.message.default_calendar;
+            }
+        }
+    } catch (e) {
+        console.error('Error loading shift allocations for range:', e);
+    }
+}
+
+async function loadAllocationsForRange(rangeStart, rangeEnd) {
+    try {
+        const response = await frappe.call({
+            method: 'albion.albion.page.capacity_planning.capacity_planning.get_all_allocations',
+            args: { start_date: rangeStart, end_date: rangeEnd }
+        });
+        if (response.message && response.message.length > 0) {
+            const existingNames = new Set(allocations.value.map(a => a.name));
+            const newAllocs = response.message
+                .filter(a => !existingNames.has(a.name))
+                .map((a, idx) => ({
+                    key: `extend-${Date.now()}-${idx}`,
+                    ...a
+                }));
+            if (newAllocs.length > 0) {
+                allocations.value = [...allocations.value, ...newAllocs];
+            }
+        }
+    } catch (e) {
+        console.error('Error loading allocations for range:', e);
+    }
+}
+
+async function extendRight() {
+    if (isExtending.value) return;
+    isExtending.value = true;
+    try {
+        const oldEnd = endDate.value;
+        const newEnd = addDaysToDate(oldEnd, EXTEND_DAYS);
+        suppressDateWatch.value = true;
+        const fetchStart = addDaysToDate(oldEnd, 1);
+        await Promise.all([
+            loadShiftAllocationsForRange(fetchStart, newEnd),
+            loadAllocationsForRange(fetchStart, newEnd)
+        ]);
+        endDate.value = newEnd;
+        if (endDateControl) endDateControl.set_value(newEnd);
+        await nextTick();
+        await nextTick();
+        suppressDateWatch.value = false;
+    } finally {
+        isExtending.value = false;
+    }
+}
+
+async function extendLeft() {
+    if (isExtending.value) return;
+    isExtending.value = true;
+    try {
+        const oldStart = startDate.value;
+        const newStart = addDaysToDate(oldStart, -EXTEND_DAYS);
+        const wrapper = document.querySelector('.calendar-wrapper');
+        const oldScrollLeft = wrapper ? wrapper.scrollLeft : 0;
+        const oldDateCount = dateRange.value.length;
+        suppressDateWatch.value = true;
+        const fetchEnd = addDaysToDate(oldStart, -1);
+        await Promise.all([
+            loadShiftAllocationsForRange(newStart, fetchEnd),
+            loadAllocationsForRange(newStart, fetchEnd)
+        ]);
+        startDate.value = newStart;
+        if (startDateControl) startDateControl.set_value(newStart);
+        await nextTick();
+        await nextTick();
+        suppressDateWatch.value = false;
+        // Restore scroll position to compensate for prepended columns
+        if (wrapper) {
+            const newColumns = dateRange.value.length - oldDateCount;
+            wrapper.scrollLeft = oldScrollLeft + (newColumns * colWidth.value);
+        }
+    } finally {
+        isExtending.value = false;
+    }
+}
+
+function onCalendarScroll() {
+    if (scrollDebounceTimer) clearTimeout(scrollDebounceTimer);
+    scrollDebounceTimer = setTimeout(() => {
+        if (isExtending.value) return;
+        const wrapper = document.querySelector('.calendar-wrapper');
+        if (!wrapper) return;
+        const { scrollLeft, scrollWidth, clientWidth } = wrapper;
+        if (scrollLeft < EXTEND_THRESHOLD) {
+            extendLeft();
+        } else if (scrollWidth - scrollLeft - clientWidth < EXTEND_THRESHOLD) {
+            extendRight();
+        }
+    }, 200);
+}
+
 async function loadExistingAllocations() {
     await loadAllAllocations();
 }
@@ -4636,7 +4976,7 @@ async function saveAllocations() {
     workloadItems.value.forEach(item => {
         const allocated = getAllocatedQuantity(item);
         if (allocated > item.quantity) {
-            errors.push(`${item.item}: Allocated ${allocated} exceeds order ${item.quantity}`);
+            errors.push(`${item.style}: Allocated ${allocated} exceeds order ${item.quantity}`);
         }
     });
 
@@ -4670,6 +5010,7 @@ async function saveAllocations() {
             actionHistory.value = [];
             redoHistory.value = [];
             await loadAllAllocations();
+            fetchTrackingData();
             emit('saveAllocations', allocations.value);
         }
     } catch (e) {
@@ -4885,7 +5226,7 @@ function populateBulkShiftTable() {
     bulkShiftMachines.value = machines.value.map(m => ({
         machine_id: m.machine_id,
         machine_name: m.machine_name || m.machine_id,
-        shift_name: getShiftNamesForDate(dateStr),
+        shift_name: getShiftNamesForDate(dateStr, m.machine_id),
         total_minutes: getEffectiveMinutes(dateStr, m.machine_id),
         allocated_minutes: getUsedMinutes(m.machine_id, dateStr),
         alteration_type: 'Add',
@@ -4950,15 +5291,15 @@ function chooseUpdateTime() {
 function chooseUpdateShift() {
     const ctx = actionChoiceContext.value;
     closeActionChoice();
-    openShiftUpdateModal(ctx.date);
+    openShiftUpdateModal(ctx.date, ctx.machine);
 }
 
 // ── Shift update modal ──
-function openShiftUpdateModal(dateStr) {
-    // Pre-select all current shifts for this date
-    const cal = getCalendarForDate(dateStr);
+function openShiftUpdateModal(dateStr, machineId = null) {
+    // Pre-select all current shifts for this date (machine-aware)
+    const cal = getCalendarForDate(dateStr, machineId);
     const currentShifts = cal && cal.shifts ? cal.shifts.map(s => s.shift) : [];
-    shiftUpdateForm.value = { date: dateStr, shifts: [...currentShifts] };
+    shiftUpdateForm.value = { date: dateStr, shifts: [...currentShifts], machine: machineId };
     showShiftUpdateModal.value = true;
 }
 
@@ -4980,7 +5321,8 @@ async function confirmShiftUpdate() {
             method: 'albion.albion.page.capacity_planning.capacity_planning.update_date_shift',
             args: {
                 date: form.date,
-                shifts: JSON.stringify(form.shifts)
+                shifts: JSON.stringify(form.shifts),
+                machine: form.machine || null
             }
         });
         frappe.show_alert({ message: __('Shift updated'), indicator: 'green' });
@@ -4992,9 +5334,13 @@ async function confirmShiftUpdate() {
         if (result) {
             const delta = (result.new_minutes || 0) - (result.old_minutes || 0);
             if (delta > 0) {
-                autoReflowAfterAlteration(form.date, null, 'Add', delta);
+                autoReflowAfterAlteration(form.date, form.machine || null, 'Add', delta);
             } else if (delta < 0) {
-                autoReflowAfterAlteration(form.date, null, 'Reduce', Math.abs(delta));
+                autoReflowAfterAlteration(form.date, form.machine || null, 'Reduce', Math.abs(delta));
+            } else if (isDefaultWeekdayOff(form.date) && (result.new_minutes || 0) > 0) {
+                // Off-day: API reports same old/new (both from calendar total_duration_minutes)
+                // but effective old capacity was 0. Force pull-back.
+                autoReflowAfterAlteration(form.date, form.machine || null, 'Add', result.new_minutes);
             }
         }
     } catch (e) {
@@ -5018,35 +5364,35 @@ async function loadAllShifts() {
 }
 
 function initFrappeControls() {
-    // Customer — Link field to filter orders
-    customerControl = frappe.ui.form.make_control({
+    // Client — Link field to filter orders
+    clientControl = frappe.ui.form.make_control({
         df: {
             fieldtype: 'Link',
-            fieldname: 'customer',
-            label: 'Customer',
-            options: 'Customer',
-            placeholder: 'Select Customer',
+            fieldname: 'client',
+            label: 'Client',
+            options: 'Client',
+            placeholder: 'Select Client',
             change() {
-                selectedCustomer.value = customerControl.get_value() || '';
-                // Update Order control query to filter by customer
+                selectedClient.value = clientControl.get_value() || '';
+                // Update Order control query to filter by client
                 if (orderControl) {
                     orderControl.df.get_query = () => {
-                        const filters = { docstatus: 1 };
-                        if (selectedCustomer.value) filters.customer = selectedCustomer.value;
+                        const filters = { docstatus: 1, status: ['!=', 'Closed'] };
+                        if (selectedClient.value) filters.client = selectedClient.value;
                         return { filters };
                     };
-                    // Clear current order selection when customer changes
+                    // Clear current order selection when client changes
                     orderControl.set_value('');
                     selectedOrder.value = '';
                     orderData.value = null;
                 }
             }
         },
-        parent: customerFieldRef.value,
+        parent: clientFieldRef.value,
         render_input: true,
         only_input: true
     });
-    customerControl.refresh();
+    clientControl.refresh();
 
     // Order — Link field with search
     orderControl = frappe.ui.form.make_control({
@@ -5057,8 +5403,8 @@ function initFrappeControls() {
             options: 'Order',
             placeholder: 'Select Order',
             get_query() {
-                const filters = { docstatus: 1 };
-                if (selectedCustomer.value) filters.customer = selectedCustomer.value;
+                const filters = { docstatus: 1, status: ['!=', 'Closed'] };
+                if (selectedClient.value) filters.client = selectedClient.value;
                 return { filters };
             },
             change() {
@@ -5113,23 +5459,23 @@ function initFrappeControls() {
     viewTypeControl.set_value('item_wise');
     viewTypeControl.refresh();
 
-    // Machine GG — Link field to filter machines
-    machineGGControl = frappe.ui.form.make_control({
+    // Machine Frame — Link field to filter machines
+    machineFrameControl = frappe.ui.form.make_control({
         df: {
             fieldtype: 'Link',
-            fieldname: 'machine_gg',
-            label: 'Machine GG',
-            options: 'Machine GG',
-            placeholder: 'Select Machine GG',
+            fieldname: 'machine_frame',
+            label: 'Machine Frame',
+            options: 'Machine Frame',
+            placeholder: 'Select Machine Frame',
             change() {
-                selectedMachineGG.value = machineGGControl.get_value() || '';
+                selectedMachineFrame.value = machineFrameControl.get_value() || '';
             }
         },
-        parent: machineGGFieldRef.value,
+        parent: machineFrameFieldRef.value,
         render_input: true,
         only_input: true
     });
-    machineGGControl.refresh();
+    machineFrameControl.refresh();
 
     // Start Date
     startDateControl = frappe.ui.form.make_control({
@@ -5196,6 +5542,7 @@ onMounted(async () => {
     await loadShiftAllocations();
     loadAllShifts();
     loadAllAllocations();
+    fetchTrackingData();
     document.addEventListener('click', closeContextMenu);
     document.addEventListener('keydown', onKeyDown);
     window.addEventListener('beforeunload', onBeforeUnload);
@@ -5219,6 +5566,7 @@ onMounted(async () => {
         if (todayIdx >= 0) {
             wrapper.scrollLeft = Math.max(0, todayIdx * colWidth.value - colWidth.value * 2);
         }
+        wrapper.addEventListener('scroll', onCalendarScroll);
     }
 });
 
@@ -5249,12 +5597,16 @@ onUnmounted(() => {
     document.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('beforeunload', onBeforeUnload);
     frappe.router.off('change', onRouteChange);
+    const wrapper = document.querySelector('.calendar-wrapper');
+    if (wrapper) wrapper.removeEventListener('scroll', onCalendarScroll);
+    if (scrollDebounceTimer) clearTimeout(scrollDebounceTimer);
 });
 
 watch([startDate, endDate], () => {
     if (suppressDateWatch.value) return;
     loadShiftAllocations();
     loadAllAllocations();
+    fetchTrackingData();
 });
 
 watch(availableProcesses, () => {
@@ -5295,8 +5647,7 @@ defineExpose({
 
 .cp-filters {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
+    flex-direction: column;
     gap: 8px;
 }
 
@@ -5311,12 +5662,58 @@ defineExpose({
     display: flex;
     gap: 16px;
     align-items: flex-end;
+    justify-content: flex-end;
 }
 
 .action-group {
     display: flex;
     gap: 8px;
     align-items: flex-end;
+}
+
+.compact-toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin: 0;
+    user-select: none;
+}
+
+.compact-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.toggle-switch {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    background: #cbd5e1;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.toggle-switch.toggle-on {
+    background: #7c3aed;
+}
+
+.toggle-knob {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: left 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch.toggle-on .toggle-knob {
+    left: 20px;
 }
 
 .frappe-field {
@@ -5403,7 +5800,7 @@ defineExpose({
     border-right: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 .panel-header {
@@ -5469,9 +5866,7 @@ defineExpose({
 }
 
 .workload-list {
-    flex: 1;
     min-height: 0;
-    overflow-y: auto;
     padding: 12px;
 }
 
@@ -5568,7 +5963,7 @@ defineExpose({
     font-weight: 700;
 }
 
-.item-gg {
+.item-frame {
     font-size: 11px;
     font-weight: 600;
     color: #6d28d9;
@@ -5900,7 +6295,7 @@ defineExpose({
     color: #64748b;
 }
 
-.machine-gg-badge {
+.machine-frame-badge {
     font-size: 10px;
     font-weight: 700;
     color: #6d28d9;
@@ -5959,6 +6354,33 @@ defineExpose({
     justify-content: flex-end;
     align-items: center;
     min-height: 18px;
+}
+
+.machine-shift-badge {
+    position: absolute;
+    bottom: 3px;
+    right: 4px;
+    z-index: 11;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: #dbeafe;
+    color: #1e40af;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.machine-shift-badge.clickable {
+    cursor: pointer;
+}
+
+.machine-shift-badge.clickable:hover {
+    background: #bfdbfe;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 .alteration-badge {
@@ -6108,13 +6530,13 @@ defineExpose({
 }
 
 @keyframes snapIn {
-    0%   { transform: scale(0.90); opacity: 0.5; box-shadow: 0 0 0 rgba(0,0,0,0); }
-    60%  { transform: scale(1.04); opacity: 1; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
-    100% { transform: scale(1); box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06); }
+    0%   { opacity: 0; box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+    40%  { opacity: 1; box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.25); }
+    100% { opacity: 1; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06); }
 }
 
 .gantt-bar.snap-in {
-    animation: snapIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation: snapIn 0.4s ease-out forwards;
 }
 
 /* --- Bar Row: Top (Item + Qty) --- */
@@ -6570,6 +6992,10 @@ defineExpose({
     color: #67e8f9;
 }
 
+.tooltip-completed {
+    color: #4ade80;
+}
+
 /* ===== Shift Modal ===== */
 .shift-modal {
     background: white;
@@ -6665,7 +7091,7 @@ defineExpose({
     margin-bottom: 0;
 }
 
-/* ===== Machine GG Disabled State ===== */
+/* ===== Machine Frame Disabled State ===== */
 .machine-disabled {
     opacity: 0.35;
     pointer-events: none;

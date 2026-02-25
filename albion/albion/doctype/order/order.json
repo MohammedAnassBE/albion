@@ -6,23 +6,50 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "customer",
+  "client",
+  "product_developer",
+  "client_season",
+  "currency_type",
   "purchase_order",
   "order_date",
   "delivery_date",
-  "items",
+  "status",
+  "total_quantity",
+  "styles",
   "section_break_matrix",
   "order_matrix_html",
   "order_details",
+  "order_processes",
   "amended_from"
  ],
  "fields": [
   {
-   "fieldname": "customer",
+   "fieldname": "client",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Customer",
-   "options": "Customer",
+   "label": "Client",
+   "options": "Client",
+   "reqd": 1
+  },
+  {
+   "fieldname": "product_developer",
+   "fieldtype": "Link",
+   "label": "Product Developer",
+   "options": "Product Developer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "client_season",
+   "fieldtype": "Link",
+   "label": "Client Season",
+   "options": "Client Season",
+   "reqd": 1
+  },
+  {
+   "fieldname": "currency_type",
+   "fieldtype": "Select",
+   "label": "Currency Type",
+   "options": "\nEuro\nDollar\nGBP",
    "reqd": 1
   },
   {
@@ -44,10 +71,29 @@
    "label": "Delivery Date"
   },
   {
-   "fieldname": "items",
+   "allow_on_submit": 1,
+   "default": "Open",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "\nOpen\nClosed",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "total_quantity",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Total Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "styles",
    "fieldtype": "Table",
-   "label": "Items",
-   "options": "Order Item"
+   "label": "Styles",
+   "options": "Order Style"
   },
   {
    "fieldname": "section_break_matrix",
@@ -67,6 +113,13 @@
    "options": "Order Detail"
   },
   {
+   "fieldname": "order_processes",
+   "fieldtype": "Table",
+   "label": "Order Processes",
+   "options": "Order Process",
+   "read_only": 1
+  },
+  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
@@ -81,10 +134,11 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-10 09:53:35.543694",
+ "modified": "2026-02-25 14:50:33.291471",
  "modified_by": "Administrator",
  "module": "Albion",
  "name": "Order",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

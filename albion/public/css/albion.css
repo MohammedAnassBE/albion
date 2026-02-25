@@ -1,0 +1,4 @@
+[data-page-container] > .container,
+.page-container > .container {
+	max-width: 100%;
+}

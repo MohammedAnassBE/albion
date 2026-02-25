@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Albion — Design Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Reset ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'DM Sans',sans-serif;font-size:14px;color:#1E293B;background:#F8FAFC}
+
+/* ── Layout ── */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:240px;min-width:240px;background:#fff;border-right:1px solid #E2E8F0;display:flex;flex-direction:column;transition:width .25s ease,min-width .25s ease;overflow:hidden;z-index:100}
+.sidebar.collapsed{width:64px;min-width:64px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:56px;background:#fff;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:28px 32px}
+
+/* ── Sidebar brand ── */
+.sidebar-brand{height:56px;display:flex;align-items:center;padding:0 16px;gap:12px;border-bottom:1px solid #E2E8F0;flex-shrink:0}
+.brand-mark{width:36px;height:36px;background:#E8A838;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:18px;font-weight:700;color:#1A1A1A;flex-shrink:0}
+.brand-name{font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;color:#0F172A;letter-spacing:0.5px;white-space:nowrap;opacity:1;transition:opacity .2s}
+.sidebar.collapsed .brand-name{opacity:0;pointer-events:none}
+.sidebar-toggle{margin-left:auto;cursor:pointer;color:#94A3B8;flex-shrink:0;padding:4px;border-radius:6px;transition:background .15s}
+.sidebar-toggle:hover{background:#F1F5F9;color:#475569}
+
+/* ── Nav ── */
+.nav-scroll{flex:1;overflow-y:auto;padding:12px 0}
+.nav-group-label{padding:16px 16px 6px;font-size:10px;font-weight:600;color:#94A3B8;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.sidebar.collapsed .nav-group-label{opacity:0;height:0;padding:0;margin:0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;border-left:3px solid transparent;transition:all .15s;white-space:nowrap;position:relative}
+.nav-item:hover{background:#F8FAFC;color:#334155}
+.nav-item.active{background:rgba(16,185,129,0.08);border-left-color:#059669;color:#059669}
+.nav-item.active .nav-icon{color:#059669}
+.nav-item.disabled{opacity:0.4;cursor:not-allowed}
+.nav-icon{width:18px;height:18px;flex-shrink:0;color:#64748B}
+.nav-label{font-size:13px;font-weight:500;color:inherit;transition:opacity .2s}
+.sidebar.collapsed .nav-label{opacity:0;pointer-events:none}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:600;background:#F1F5F9;color:#64748B;padding:2px 6px;border-radius:10px}
+.sidebar.collapsed .nav-badge{display:none}
+
+/* ── Settings toggle ── */
+.nav-settings-toggle{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.nav-settings-toggle:hover{background:#F8FAFC}
+.settings-arrow{margin-left:auto;transition:transform .2s;color:#94A3B8}
+.settings-arrow.open{transform:rotate(90deg)}
+.settings-children{overflow:hidden;max-height:0;transition:max-height .25s ease}
+.settings-children.open{max-height:300px}
+.settings-children .nav-item{padding-left:40px}
+
+/* ── Sidebar footer ── */
+.sidebar-footer{padding:12px 14px;border-top:1px solid #E2E8F0;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#E8A838,#1E293B);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.user-info{overflow:hidden}
+.user-name{font-size:13px;font-weight:600;color:#0F172A;white-space:nowrap}
+.user-role{font-size:11px;color:#94A3B8;white-space:nowrap}
+.sidebar.collapsed .user-info{display:none}
+
+/* ── Topbar ── */
+.topbar-title{font-family:'DM Sans',sans-serif;font-weight:600;font-size:15px;color:#0F172A}
+.topbar-search{flex:1;max-width:320px;position:relative}
+.topbar-search input{width:100%;padding:7px 12px 7px 34px;border:1px solid #E2E8F0;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:#334155;background:#fff;outline:none;transition:border .15s}
+.topbar-search input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,0.08)}
+.topbar-search .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94A3B8}
+.topbar-actions{margin-left:auto;display:flex;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:#059669;color:#fff}
+.btn-primary:hover{background:#047857}
+.btn-outline{background:#fff;color:#334155;border:1px solid #E2E8F0}
+.btn-outline:hover{background:#F8FAFC;border-color:#CBD5E1}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-ghost{background:transparent;color:#64748B;padding:6px 8px}
+.btn-ghost:hover{background:#F1F5F9}
+
+/* ── Pages ── */
+.page{display:none;animation:fadeSlideIn .2s ease}
+.page.active{display:block}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Page header ── */
+.page-header{margin-bottom:24px}
+.page-header h1{font-family:'Instrument Serif',serif;font-size:2rem;color:#0F172A;line-height:1.1;margin-bottom:4px}
+.page-header p{color:#64748B;font-size:13px}
+.page-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+/* ── Stat cards ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.stat-card-top{display:flex;align-items:flex-start;justify-content:space-between}
+.stat-icon-box{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-icon-box.emerald{background:rgba(16,185,129,0.12)}
+.stat-icon-box.blue{background:rgba(59,130,246,0.12)}
+.stat-icon-box.violet{background:rgba(139,92,246,0.12)}
+.stat-icon-box.amber{background:rgba(245,158,11,0.12)}
+.stat-icon-box.rose{background:rgba(244,63,94,0.12)}
+.stat-icon-box svg{width:20px;height:20px}
+.stat-icon-box.emerald svg{color:#059669}
+.stat-icon-box.blue svg{color:#2563EB}
+.stat-icon-box.violet svg{color:#7C3AED}
+.stat-icon-box.amber svg{color:#D97706}
+.stat-icon-box.rose svg{color:#E11D48}
+.stat-trend{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px}
+.stat-trend.up{background:rgba(16,185,129,0.1);color:#059669}
+.stat-trend.down{background:rgba(239,68,68,0.1);color:#DC2626}
+.stat-trend.neutral{background:#F1F5F9;color:#64748B}
+.stat-value{font-family:'Instrument Serif',serif;font-size:2rem;line-height:1;color:#0F172A}
+.stat-label{font-size:12px;color:#64748B;font-weight:500}
+
+/* ── Quick actions ── */
+.quick-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.action-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#fff;border:1px solid #E2E8F0;border-radius:20px;font-size:12px;font-weight:500;color:#334155;cursor:pointer;transition:all .15s}
+.action-chip:hover{background:#F0FDF9;border-color:#6EE7B7;color:#059669}
+.action-chip svg{width:14px;height:14px}
+
+/* ── Section card ── */
+.section-card{background:#fff;border:1px solid #E2E8F0;border-radius:14px;overflow:hidden}
+.section-card-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #E2E8F0}
+.section-card-title{font-size:14px;font-weight:600;color:#0F172A}
+.section-card-sub{font-size:12px;color:#94A3B8}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead tr{background:#F8FAFC}
+th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#94A3B8;letter-spacing:0.8px;text-transform:uppercase;white-space:nowrap;position:sticky;top:0;background:#F8FAFC;z-index:1}
+td{padding:12px 16px;border-top:1px solid #F1F5F9;font-size:13px;color:#334155}
+tr:hover td{background:#F8FAFC}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-submitted{background:rgba(16,185,129,0.1);color:#059669}
+.badge-draft{background:rgba(100,116,139,0.1);color:#475569}
+.badge-cancelled{background:rgba(239,68,68,0.1);color:#DC2626}
+.badge-info{background:rgba(59,130,246,0.1);color:#2563EB}
+.badge-amber{background:rgba(245,158,11,0.1);color:#D97706}
+.badge-violet{background:rgba(139,92,246,0.1);color:#7C3AED}
+.badge-neutral{background:#F1F5F9;color:#64748B}
+.pulse-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(0.75)}}
+
+/* ── PO pill ── */
+.po-pill{display:inline-block;padding:2px 8px;background:#F1F5F9;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#475569}
+
+/* ── Filter tabs ── */
+.filter-tabs{display:flex;gap:4px;margin-bottom:16px}
+.filter-tab{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:#64748B;transition:all .15s}
+.filter-tab:hover{background:#F1F5F9}
+.filter-tab.active{background:#fff;color:#0F172A;border:1px solid #E2E8F0;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+
+/* ── Search row ── */
+.search-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-box{position:relative;flex:1;min-width:200px}
+.search-box input{width:100%;padding:8px 12px 8px 34px;border:1px solid #E2E8F0;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:#334155;background:#fff;outline:none;transition:border .15s}
+.search-box input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,0.08)}
+.search-box .si{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94A3B8;width:16px;height:16px}
+
+/* ── Gauge badge ── */
+.gauge-badge{display:inline-block;padding:2px 8px;background:#EFF6FF;border-radius:6px;font-size:11px;font-weight:600;color:#2563EB;border:1px solid #BFDBFE}
+
+/* ── Capacity Planning placeholder ── */
+.planner-card{background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:48px;text-align:center}
+.planner-icon{width:72px;height:72px;background:rgba(16,185,129,0.1);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:#059669}
+.planner-card h2{font-family:'Instrument Serif',serif;font-size:1.6rem;color:#0F172A;margin-bottom:8px}
+.planner-card p{color:#64748B;font-size:13px;max-width:420px;margin:0 auto 24px;line-height:1.6}
+
+/* ── Settings table ── */
+.settings-table td:last-child{text-align:right}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:none;background:transparent;cursor:pointer;color:#94A3B8;transition:all .15s}
+.icon-btn:hover.edit{background:#EFF6FF;color:#2563EB}
+.icon-btn:hover.del{background:#FFF1F2;color:#E11D48}
+
+/* ── Import status ── */
+.badge-success{background:rgba(16,185,129,0.1);color:#059669}
+.badge-error{background:rgba(239,68,68,0.1);color:#DC2626}
+.badge-pending{background:rgba(245,158,11,0.1);color:#D97706}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .sidebar{width:64px;min-width:64px}
+  .sidebar .brand-name,.sidebar .nav-label,.sidebar .nav-group-label,.sidebar .nav-badge,.sidebar .user-info{opacity:0;pointer-events:none}
+  .sidebar .settings-children .nav-item{padding-left:14px}
+  .content{padding:20px 16px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#E2E8F0;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#CBD5E1}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══════════════════════════════════════ SIDEBAR ══════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-mark">A</div>
+    <span class="brand-name">ALBION</span>
+    <div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </div>
+  </div>
+
+  <nav class="nav-scroll">
+    <div class="nav-group-label">OVERVIEW</div>
+    <div class="nav-item active" onclick="navigate('dashboard',this)" title="Dashboard">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="nav-label">Dashboard</span>
+    </div>
+    <div class="nav-item" onclick="navigate('orders',this)" title="Orders">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <span class="nav-label">Orders</span>
+      <span class="nav-badge">419</span>
+    </div>
+    <div class="nav-item" onclick="navigate('items',this)" title="Items">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      <span class="nav-label">Items</span>
+    </div>
+    <div class="nav-item" onclick="navigate('customers',this)" title="Customers">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      <span class="nav-label">Customers</span>
+    </div>
+
+    <div class="nav-group-label">PRODUCTION</div>
+    <div class="nav-item" onclick="navigate('machines',this)" title="Machines">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"/></svg>
+      <span class="nav-label">Machines</span>
+    </div>
+    <div class="nav-item" onclick="navigate('shifts',this)" title="Shifts">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <span class="nav-label">Shifts</span>
+    </div>
+    <div class="nav-item" onclick="navigate('shift-allocations',this)" title="Shift Allocations">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="nav-label">Shift Allocations</span>
+    </div>
+    <div class="nav-item" onclick="navigate('capacity',this)" title="Capacity Planning">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span class="nav-label">Capacity Planning</span>
+    </div>
+
+    <div class="nav-group-label">DATA</div>
+    <div class="nav-item" onclick="navigate('import',this)" title="Import Data">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span class="nav-label">Import Data</span>
+    </div>
+    <div class="nav-item disabled" title="Reports (coming soon)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <span class="nav-label">Reports</span>
+      <span class="nav-badge">soon</span>
+    </div>
+
+    <div class="nav-group-label">SETTINGS</div>
+    <div class="nav-settings-toggle" id="settings-toggle" onclick="toggleSettings()">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"/></svg>
+      <span class="nav-label" style="color:#64748B;font-weight:500">Settings</span>
+      <svg class="settings-arrow" id="settings-arrow" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="settings-children" id="settings-children">
+      <div class="nav-item" onclick="navigate('colours',this)" title="Colours">
+        <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 011.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        <span class="nav-label">Colours</span>
+      </div>
+      <div class="nav-item" onclick="navigate('sizes',this)" title="Sizes">
+        <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        <span class="nav-label">Sizes</span>
+      </div>
+      <div class="nav-item" onclick="navigate('processes',this)" title="Processes">
+        <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+        <span class="nav-label">Processes</span>
+      </div>
+      <div class="nav-item" onclick="navigate('machine-frame',this)" title="Machine Frame">
+        <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"/></svg>
+        <span class="nav-label">Machine Frame</span>
+      </div>
+      <div class="nav-item" onclick="navigate('size-ranges',this)" title="Size Ranges">
+        <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <span class="nav-label">Size Ranges</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-avatar">AD</div>
+    <div class="user-info">
+      <div class="user-name">Administrator</div>
+      <div class="user-role">Full access</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══════════════════════════════════════ MAIN ══════════════════════════════════════ -->
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="topbar-title">Dashboard</span>
+    <div class="topbar-search">
+      <svg class="search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search…">
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline btn-sm">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/></svg>
+        Settings
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+<!-- ════════════════════════════════ PAGE: DASHBOARD ════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header-row">
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <p>Albion production overview — <span style="font-family:'JetBrains Mono',monospace;font-size:12px">2026-02-20</span></p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-outline btn-sm">Export Report</button>
+      <button class="btn btn-primary btn-sm">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Order
+      </button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div class="stat-icon-box emerald">
+          <svg fill="none" stroke="#059669" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <span class="stat-trend up">+12% this month</span>
+      </div>
+      <div class="stat-value">419</div>
+      <div class="stat-label">Active Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div class="stat-icon-box blue">
+          <svg fill="none" stroke="#2563EB" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        </div>
+        <span class="stat-trend neutral">+3 new items</span>
+      </div>
+      <div class="stat-value">84</div>
+      <div class="stat-label">Items</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div class="stat-icon-box violet">
+          <svg fill="none" stroke="#7C3AED" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"/></svg>
+        </div>
+        <span class="stat-trend neutral">All operational</span>
+      </div>
+      <div class="stat-value">12</div>
+      <div class="stat-label">Machines</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div class="stat-icon-box amber">
+          <svg fill="none" stroke="#D97706" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <span class="stat-trend down">-5% vs last week</span>
+      </div>
+      <div class="stat-value">38</div>
+      <div class="stat-label">This Week's Allocations</div>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <div class="action-chip" onclick="navigate('capacity',document.querySelector('[title=\'Capacity Planning\']'))">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Capacity Planning
+    </div>
+    <div class="action-chip" onclick="navigate('shift-allocations',document.querySelector('[title=\'Shift Allocations\']'))">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Shift Allocations
+    </div>
+    <div class="action-chip">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export Report
+    </div>
+    <div class="action-chip" onclick="navigate('import',document.querySelector('[title=\'Import Data\']'))">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Import Data
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-card-header">
+      <span class="section-card-title">Recent Orders</span>
+      <span class="section-card-sub">Last 10 orders</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Order</th><th>Customer</th><th>PO</th><th>Date</th><th>Status</th>
+        </tr></thead>
+        <tbody id="dashboard-orders"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: ORDERS ════════════════════════════════ -->
+<div class="page" id="page-orders">
+  <div class="page-header-row">
+    <div class="page-header"><h1>Orders</h1><p>Manage all production orders</p></div>
+    <button class="btn btn-primary btn-sm" style="align-self:flex-start">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Order
+    </button>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-card-top"><div class="stat-icon-box emerald"><svg fill="none" stroke="#059669" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div><span class="stat-trend neutral">All time</span></div>
+      <div class="stat-value">419</div><div class="stat-label">Total Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-top"><div class="stat-icon-box blue"><svg fill="none" stroke="#2563EB" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="stat-trend up">+12%</span></div>
+      <div class="stat-value">387</div><div class="stat-label">Submitted</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-top"><div class="stat-icon-box amber"><svg fill="none" stroke="#D97706" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><span class="stat-trend neutral">In progress</span></div>
+      <div class="stat-value">28</div><div class="stat-label">Draft</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-top"><div class="stat-icon-box rose"><svg fill="none" stroke="#E11D48" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><span class="stat-trend neutral">Resolved</span></div>
+      <div class="stat-value">4</div><div class="stat-label">Cancelled</div>
+    </div>
+  </div>
+  <div class="section-card">
+    <div class="section-card-header">
+      <div class="filter-tabs" style="margin:0">
+        <button class="filter-tab active" onclick="setTab(this,'all')">All</button>
+        <button class="filter-tab" onclick="setTab(this,'draft')">Draft</button>
+        <button class="filter-tab" onclick="setTab(this,'submitted')">Submitted</button>
+        <button class="filter-tab" onclick="setTab(this,'cancelled')">Cancelled</button>
+      </div>
+      <div class="search-box" style="width:220px">
+        <svg class="si" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search orders…">
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Order</th><th>Customer</th><th>Purchase Order</th><th>Order Date</th><th>Delivery Date</th><th>Status</th></tr></thead>
+        <tbody id="orders-table"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: ITEMS ════════════════════════════════ -->
+<div class="page" id="page-items">
+  <div class="page-header-row">
+    <div class="page-header"><h1>Items</h1><p>Knitting item catalogue</p></div>
+    <button class="btn btn-primary btn-sm" style="align-self:flex-start">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Item
+    </button>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box blue"><svg fill="none" stroke="#2563EB" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div><span class="stat-trend neutral">Total</span></div><div class="stat-value">84</div><div class="stat-label">Total Items</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box violet"><svg fill="none" stroke="#7C3AED" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2"/></svg></div><span class="stat-trend neutral">GG Types</span></div><div class="stat-value">6</div><div class="stat-label">Machine Frames used</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box amber"><svg fill="none" stroke="#D97706" stroke-width="1.8" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg></div><span class="stat-trend neutral">Active</span></div><div class="stat-value">14</div><div class="stat-label">Size Ranges</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box emerald"><svg fill="none" stroke="#059669" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/></svg></div><span class="stat-trend neutral">Configured</span></div><div class="stat-value">8</div><div class="stat-label">Processes</div></div>
+  </div>
+  <div class="section-card">
+    <div class="section-card-header">
+      <span class="section-card-title">Item Catalogue</span>
+      <div class="search-box" style="width:220px">
+        <svg class="si" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search items…">
+      </div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Item Code</th><th>Item Name</th><th>Gauge</th><th>Size Range</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">ITM-001</td><td>Classic Crew Neck</td><td><span class="gauge-badge">GG 7</span></td><td>S–XL Standard</td></tr>
+        <tr><td class="mono">ITM-002</td><td>V-Neck Pullover</td><td><span class="gauge-badge">GG 12</span></td><td>XS–XXL Extended</td></tr>
+        <tr><td class="mono">ITM-003</td><td>Cardigan Open Front</td><td><span class="gauge-badge">GG 5</span></td><td>S–XL Standard</td></tr>
+        <tr><td class="mono">ITM-004</td><td>Turtleneck Sweater</td><td><span class="gauge-badge">GG 7</span></td><td>S–L Compact</td></tr>
+        <tr><td class="mono">ITM-005</td><td>Zip-Up Hoodie</td><td><span class="gauge-badge">GG 14</span></td><td>S–XL Standard</td></tr>
+        <tr><td class="mono">ITM-006</td><td>Merino Base Layer</td><td><span class="gauge-badge">GG 18</span></td><td>XS–XXL Extended</td></tr>
+        <tr><td class="mono">ITM-007</td><td>Cable Knit Vest</td><td><span class="gauge-badge">GG 5</span></td><td>S–XL Standard</td></tr>
+        <tr><td class="mono">ITM-008</td><td>Fine Gauge T-Shirt</td><td><span class="gauge-badge">GG 18</span></td><td>XS–L Fine</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: CUSTOMERS ════════════════════════════════ -->
+<div class="page" id="page-customers">
+  <div class="page-header-row">
+    <div class="page-header"><h1>Customers</h1><p>Client accounts and contacts</p></div>
+    <button class="btn btn-primary btn-sm" style="align-self:flex-start">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Customer
+    </button>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box blue"><svg fill="none" stroke="#2563EB" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><span class="stat-trend neutral">All time</span></div><div class="stat-value">47</div><div class="stat-label">Total Customers</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box emerald"><svg fill="none" stroke="#059669" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="stat-trend up">+2 this month</span></div><div class="stat-value">38</div><div class="stat-label">Active (with orders)</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box amber"><svg fill="none" stroke="#D97706" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div><span class="stat-trend neutral">This month</span></div><div class="stat-value">3</div><div class="stat-label">New This Month</div></div>
+  </div>
+  <div class="section-card">
+    <div class="section-card-header">
+      <span class="section-card-title">Customer List</span>
+      <div class="search-box" style="width:220px">
+        <svg class="si" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search customers…">
+      </div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Customer Name</th><th>Phone</th><th>Email</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Meridian Apparel Co.</td><td class="mono">+44 20 7946 0123</td><td class="mono">orders@meridian-apparel.co.uk</td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td>BlueSky Textiles Ltd</td><td class="mono">+44 161 496 0020</td><td class="mono">procurement@bluesky-tex.com</td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td>Alpine Knitwear GmbH</td><td class="mono">+49 89 1234 5678</td><td class="mono">buying@alpine-knit.de</td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td>Nordic Thread AS</td><td class="mono">+47 22 33 44 55</td><td class="mono">ops@nordicthread.no</td><td><span class="badge badge-draft">Inactive</span></td></tr>
+        <tr><td>Coastal Garments PLC</td><td class="mono">+44 1273 444 000</td><td class="mono">kate.h@coastal-garments.com</td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td>Sunrise Fashion Pvt Ltd</td><td class="mono">+91 22 6789 0123</td><td class="mono">import@sunrisefashion.in</td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td>Parisian Couture SARL</td><td class="mono">+33 1 40 20 50 60</td><td class="mono">commandes@parisian-couture.fr</td><td><span class="badge badge-draft">Inactive</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: MACHINES ════════════════════════════════ -->
+<div class="page" id="page-machines">
+  <div class="page-header-row">
+    <div class="page-header"><h1>Machines</h1><p>Knitting machine inventory</p></div>
+    <button class="btn btn-primary btn-sm" style="align-self:flex-start">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Machine
+    </button>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box violet"><svg fill="none" stroke="#7C3AED" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"/></svg></div><span class="stat-trend neutral">Total</span></div><div class="stat-value">12</div><div class="stat-label">Total Machines</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box blue"><svg fill="none" stroke="#2563EB" stroke-width="1.8" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg></div><span class="stat-trend neutral">Unique</span></div><div class="stat-value">5</div><div class="stat-label">GG Types</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box emerald"><svg fill="none" stroke="#059669" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span class="stat-trend up">+4 this week</span></div><div class="stat-value">38</div><div class="stat-label">Active Allocations</div></div>
+  </div>
+  <div class="section-card">
+    <div class="section-card-header">
+      <span class="section-card-title">Machine List</span>
+      <div class="search-box" style="width:220px">
+        <svg class="si" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search machines…">
+      </div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Machine ID</th><th>Machine Name</th><th>Gauge</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">MCH-001</td><td>Stoll CMS 530 HP</td><td><span class="gauge-badge">GG 7</span></td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td class="mono">MCH-002</td><td>Stoll CMS 530 HP</td><td><span class="gauge-badge">GG 7</span></td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td class="mono">MCH-003</td><td>Shima Seiki SWG061N2</td><td><span class="gauge-badge">GG 12</span></td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td class="mono">MCH-004</td><td>Shima Seiki SWG061N2</td><td><span class="gauge-badge">GG 12</span></td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td class="mono">MCH-005</td><td>Protti RCF 32</td><td><span class="gauge-badge">GG 5</span></td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td class="mono">MCH-006</td><td>Stoll CMS 730 S</td><td><span class="gauge-badge">GG 14</span></td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td class="mono">MCH-007</td><td>Santoni SM8 TOP2</td><td><span class="gauge-badge">GG 18</span></td><td><span class="badge badge-draft">Idle</span></td></tr>
+        <tr><td class="mono">MCH-008</td><td>Santoni SM8 TOP2</td><td><span class="gauge-badge">GG 18</span></td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td class="mono">MCH-009</td><td>Shima Seiki MACH2XS</td><td><span class="gauge-badge">GG 15</span></td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td class="mono">MCH-010</td><td>Stoll CMS 502 HP</td><td><span class="gauge-badge">GG 7</span></td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+        <tr><td class="mono">MCH-011</td><td>Protti RCF 32</td><td><span class="gauge-badge">GG 5</span></td><td><span class="badge badge-draft">Maintenance</span></td></tr>
+        <tr><td class="mono">MCH-012</td><td>Shima Seiki SWG041N</td><td><span class="gauge-badge">GG 12</span></td><td><span class="badge badge-submitted"><span class="pulse-dot"></span>Active</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: SHIFTS ════════════════════════════════ -->
+<div class="page" id="page-shifts">
+  <div class="page-header-row">
+    <div class="page-header"><h1>Shifts</h1><p>Working shift definitions</p></div>
+    <button class="btn btn-primary btn-sm" style="align-self:flex-start">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Shift
+    </button>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box blue"><svg fill="none" stroke="#2563EB" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><span class="stat-trend neutral">Defined</span></div><div class="stat-value">4</div><div class="stat-label">Total Shifts</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box emerald"><svg fill="none" stroke="#059669" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><span class="stat-trend neutral">Average</span></div><div class="stat-value">450</div><div class="stat-label">Avg Duration (min)</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box amber"><svg fill="none" stroke="#D97706" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="stat-trend neutral">Per week</span></div><div class="stat-value">13,440</div><div class="stat-label">Total Weekly Minutes</div></div>
+  </div>
+  <div class="section-card">
+    <div class="section-card-header">
+      <span class="section-card-title">Shift Definitions</span>
+      <div class="search-box" style="width:220px">
+        <svg class="si" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search shifts…">
+      </div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Shift Name</th><th>Start Time</th><th>End Time</th><th>Duration</th><th>Days</th></tr></thead>
+      <tbody>
+        <tr><td>Morning Shift</td><td class="mono">06:00</td><td class="mono">14:00</td><td><span class="badge badge-info">480 min</span></td><td style="color:#64748B;font-size:12px">Mon–Sat</td></tr>
+        <tr><td>Afternoon Shift</td><td class="mono">14:00</td><td class="mono">22:00</td><td><span class="badge badge-info">480 min</span></td><td style="color:#64748B;font-size:12px">Mon–Sat</td></tr>
+        <tr><td>Night Shift</td><td class="mono">22:00</td><td class="mono">06:00</td><td><span class="badge badge-info">480 min</span></td><td style="color:#64748B;font-size:12px">Mon–Fri</td></tr>
+        <tr><td>Half Day</td><td class="mono">08:00</td><td class="mono">14:00</td><td><span class="badge badge-amber">360 min</span></td><td style="color:#64748B;font-size:12px">Mon–Fri</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: SHIFT ALLOCATIONS ════════════════════════════════ -->
+<div class="page" id="page-shift-allocations">
+  <div class="page-header-row">
+    <div class="page-header"><h1>Shift Allocations</h1><p>Machine shift scheduling</p></div>
+    <button class="btn btn-primary btn-sm" style="align-self:flex-start">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Allocation
+    </button>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box emerald"><svg fill="none" stroke="#059669" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span class="stat-trend neutral">Total</span></div><div class="stat-value">18</div><div class="stat-label">Total Allocations</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box blue"><svg fill="none" stroke="#2563EB" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="stat-trend neutral">Applies to all</span></div><div class="stat-value">3</div><div class="stat-label">Default Allocations</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box violet"><svg fill="none" stroke="#7C3AED" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2"/></svg></div><span class="stat-trend neutral">Targeted</span></div><div class="stat-value">15</div><div class="stat-label">Machine-specific</div></div>
+  </div>
+  <div class="section-card">
+    <div class="section-card-header">
+      <span class="section-card-title">Allocation Schedule</span>
+      <div class="search-box" style="width:220px">
+        <svg class="si" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search allocations…">
+      </div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Default</th><th>Machine</th><th>Shift</th><th>Start Date</th><th>End Date</th><th>Daily Duration</th></tr></thead>
+      <tbody>
+        <tr><td><svg width="16" height="16" fill="none" stroke="#059669" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></td><td style="color:#94A3B8;font-style:italic">All machines</td><td>Morning Shift</td><td class="mono">2026-01-01</td><td class="mono">—</td><td><span class="badge badge-info">480 min</span></td></tr>
+        <tr><td></td><td>MCH-003 Shima 12GG</td><td>Afternoon Shift</td><td class="mono">2026-01-15</td><td class="mono">2026-06-30</td><td><span class="badge badge-info">480 min</span></td></tr>
+        <tr><td></td><td>MCH-007 Santoni 18GG</td><td>Night Shift</td><td class="mono">2026-02-01</td><td class="mono">2026-03-31</td><td><span class="badge badge-info">480 min</span></td></tr>
+        <tr><td><svg width="16" height="16" fill="none" stroke="#059669" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></td><td style="color:#94A3B8;font-style:italic">All machines</td><td>Afternoon Shift</td><td class="mono">2026-01-01</td><td class="mono">—</td><td><span class="badge badge-info">480 min</span></td></tr>
+        <tr><td></td><td>MCH-001 Stoll 7GG</td><td>Morning Shift</td><td class="mono">2026-02-10</td><td class="mono">2026-04-30</td><td><span class="badge badge-info">480 min</span></td></tr>
+        <tr><td></td><td>MCH-005 Protti 5GG</td><td>Half Day</td><td class="mono">2026-02-15</td><td class="mono">2026-05-15</td><td><span class="badge badge-amber">360 min</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: CAPACITY PLANNING ════════════════════════════════ -->
+<div class="page" id="page-capacity">
+  <div class="page-header">
+    <h1>Capacity Planning</h1>
+    <p>Gantt-based machine allocation planner</p>
+  </div>
+  <div class="stats-grid" style="margin-bottom:24px">
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box emerald"><svg fill="none" stroke="#059669" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div><span class="stat-trend neutral">Queued</span></div><div class="stat-value">12</div><div class="stat-label">Scheduled Orders</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box violet"><svg fill="none" stroke="#7C3AED" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2"/></svg></div><span class="stat-trend neutral">Running</span></div><div class="stat-value">10</div><div class="stat-label">Machines Active</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box amber"><svg fill="none" stroke="#D97706" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="stat-trend up">+8%</span></div><div class="stat-value">38</div><div class="stat-label">Allocated This Week</div></div>
+  </div>
+  <div class="planner-card">
+    <div class="planner-icon">
+      <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </div>
+    <h2>Capacity Planning</h2>
+    <p>The interactive Gantt planner lets you allocate production orders to machines, manage overtime, and visualise factory capacity across multiple shifts and weeks.</p>
+    <button class="btn btn-primary" onclick="window.open('/albion/capacity-planning','_blank')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Open Planner
+    </button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: IMPORT DATA ════════════════════════════════ -->
+<div class="page" id="page-import">
+  <div class="page-header-row">
+    <div class="page-header"><h1>Import Data</h1><p>Bulk Excel import for masters &amp; orders</p></div>
+    <button class="btn btn-primary btn-sm" style="align-self:flex-start">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Import
+    </button>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box blue"><svg fill="none" stroke="#2563EB" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><span class="stat-trend neutral">Total</span></div><div class="stat-value">23</div><div class="stat-label">Total Imports</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box emerald"><svg fill="none" stroke="#059669" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="stat-trend up">+5 this week</span></div><div class="stat-value">19</div><div class="stat-label">Completed</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box rose"><svg fill="none" stroke="#E11D48" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><span class="stat-trend neutral">Needs review</span></div><div class="stat-value">2</div><div class="stat-label">Errors</div></div>
+    <div class="stat-card"><div class="stat-card-top"><div class="stat-icon-box amber"><svg fill="none" stroke="#D97706" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div><span class="stat-trend neutral">Queued</span></div><div class="stat-value">2</div><div class="stat-label">Pending</div></div>
+  </div>
+  <div class="section-card">
+    <div class="section-card-header">
+      <span class="section-card-title">Import History</span>
+      <div class="search-box" style="width:220px">
+        <svg class="si" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search imports…">
+      </div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>File</th><th>Status</th><th>Records</th><th>Created Date</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">IMP-0023</td><td>orders_feb_w2_2026.xlsx</td><td><span class="badge badge-pending">⏳ Pending</span></td><td style="color:#94A3B8">—</td><td class="mono">2026-02-20</td></tr>
+        <tr><td class="mono">IMP-0022</td><td>orders_feb_w1_2026.xlsx</td><td><span class="badge badge-pending">⏳ Pending</span></td><td style="color:#94A3B8">—</td><td class="mono">2026-02-14</td></tr>
+        <tr><td class="mono">IMP-0021</td><td>masters_colours_v3.xlsx</td><td><span class="badge badge-error">✕ Error</span></td><td style="color:#DC2626">3 failed</td><td class="mono">2026-02-10</td></tr>
+        <tr><td class="mono">IMP-0020</td><td>orders_jan_w4_2026.xlsx</td><td><span class="badge badge-success"><span class="pulse-dot"></span>Complete</span></td><td>142</td><td class="mono">2026-01-31</td></tr>
+        <tr><td class="mono">IMP-0019</td><td>orders_jan_w3_2026.xlsx</td><td><span class="badge badge-success"><span class="pulse-dot"></span>Complete</span></td><td>118</td><td class="mono">2026-01-24</td></tr>
+        <tr><td class="mono">IMP-0018</td><td>machines_update.xlsx</td><td><span class="badge badge-error">✕ Error</span></td><td style="color:#DC2626">1 failed</td><td class="mono">2026-01-20</td></tr>
+        <tr><td class="mono">IMP-0017</td><td>orders_jan_w2_2026.xlsx</td><td><span class="badge badge-success"><span class="pulse-dot"></span>Complete</span></td><td>96</td><td class="mono">2026-01-17</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: COLOURS ════════════════════════════════ -->
+<div class="page" id="page-colours">
+  <div class="page-header-row">
+    <div class="page-header"><h1>Colours</h1><p>Colour master list</p></div>
+    <button class="btn btn-primary btn-sm" style="align-self:flex-start">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Colour
+    </button>
+  </div>
+  <div class="section-card">
+    <div class="section-card-header"><span class="section-card-title">Colour List</span><span class="section-card-sub">8 colours</span></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Colour Name</th><th>Code</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>
+        <tr><td class="mono" style="color:#94A3B8">1</td><td><span style="display:inline-flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#FFFFFF;border:1px solid #E2E8F0;display:inline-block"></span>White</span></td><td class="mono">WHT</td><td style="text-align:right"><button class="icon-btn edit" title="Edit">✎</button><button class="icon-btn del" title="Delete">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">2</td><td><span style="display:inline-flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#1C1C1C;display:inline-block"></span>Black</span></td><td class="mono">BLK</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">3</td><td><span style="display:inline-flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#6B7280;display:inline-block"></span>Grey Melange</span></td><td class="mono">GYM</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">4</td><td><span style="display:inline-flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#1D4ED8;display:inline-block"></span>Navy</span></td><td class="mono">NVY</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">5</td><td><span style="display:inline-flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#DC2626;display:inline-block"></span>Red</span></td><td class="mono">RED</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">6</td><td><span style="display:inline-flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#15803D;display:inline-block"></span>Bottle Green</span></td><td class="mono">BGN</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">7</td><td><span style="display:inline-flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#D97706;display:inline-block"></span>Camel</span></td><td class="mono">CML</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">8</td><td><span style="display:inline-flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#9D174D;display:inline-block"></span>Burgundy</span></td><td class="mono">BRG</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: SIZES ════════════════════════════════ -->
+<div class="page" id="page-sizes">
+  <div class="page-header-row">
+    <div class="page-header"><h1>Sizes</h1><p>Size master list</p></div>
+    <button class="btn btn-primary btn-sm" style="align-self:flex-start">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Size
+    </button>
+  </div>
+  <div class="section-card">
+    <div class="section-card-header"><span class="section-card-title">Size List</span><span class="section-card-sub">8 sizes</span></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Size Name</th><th>Sort Order</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>
+        <tr><td class="mono" style="color:#94A3B8">1</td><td>XS</td><td class="mono">10</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">2</td><td>S</td><td class="mono">20</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">3</td><td>M</td><td class="mono">30</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">4</td><td>L</td><td class="mono">40</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">5</td><td>XL</td><td class="mono">50</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">6</td><td>XXL</td><td class="mono">60</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">7</td><td>3XL</td><td class="mono">70</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">8</td><td>4XL</td><td class="mono">80</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: PROCESSES ════════════════════════════════ -->
+<div class="page" id="page-processes">
+  <div class="page-header-row">
+    <div class="page-header"><h1>Processes</h1><p>Production process types</p></div>
+    <button class="btn btn-primary btn-sm" style="align-self:flex-start">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Process
+    </button>
+  </div>
+  <div class="section-card">
+    <div class="section-card-header"><span class="section-card-title">Process List</span><span class="section-card-sub">8 processes</span></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Process Name</th><th>Description</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>
+        <tr><td class="mono" style="color:#94A3B8">1</td><td>Knitting</td><td style="color:#64748B;font-size:12px">Main fabric construction</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">2</td><td>Linking</td><td style="color:#64748B;font-size:12px">Garment assembly seaming</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">3</td><td>Washing</td><td style="color:#64748B;font-size:12px">Wet finishing process</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">4</td><td>Pressing</td><td style="color:#64748B;font-size:12px">Steam pressing and shaping</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">5</td><td>Mending</td><td style="color:#64748B;font-size:12px">Quality repair work</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">6</td><td>Embroidery</td><td style="color:#64748B;font-size:12px">Decorative stitching</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">7</td><td>Packing</td><td style="color:#64748B;font-size:12px">Final packaging step</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">8</td><td>QC Inspection</td><td style="color:#64748B;font-size:12px">Quality control check</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: MACHINE FRAME ════════════════════════════════ -->
+<div class="page" id="page-machine-frame">
+  <div class="page-header-row">
+    <div class="page-header"><h1>Machine Frame</h1><p>Gauge types for knitting machines</p></div>
+    <button class="btn btn-primary btn-sm" style="align-self:flex-start">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New GG
+    </button>
+  </div>
+  <div class="section-card">
+    <div class="section-card-header"><span class="section-card-title">Gauge List</span><span class="section-card-sub">6 gauges</span></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>GG Label</th><th>Gauge Value</th><th>Typical Use</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>
+        <tr><td class="mono" style="color:#94A3B8">1</td><td><span class="gauge-badge">GG 5</span></td><td class="mono">5</td><td style="color:#64748B;font-size:12px">Chunky/bulky knits</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">2</td><td><span class="gauge-badge">GG 7</span></td><td class="mono">7</td><td style="color:#64748B;font-size:12px">Medium weight knitwear</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">3</td><td><span class="gauge-badge">GG 12</span></td><td class="mono">12</td><td style="color:#64748B;font-size:12px">Fine knitwear</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">4</td><td><span class="gauge-badge">GG 14</span></td><td class="mono">14</td><td style="color:#64748B;font-size:12px">Fine/superfine knits</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">5</td><td><span class="gauge-badge">GG 15</span></td><td class="mono">15</td><td style="color:#64748B;font-size:12px">Superfine merino</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">6</td><td><span class="gauge-badge">GG 18</span></td><td class="mono">18</td><td style="color:#64748B;font-size:12px">Ultra-fine seamless</td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ PAGE: SIZE RANGES ════════════════════════════════ -->
+<div class="page" id="page-size-ranges">
+  <div class="page-header-row">
+    <div class="page-header"><h1>Size Ranges</h1><p>Size groupings for items</p></div>
+    <button class="btn btn-primary btn-sm" style="align-self:flex-start">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Size Range
+    </button>
+  </div>
+  <div class="section-card">
+    <div class="section-card-header"><span class="section-card-title">Size Range List</span><span class="section-card-sub">6 ranges</span></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Range Name</th><th>Sizes Included</th><th>Items Using</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>
+        <tr><td class="mono" style="color:#94A3B8">1</td><td>S–XL Standard</td><td><span class="badge badge-neutral">S</span> <span class="badge badge-neutral">M</span> <span class="badge badge-neutral">L</span> <span class="badge badge-neutral">XL</span></td><td><span class="badge badge-info">42 items</span></td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">2</td><td>XS–XXL Extended</td><td><span class="badge badge-neutral">XS</span> <span class="badge badge-neutral">S</span> <span class="badge badge-neutral">M</span> <span class="badge badge-neutral">L</span> <span class="badge badge-neutral">XL</span> <span class="badge badge-neutral">XXL</span></td><td><span class="badge badge-info">28 items</span></td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">3</td><td>S–L Compact</td><td><span class="badge badge-neutral">S</span> <span class="badge badge-neutral">M</span> <span class="badge badge-neutral">L</span></td><td><span class="badge badge-info">8 items</span></td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">4</td><td>XS–L Fine</td><td><span class="badge badge-neutral">XS</span> <span class="badge badge-neutral">S</span> <span class="badge badge-neutral">M</span> <span class="badge badge-neutral">L</span></td><td><span class="badge badge-info">4 items</span></td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">5</td><td>One Size</td><td><span class="badge badge-neutral">OS</span></td><td><span class="badge badge-info">1 item</span></td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+        <tr><td class="mono" style="color:#94A3B8">6</td><td>Plus Size</td><td><span class="badge badge-neutral">XXL</span> <span class="badge badge-neutral">3XL</span> <span class="badge badge-neutral">4XL</span></td><td><span class="badge badge-info">1 item</span></td><td style="text-align:right"><button class="icon-btn edit">✎</button><button class="icon-btn del">✕</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ── Data ──
+const orders = [
+  {id:'ORD-2026-00419',customer:'Meridian Apparel Co.',po:'PO-MA-2026-001',date:'2026-02-18',delivery:'2026-04-15',status:'Submitted'},
+  {id:'ORD-2026-00418',customer:'BlueSky Textiles Ltd',po:'BST-PO-0884',date:'2026-02-17',delivery:'2026-04-10',status:'Submitted'},
+  {id:'ORD-2026-00417',customer:'Alpine Knitwear GmbH',po:'AKG-2026-22',date:'2026-02-16',delivery:'2026-03-30',status:'Submitted'},
+  {id:'ORD-2026-00416',customer:'Nordic Thread AS',po:'NT-O-2026-07',date:'2026-02-15',delivery:'2026-04-01',status:'Submitted'},
+  {id:'ORD-2026-00415',customer:'Coastal Garments PLC',po:'CG-2026-0412',date:'2026-02-14',delivery:'2026-05-01',status:'Submitted'},
+  {id:'ORD-2026-00414',customer:'Sunrise Fashion Pvt Ltd',po:'SF-PO-26014',date:'2026-02-13',delivery:'2026-04-20',status:'Submitted'},
+  {id:'ORD-2026-00413',customer:'Meridian Apparel Co.',po:'PO-MA-2026-002',date:'2026-02-12',delivery:'2026-04-30',status:'Submitted'},
+  {id:'ORD-2026-00412',customer:'BlueSky Textiles Ltd',po:'BST-PO-0883',date:'2026-02-11',delivery:'2026-03-25',status:'Submitted'},
+  {id:'ORD-2026-00411',customer:'Parisian Couture SARL',po:'PC-26-411',date:'2026-02-10',delivery:'2026-04-15',status:'Draft'},
+  {id:'ORD-2026-00410',customer:'Alpine Knitwear GmbH',po:'AKG-2026-21',date:'2026-02-09',delivery:'2026-03-28',status:'Submitted'},
+];
+
+// ── Render dashboard orders ──
+function renderDashboardOrders(){
+  const tbody = document.getElementById('dashboard-orders');
+  tbody.innerHTML = orders.map(o=>`
+    <tr>
+      <td class="mono" style="color:#059669;font-weight:600">${o.id}</td>
+      <td>${o.customer}</td>
+      <td><span class="po-pill">${o.po}</span></td>
+      <td class="mono">${o.date}</td>
+      <td>${badge(o.status)}</td>
+    </tr>`).join('');
+}
+
+// ── Render orders table ──
+function renderOrdersTable(){
+  const tbody = document.getElementById('orders-table');
+  tbody.innerHTML = orders.map(o=>`
+    <tr>
+      <td class="mono" style="color:#059669;font-weight:600">${o.id}</td>
+      <td>${o.customer}</td>
+      <td><span class="po-pill">${o.po}</span></td>
+      <td class="mono">${o.date}</td>
+      <td class="mono">${o.delivery}</td>
+      <td>${badge(o.status)}</td>
+    </tr>`).join('');
+}
+
+function badge(status){
+  if(status==='Submitted') return '<span class="badge badge-submitted"><span class="pulse-dot"></span>Submitted</span>';
+  if(status==='Draft') return '<span class="badge badge-draft">Draft</span>';
+  if(status==='Cancelled') return '<span class="badge badge-cancelled">Cancelled</span>';
+  return `<span class="badge badge-neutral">${status}</span>`;
+}
+
+// ── Navigation ──
+const pageMap = {
+  'dashboard':'Dashboard','orders':'Orders','items':'Items','customers':'Customers',
+  'machines':'Machines','shifts':'Shifts','shift-allocations':'Shift Allocations',
+  'capacity':'Capacity Planning','import':'Import Data','colours':'Colours',
+  'sizes':'Sizes','processes':'Processes','machine-frame':'Machine Frame','size-ranges':'Size Ranges'
+};
+
+function navigate(pageId, navEl){
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  // Show target
+  const target = document.getElementById('page-'+pageId);
+  if(target) target.classList.add('active');
+  // Update topbar
+  document.getElementById('topbar-title').textContent = pageMap[pageId]||pageId;
+  // Update nav active
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(navEl) navEl.classList.add('active');
+  // Open settings if needed
+  const settingsPages = ['colours','sizes','processes','machine-frame','size-ranges'];
+  if(settingsPages.includes(pageId)){
+    openSettings();
+  }
+}
+
+// ── Sidebar toggle ──
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+// ── Settings accordion ──
+let settingsOpen = false;
+function toggleSettings(){
+  settingsOpen = !settingsOpen;
+  document.getElementById('settings-children').classList.toggle('open', settingsOpen);
+  document.getElementById('settings-arrow').classList.toggle('open', settingsOpen);
+}
+function openSettings(){
+  if(!settingsOpen){
+    settingsOpen = true;
+    document.getElementById('settings-children').classList.add('open');
+    document.getElementById('settings-arrow').classList.add('open');
+  }
+}
+
+// ── Filter tabs ──
+function setTab(el, filter){
+  el.closest('.filter-tabs').querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── Init ──
+renderDashboardOrders();
+renderOrdersTable();
+</script>
+</body>
+</html>

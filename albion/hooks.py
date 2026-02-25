@@ -10,23 +10,24 @@ app_license = "mit"
 
 # required_apps = []
 
-# Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "albion",
-# 		"logo": "/assets/albion/logo.png",
-# 		"title": "Albion",
-# 		"route": "/albion",
-# 		"has_permission": "albion.api.permission.has_app_permission"
-# 	}
-# ]
+add_to_apps_screen = [
+	{
+		"name": "albion",
+		"title": "Albion",
+		"route": "/web",
+	}
+]
 
 # Includes in <head>
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/albion/css/albion.css"
+app_include_css = "/assets/albion/css/albion.css"
 app_include_js = "albion.bundle.js"
+
+website_route_rules = [
+	{"from_route": "/web/<path:app_path>", "to_route": "web"},
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/albion/css/albion.css"
@@ -197,7 +198,7 @@ app_include_js = "albion.bundle.js"
 # Request Events
 # ----------------
 # before_request = ["albion.utils.before_request"]
-# after_request = ["albion.utils.after_request"]
+after_request = ["albion.overrides.override_home_page"]
 
 # Job Events
 # ----------

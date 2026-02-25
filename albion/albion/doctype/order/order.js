@@ -45,6 +45,44 @@ frappe.ui.form.on('Order', {
                 );
             }
         }
+
+        // Close / Reopen buttons
+        if (frm.doc.docstatus === 1 && frm.doc.status !== 'Closed') {
+            frm.add_custom_button(__('Close'), function () {
+                frappe.confirm(
+                    __('Close this Order? Closed orders cannot be cancelled or allocated.'),
+                    function () {
+                        frappe.call({
+                            method: 'albion.albion.doctype.order.order.close_order',
+                            args: { order_name: frm.doc.name },
+                            callback: function () {
+                                frm.reload_doc();
+                            },
+                        });
+                    }
+                );
+            }, __('Status'));
+        }
+
+        if (frm.doc.docstatus === 1 && frm.doc.status === 'Closed') {
+            frm.add_custom_button(__('Reopen'), function () {
+                frappe.confirm(
+                    __('Reopen this Order?'),
+                    function () {
+                        frappe.call({
+                            method: 'albion.albion.doctype.order.order.reopen_order',
+                            args: { order_name: frm.doc.name },
+                            callback: function () {
+                                frm.reload_doc();
+                            },
+                        });
+                    }
+                );
+            }, __('Status'));
+
+            // Hide Cancel/Amend for closed orders
+            frm.page.clear_secondary_action();
+        }
     },
 
     before_save: function(frm) {

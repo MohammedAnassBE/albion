@@ -25,21 +25,21 @@ def execute():
     for name in frappe.get_all("Shift Allocation", pluck="name"):
         frappe.delete_doc("Shift Allocation", name, force=True)
 
-    # 4. Machine (links to Machine GG)
+    # 4. Machine (links to Machine Frame)
     for name in frappe.get_all("Machine", pluck="name"):
         frappe.delete_doc("Machine", name, force=True)
 
-    # 5. Item (links to Machine GG, Process, Colour, Size)
-    for name in frappe.get_all("Item", pluck="name"):
-        frappe.delete_doc("Item", name, force=True)
+    # 5. Style (links to Machine Frame, Process, Colour, Size)
+    for name in frappe.get_all("Style", pluck="name"):
+        frappe.delete_doc("Style", name, force=True)
 
-    # 6. Machine GG
-    for name in frappe.get_all("Machine GG", pluck="name"):
-        frappe.delete_doc("Machine GG", name, force=True)
+    # 6. Machine Frame
+    for name in frappe.get_all("Machine Frame", pluck="name"):
+        frappe.delete_doc("Machine Frame", name, force=True)
 
-    # 7. Customer
-    for name in frappe.get_all("Customer", pluck="name"):
-        frappe.delete_doc("Customer", name, force=True)
+    # 7. Client
+    for name in frappe.get_all("Client", pluck="name"):
+        frappe.delete_doc("Client", name, force=True)
 
     # 8. Shift
     for name in frappe.get_all("Shift", pluck="name"):
