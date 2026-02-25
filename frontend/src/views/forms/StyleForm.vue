@@ -140,7 +140,7 @@
 					:modelValue="form.colours || []"
 					:columns="colourColumns"
 					:readonly="isReadonly"
-					@update:modelValue="(val) => form.colours = val"
+					@update:modelValue="onColoursUpdate"
 				/>
 				<ItemCardList
 					title="Sizes"
@@ -187,7 +187,11 @@ const { canCreate: permCanCreate, canWrite: permCanWrite, canDelete: permCanDele
 const isNew = computed(() => !props.id)
 
 // Child table column definitions
-const colourColumns = [{ field: 'colour', header: 'Colour', type: 'link', options: 'Colour' }]
+const colourColumns = [
+	{ field: 'colour', header: 'Colour', type: 'link', options: 'Colour' },
+	{ field: 'colour_no', header: 'Colour No', type: 'data', read_only: true },
+	{ field: 'yarn_name', header: 'Yarn Name', type: 'data', read_only: true },
+]
 const sizeColumns = [{ field: 'size', header: 'Size', type: 'link', options: 'Size' }]
 const processColumns = [
 	{ field: 'process_name', header: 'Process', type: 'link', options: 'Process' },
@@ -287,6 +291,29 @@ function buildPayload() {
 		}
 	}
 	return payload
+}
+
+// Colours table update — fetch colour_no and yarn_name when colour link changes
+async function onColoursUpdate(val) {
+	form.colours = val
+	for (const row of val) {
+		if (row.colour && row.colour !== row._lastColour) {
+			try {
+				const colourDoc = await getDoc('Colour', row.colour)
+				row.colour_no = colourDoc?.colour_no || ''
+				row.yarn_name = colourDoc?.yarn_name || ''
+			} catch {
+				row.colour_no = ''
+				row.yarn_name = ''
+			}
+			row._lastColour = row.colour
+		} else if (!row.colour) {
+			row.colour_no = ''
+			row.yarn_name = ''
+			row._lastColour = null
+		}
+	}
+	form.colours = [...val]
 }
 
 // Size range onChange handler

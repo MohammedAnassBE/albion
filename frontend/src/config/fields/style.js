@@ -22,6 +22,8 @@ export default {
 		},
 		{ fieldname: 'colours', fieldtype: 'Table', label: 'Colours', options: 'Style Colour', columns: [
 			{ field: 'colour', header: 'Colour', type: 'link', options: 'Colour' },
+			{ field: 'colour_no', header: 'Colour No', type: 'data', read_only: true },
+			{ field: 'yarn_name', header: 'Yarn Name', type: 'data', read_only: true },
 		]},
 		{ fieldname: 'sizes', fieldtype: 'Table', label: 'Sizes', options: 'Style Size', columns: [
 			{ field: 'size', header: 'Size', type: 'link', options: 'Size' },

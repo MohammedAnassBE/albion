@@ -20,6 +20,7 @@ const DOCTYPES = [
   { doctype: 'Style', route: 'styles', label: 'Styles', icon: 'box', group: 'Masters', sortOrder: 10, isSubmittable: false, isSingle: false },
   { doctype: 'Client', route: 'clients', label: 'Clients', icon: 'users', group: 'Masters', sortOrder: 11, isSubmittable: false, isSingle: false },
   { doctype: 'Colour', route: 'colours', label: 'Colours', icon: 'palette', group: 'Masters', sortOrder: 12, isSubmittable: false, isSingle: false },
+  { doctype: 'Colour No', route: 'colour-nos', label: 'Colour Nos', icon: 'hash', group: 'Masters', sortOrder: 12.5, isSubmittable: false, isSingle: false },
   { doctype: 'Size', route: 'sizes', label: 'Sizes', icon: 'expand', group: 'Masters', sortOrder: 13, isSubmittable: false, isSingle: false },
   { doctype: 'Size Range', route: 'size-ranges', label: 'Size Ranges', icon: 'list', group: 'Masters', sortOrder: 14, isSubmittable: false, isSingle: false },
   { doctype: 'Knitter', route: 'knitters', label: 'Knitters', icon: 'user', group: 'Masters', sortOrder: 15, isSubmittable: false, isSingle: false },

@@ -138,7 +138,7 @@ def get_style_details(style_code):
     sizes = []
 
     if style.colours:
-        colours = [{"colour": c.colour} for c in style.colours]
+        colours = [{"colour": c.colour, "colour_no": c.colour_no or "", "yarn_name": c.yarn_name or ""} for c in style.colours]
 
     if style.sizes:
         sizes = [{"size": s.size} for s in style.sizes]

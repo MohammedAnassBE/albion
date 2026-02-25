@@ -6,7 +6,9 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "colour"
+  "colour",
+  "colour_no",
+  "yarn_name"
  ],
  "fields": [
   {
@@ -16,6 +18,22 @@
    "label": "Colour",
    "options": "Colour",
    "reqd": 1
+  },
+  {
+   "fetch_from": "colour.colour_no",
+   "fieldname": "colour_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Colour No",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "colour.yarn_name",
+   "fieldname": "yarn_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Yarn Name",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,

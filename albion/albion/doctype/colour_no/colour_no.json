@@ -1,43 +1,30 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:colour_name",
- "creation": "2026-02-16 12:00:00.000000",
+ "autoname": "field:colour_no_name",
+ "creation": "2026-02-25 12:00:00.000000",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "colour_name",
-  "colour_no",
-  "yarn_name"
+  "colour_no_name"
  ],
  "fields": [
   {
-   "fieldname": "colour_name",
+   "fieldname": "colour_no_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Colour Name",
+   "label": "Colour No Name",
    "reqd": 1,
    "unique": 1
-  },
-  {
-   "fieldname": "colour_no",
-   "fieldtype": "Link",
-   "label": "Colour No",
-   "options": "Colour No"
-  },
-  {
-   "fieldname": "yarn_name",
-   "fieldtype": "Data",
-   "label": "Yarn Name"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-16 12:00:00.000000",
+ "modified": "2026-02-25 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Albion",
- "name": "Colour",
+ "name": "Colour No",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [

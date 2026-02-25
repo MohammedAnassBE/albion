@@ -56,6 +56,9 @@ const routes = [
 			// Colour
 			{ path: "colours/new", component: () => import("@/views/forms/ColourForm.vue") },
 			{ path: "colours/:id", component: () => import("@/views/forms/ColourForm.vue"), props: true },
+			// Colour No
+			{ path: "colour-nos/new", component: () => import("@/views/forms/ColourNoForm.vue") },
+			{ path: "colour-nos/:id", component: () => import("@/views/forms/ColourNoForm.vue"), props: true },
 			// Size
 			{ path: "sizes/new", component: () => import("@/views/forms/SizeForm.vue") },
 			{ path: "sizes/:id", component: () => import("@/views/forms/SizeForm.vue"), props: true },
